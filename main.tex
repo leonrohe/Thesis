@@ -1,0 +1,60 @@
+% arara: lualatex: { shell: yes }
+% arara: biber
+% arara: nomencl
+% arara: lualatex: { shell: yes }
+% arara: lualatex: { shell: yes }
+
+\documentclass[ngerman]{ttlab-qualify}
+%%% mögliche Optionen:
+% - ngerman
+% - english
+% - minted
+% - algorithm
+% - nomencl
+% - nolibertine
+%%% wähle den Studiengang (Auswahl erforderlich):
+% - bsc2019
+% - msc2019
+% - mscbio2019
+% - mscwirtschaft2019
+% - seminar
+\usepackage{hyperref}
+\usepackage{setspace}
+
+\addbibresource{quellen.bib}
+\newcommand{\tocite}{\textcolor{red}{[?]}} % Zitat Platzhalter
+
+\begin{document}
+\titlehead{
+  Leon Rohe\\
+  7990263\\
+  Informatik (BA)\\
+  s1225702@stud.uni-frankfurt.de  
+}
+\subject{Bachelorarbeit}
+\author{Leon Rohe}
+\title{RTReconstruct}
+\subtitle{Konzeption und Evaluation eines skallierbaren Systems für Echtzeit-3D-Rekonstruktionen}
+\date{Abgabedatum: <Datum>}
+\publishers{Institut für Informatik\\Text Technology Lab\\Prof. Dr. Alexander Mehler\\Ggf. Name des Zweitbetreuers}
+
+\maketitle
+
+\include{chapters/0_abstract}
+
+\tableofcontents
+
+\include{chapters/1_introduction}
+\include{chapters/2_hintergrund}
+\include{chapters/3_related_works}
+\include{chapters/4_methodik}
+\include{chapters/5_implementierung}
+\include{chapters/6_evaluation}
+\include{chapters/7_diskussion}
+\include{chapters/8_fazit}
+
+\appendix
+
+\printbibliography
+
+\end{document}
