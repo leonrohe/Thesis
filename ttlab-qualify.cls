@@ -111,7 +111,7 @@
 \RequirePackage{xcolor}
 \RequirePackage{mathtools}
 \RequirePackage{amssymb}
-\RequirePackage[style=authoryear, maxnames=5, maxcitenames=3, backend=biber]{biblatex}
+\RequirePackage[style=ieee, maxnames=5, maxcitenames=3, backend=biber]{biblatex}
 
 \ifbool{minted}{\RequirePackage{minted}}{}
 \ifbool{nomencl}{\RequirePackage[intoc]{nomencl}\makenomenclature}{}
