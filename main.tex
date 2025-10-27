@@ -22,7 +22,11 @@
 \usepackage{setspace}
 
 \addbibresource{quellen.bib}
-\newcommand{\needcitation}{\textcolor{red}{[?]}} % Zitat Platzhalter
+\newcounter{needcitationcounter}
+\newcommand{\needcitation}{%
+  \stepcounter{needcitationcounter}%
+  \textcolor{red}{[\theneedcitationcounter]}%
+}
 
 \begin{document}
 \titlehead{

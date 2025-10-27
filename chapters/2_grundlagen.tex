@@ -1,11 +1,66 @@
 \chapter{Grundlagen}
+Dieses Kapitel bildet die technische und theoretische Grundlage der Arbeit. Es erläutert die wichtigsten Konzepte, auf denen das entwickelte System basiert und vermittelt somit das notwendige Verständnis für die folgenden Kapitel.
 
-\section{Virtuelle Realität}
+\section{Virtuelle Realität und Extended Reality}
+Als Virtuelle Realität (VR) wird eine durch Computer generierte, interaktive Darstellung einer virtuellen, dreidimensionalen Umgebung bezeichnet. In dieser können Nutzer immersiv mit ihrer Umgebung interagieren. \needcitation Durch sogenannte Head-Mounted Displays (HMDs) wird dabei ein räumliches Verständnis geschaffen, indem den Nutzern ein stereoskopisches Bild, Head-Tracking und 3D-Audio geboten werden.
 
-\section{3D-Rekonstruktionsverfahren}
+Die Weiterentwicklung der einfachen virtuellen Realität (VR) ist die sogenannte Extended Reality (XR). Sie vereint virtuelle und reale Elemente zu einem zusammenhängenden Erlebnis. Dies wird bei unterstützten HMDs durch eine Passthrough-Funktion ermöglicht. Dabei wird das Bild einer am HMD befestigten Kamera an den Nutzer ausgegeben und um virtuelle Elemente ergänzt. Der Grad der Immersion reicht dabei von einfacher Augmented Reality (AR), bei der die reale Umgebung nur um virtuelle Informationen ergänzt wird, bis hin zur Mixed Reality (MR), bei der eine plausible Interaktion zwischen realer und virtueller Welt möglich wird. \needcitation
 
-\section{Container-Technologie und Docker}
+\section{3D-Rekonstruktion}
+3D-Rekonstruktion beschreibt das Verfahren, bei dem aus einer Reihe von Bildern eine möglichst genaue virtuelle 3D-Repräsentation der aufgenommenen Umgebung erstellt wird. Erweitert man die Eingabe für diese Algorithmen um weitere Informationen, wie zum Beispiel Tiefenkarten, Kameraparameter (Intrinsiken und Extrinsiken), so kann diese Rekonstruktion noch akkurater werden. \needcitation Ziel der 3D-Rekonstruktion besteht darin Geometrie, Textur und räumliche Struktur möglichst genau wiederzugeben. \needcitation
 
-\section{Kommunikationsprotokolle}
+In der Forschung existieren für diese Zwecke unterschiedliche Ansätze, die sich in Bezug auf die benötigten Daten, Genauigkeit der Rekonstruktion und die Echtzeitfähigkeit unterscheiden.
 
-\section{Unity und das Va.Si.Li-Lab}
+\subsection{Photogrammetrie}
+Die Photogrammetrie nutzt mehrere überlappende Bilder, um durch Merkmalsextraktion, Korrespondenzsuche und Triangulation eine Punktwolke der Szene zu berechnen. Aus dieser wird anschließend ein 3D-Modell generiert. Photogrammetrische Verfahren liefern extem detaillierte Ergebnisse, erfordern aber jedoch hohe Rechenleistung und sind meist für nur Offline-Prozesse geeignet. \needcitation
+
+\subsection{SLAM-Verfahren}
+Simultaneous Localization and Mapping (SLAM) bezeichnet einen Ansatz, bei dem ein System seine eigene Position bestimmt und gleichzeitig eine Karte der Umgebung erstellt. Der Einsatz von SLAM-Verfahren erfolgt vor allem in der Robotik und in Augmented-Reality-Anwendungen, da sie kontinuierlich in Echtzeit arbeiten. Sie liefern weniger detailreiche, aber dafür schnelle Rekonstruktionen, die besonders für dynamische Umgebungen geeignet sind. \needcitation
+
+\subsection{Neuronale Rekonstruktion}
+Jüngere Entwicklungen im Bereich der 3D-Rekonstruktion basieren auf neuronalen Netzen, die Bild- und Tiefendaten direkt in volumetrische oder strahlbasierte Darstellungen übersetzen. Besonders relevant sind sogenannte Neural Radiance Fields (NeRF), die Lichtverteilungen in einem 3D-Raum modellieren. Modelle wie SLAM3R kombinieren diese Ansätze mit GPU-beschleunigter Echtzeitverarbeitung. \needcitation
+
+\subsection{Qualitätskriterien der 3D-Rekonstruktion}
+Die Bewertung der Qualität einer 3D-Rekonstruktion kann aus verschiedenen Perspektiven erfolgen. Für die im Rahmen dieser Arbeit verfolgte Zielsetzung – die Integration und Echtzeit-Ausführung verschiedener Rekonstruktionsverfahren in einer VR-Umgebung – sind insbesondere Genauigkeit, Vollständigkeit, Latenz und Robustheit von zentraler Bedeutung.
+
+Genauigkeit beschreibt, wie präzise die rekonstruierte Geometrie mit der realen Szene übereinstimmt. Sie ist entscheidend, um in der virtuellen Umgebung realistische und maßstabsgetreue Darstellungen zu ermöglichen. Ungenauigkeiten wirken sich unmittelbar auf die Wahrnehmung der räumlichen Tiefe und das Interaktionsverhalten im VR-System aus.
+
+Vollständigkeit bezeichnet den Anteil der tatsächlichen Szene, der erfolgreich rekonstruiert wurde. Da die rekonstruierten Modelle in Echtzeit in die VR-Umgebung eingebettet werden, ist eine möglichst vollständige Erfassung der Umgebung wichtig, um Lücken und Artefakte zu vermeiden, die die Immersion des Nutzers stören könnten.
+
+Latenz beschreibt die Zeitspanne zwischen der Erfassung der Eingangsdaten und dem Auftreten des aktualisierten 3D-Modells in der VR-Szene. Für interaktive Anwendungen ist eine geringe Latenz essenziell, um ein konsistentes Nutzererlebnis zu gewährleisten und Verzögerungen zwischen realer Bewegung und virtueller Rückmeldung zu minimieren.
+
+Robustheit schließlich misst die Widerstandsfähigkeit des Systems gegenüber Störeinflüssen wie wechselnden Lichtverhältnissen, Bewegungsunschärfe oder dynamischen Objekten. Da das System in realen Einsatzszenarien nicht unter idealisierten Bedingungen arbeitet, ist Robustheit ein entscheidendes Kriterium für die praktische Nutzbarkeit der vorgeschlagenen Architektur.
+
+\section{Systemische Grundlagen}
+
+\subsection{Container-Technologie und Docker}
+Container-Technologien ermöglichen es, Anwendungen mitsamt ihren Abhängigkeiten in isolierten Umgebungen auszuführen. Dadurch lassen sich Softwarekomponenten unabhängig vom Hostsystem betreiben, was die Reproduzierbarkeit und Portabilität von Anwendungen wesentlich verbessert. \needcitation Ein Container enthält alle zur Laufzeit benötigten Komponenten einer Anwendung, wie etwa Bibliotheken, Konfigurationsdateien und Laufzeitumgebungen. Dadurch wird sichergestellt, dass die Software in unterschiedlichen Umgebungen identisch funktioniert. Im Gegensatz zu virtuellen Maschinen teilen sich Container den Kernel des Host-Betriebssystems, wodurch sie deutlich ressourcenschonender sind. \needcitation Die bekannteste Implementierungen einer solchen Container-Technologie ist Docker. \needcitation
+
+\subsection{WebSockets}
+WebSockets sind ein Netzwerkprotokoll, das eine bidirektionale, dauerhafte Verbindung zwischen Client und Server ermöglicht. Im Gegensatz zu klassischen HTTP-Verbindungen, die nach jeder Anfrage beendet werden, erlaubt eine WebSocket-Verbindung den kontinuierlichen Austausch von Nachrichten in beide Richtungen. Dies macht sie besonders geeignet für Anwendungen mit Echtzeitanforderungen. \needcitation
+
+Nach dem initialen Verbindungsaufbau über ein HTTP-Handshake wird die Verbindung auf das WebSocket-Protokoll umgestellt. Von diesem Zeitpunkt an können sowohl Client als auch Server asynchron Daten senden, ohne dass eine neue Anfrage notwendig ist. \needcitation
+
+\section{Zielumgebung}
+\subsection{Unity als VR-Plattform}
+Die Game-Engine Unity dient als zentrale Laufzeit- und Entwicklungsumgebung für Virtual- und Extended-Reality-Anwendungen. Sie ermöglicht die Erstellung interaktiver, immersiver 3D-Szenen, die mit verschiedenen Head-Mounted Displays (HMDs) kompatibel sind. \needcitation
+
+Unity bietet eine komponentenbasierte Architektur, bei der jedes Objekt durch sogenannte \textit{GameObjects} und deren \textit{Components} definiert wird. Dadurch lassen sich komplexe Systeme modular und flexibel strukturieren. Für Virtual-Reality-Anwendungen stehen in Unity spezialisierte XR-Plugins und SDKs zur Verfügung, die Head-Tracking, stereoskopisches Rendering, Controller-Interaktion und 3D-Audio unterstützen. \needcitation
+
+Besonders relevant ist die enge Integration mit VR-Plattformen wie Meta Quest, HTC Vive oder Valve Index, wodurch plattformübergreifende Entwicklung möglich wird. Zudem erlaubt Unity durch seine Script-API in C\# die direkte Einbindung externer Systeme, beispielsweise über Netzwerkprotokolle wie WebSockets. \needcitation
+
+\subsection{Das Va.Si.Li-Lab}
+Das Va.Si.Li-Lab („Virtual and Simulation-Based Learning Laboratory“)  ist eine immersive Mehrbenutzer-VR-Umgebung der Goethe-Universität Frankfurt, die für simulationsbasiertes Lernen und interaktive Forschungsanwendungen entwickelt wurde. Es bietet eine hochgradig flexible Infrastruktur, in der virtuelle Lernszenarien, soziale Interaktionen und kollaborative Experimente in Echtzeit durchgeführt und analysiert werden können. \needcitation
+
+Das Labor kombiniert Virtual-Reality-Technologien mit multimodaler Datenerfassung. Zu diesem Zweck werden diverse Eingabekanäle, wie etwa Sprache, Gestik, Blickrichtung sowie Objektinteraktionen, erfasst und zentral gespeichert. Die Architektur basiert auf Unity und dem Mehrbenutzer-Framework Ubiq, das es mehreren Teilnehmern gleichzeitig erlaubt, zu interagieren. \needcitation
+
+Das Labor deckt ein breites Spektrum an Anwendungsszenarien ab: von schulischen und beruflichen Trainings über soziale Interaktionssimulationen bis hin zu wissenschaftlichen Untersuchungen von Lernprozessen. \needcitation
+
+% \subsubsection*{Relevanz für diese Arbeit}
+% Die Wahl des Va.Si.Li-Lab als Zielumgebung bietet mehrere Vorteile für die Integration und Evaluation des entwickelten Systems:
+% \begin{itemize}
+%     \item \textbf{Bestehende Infrastruktur:} Das Lab stellt bereits eine stabile Multiuser-VR-Plattform bereit, die eine schnelle Integration des Systems ermöglicht.
+%     \item \textbf{Echtzeit-Interaktion:} Durch die bestehende Netz- und Trackinginfrastruktur können Live-Rekonstruktionsdaten direkt im VR-Kontext evaluiert werden.
+%     \item \textbf{Erweiterbarkeit:} Die modulare Architektur des Labs erlaubt die Anbindung externer Container und Kommunikationsschnittstellen wie WebSockets.
+%     \item \textbf{Forschungsorientierung:} Die Verbindung von technischer Innovation und simulationsbasiertem Lernen eröffnet neue Perspektiven für interaktive, datengestützte Forschungsanwendungen.
+% \end{itemize}
