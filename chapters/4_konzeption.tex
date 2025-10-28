@@ -1,9 +1,119 @@
 \chapter{Konzeption}
+Dieses Kapitel beschreibt die Konzeption des entwickelten Systems. Ziel ist es, einen modularen, containerbasierten Ansatz zur Echtzeit-3D-Rekonstruktion zu entwickeln und in eine bestehende VR-Umgebung zu integrieren. Auf Basis der Anforderungen werden zunächst zentrale Designprinzipien definiert. Anschließend werden Gesamtarchitektur, Backend- und Frontend-Struktur sowie Schnittstellen und Datenfluss erläutert.
+% In diesem Kapitel wird die konzeptionelle Gestaltung des Systems zur Echtzeit-3D-Rekonstruktion in einer VR-Umgebung beschrieben. Das Ziel besteht darin, eine Architektur zu entwickeln, die die Kameradaten eines VR-Headsets fortlaufend verarbeitet, an austauschbare Rekonstruktionsmodule übermittelt und das rekonstruierte 3D-Material zur Visualisierung zurückführt.
 
-\section{Systemarchitektur}
+\section{Anforderungen}
+% Die Anforderungen an das zu konzipierende System lassen sich in 2. Unterkategorien aufteilen, nämlich Funktionale und Nicht-Funktionale Anforderungen. Funktionale Anforderungen beschreiben was das zu konzipierende System explizit leisten soll, während Nicht-Funktionale Anforderungen die Qualitätsmerkmale des Systems beschreiben.
+Das System verfolgt zwei zentrale Ziele: (1) Echtzeitfähigkeit bei der Verarbeitung der Kameradaten und (2) Modularität zur Integration verschiedener Rekonstruktionsverfahren. Daraus resultieren Anforderungen die sich in zwei Unterkategorien einteilen lassen. Funktionale Anforderungen beschreiben was das System leisten soll und Nicht-Funktionale Anforderungen beschreiben die Qualitätsmerkmale des Systems.
 
-\section{Schnittstellendesign}
+\medskip
 
-\section{Kommunikationsfluss}
+\noindent
+\textbf{Funktionale Anforderungen}
+\begin{itemize}
+    \item Erfassung von Kameradaten und Kopfpose in einer VR-Umgebung
+    \item Fortlaufende Übertragung dieser Daten an ein Verarbeitungssystem
+    \item Rekonstruktion einer 3D-Szene aus den übermittelten Daten
+    \item Rückführung der rekonstruierten Szenenelemente in den VR-Kontext
+    \item Austauschbare Nutzung verschiedener Rekonstruktionsverfahren
+\end{itemize}
 
-\section{Modularisierungskonzept}
+\noindent
+\textbf{Nicht-Funktionale Anforderungen}
+\begin{itemize}
+    \item \textbf{Niedrige Latenz}: realtime-fähige Verarbeitung und Ausgabe
+    \item \textbf{Robustheit}: Verarbeitung trotz variierender Datenraten und Qualität
+    \item \textbf{Modularität}: klar abgegrenzte Komponenten und Rollen
+    \item \textbf{Skalierbarkeit}: Möglichkeit zur Erweiterung um zusätzliche Module
+\end{itemize}
+
+\noindent
+Basierend auf diesen Anforderungen gelangen wir zu folgenden Designprinzipien:
+
+\medskip
+\noindent
+\textbf{Designprinzipien}
+\begin{itemize}
+    \item \textbf{Entkopplung} von VR-Frontend und Rekonstruktionsmodulen
+    \item \textbf{Standardisierte Kommunikation} via WebSockets
+    \item \textbf{Containerisierung} zur einfachen Integration heterogener Modelle
+    \item \textbf{Streaming-Pipeline} für kontinuierliche Verarbeitung statt Batch-Jobs
+\end{itemize}
+
+\section{Gesamtarchitektur}
+Die Gesamtarchitektur des Systems besteht aus zwei logisch getrennten, jedoch eng kooperierenden Hauptkomponenten: einem VR-Frontend zur Datenerfassung und Visualisierung sowie einem Backend zur Verarbeitung und Rekonstruktion der 3D-Szene. Beide Systeme stehen über eine kontinuierliche, bidirektionale Kommunikationsschnittstelle in Verbindung, die einen fortlaufenden Austausch von Sensordaten und Rekonstruktionsinformationen ermöglicht.
+
+Die Architektur folgt einem Client-Server-Modell:
+Das VR-System agiert als Datenquelle und Betrachtungsebene, während das Backend die zentrale Verarbeitungseinheit darstellt. Die Trennung erlaubt es, Rekonstruktionsmethoden unabhängig vom VR-System zu entwickeln, auszutauschen und zu skalieren.
+
+\subsection{Backend-Architektur}
+Das Backend bildet die Kernkomponente für die 3D-Rekonstruktion. Es übernimmt die folgenden Aufgaben:
+\begin{enumerate}
+    \item Empfangen und Verwalten von Datenströmen aus der VR-Umgebung
+    \item Koordination der Rekonstruktionspipeline zur Verarbeitung eingehender Frames
+    \item Weiterleitung der Sensordaten an modulare Rekonstruktionskomponenten
+    \item Fortlaufende Aggregation und Aufbereitung der rekonstruierten Geometrie
+    \item Bereitstellung von Ergebnissen zur Rückübertragung an das Frontend
+\end{enumerate}
+Die Architektur ist modular aufgebaut, sodass Rekonstruktionsmethoden als austauschbare Einheiten integriert werden können. Jedes Rechenmodul verarbeitet die eingehenden Sensordaten nach seinem eigenen Ansatz, während das Backend lediglich eine vereinheitlichte Schnittstelle bereitstellt.
+Damit bleibt die Pipeline unabhängig von spezifischen Implementierungsdetails der Rekonstruktionsverfahren und ist erweiterbar, ohne die übrige Systemstruktur zu verändern.
+
+\textcolor{red}{BILD}
+
+\subsection{Frontend-Architektur}
+Das Frontend ist innerhalb der VR-Umgebung angesiedelt und erfüllt zwei zentrale Funktionen:
+\begin{enumerate}
+    \item Datenaufnahme
+    \begin{itemize}
+        \item kontinuierliche Erfassung von Kamerabildern und Positionsinformationen
+        \item Vorbereitung der Daten zur Übertragung an das Backend
+    \end{itemize}
+
+    \item Visualisierung
+    \begin{itemize}
+        \item Empfang der rekonstruierten 3D-Informationen
+        \item Aktualisierung der virtuellen Szene in Echtzeit
+    \end{itemize}
+\end{enumerate}
+Das Frontend agiert somit sowohl als Sensorebene als auch als Darstellungskomponente. Durch die klare Trennung von Erfassung und Visualisierung bleibt die VR-Anwendung reaktionsfähig, während die Rekonstruktion extern erfolgt.
+Die Gestaltung folgt dem Ansatz, dass das Frontend leichtgewichtig bleibt und lediglich Sensordaten liefert und rekonstruktive Ergebnisse darstellt, ohne selbst komplexe Verarbeitungsschritte durchzuführen.
+
+\textcolor{red}{BILD}
+
+\section{Modul- und Schnittstellendesign}
+Die Systemarchitektur sieht eine einheitliche Schnittstelle zwischen dem zentralen Verarbeitungsmodul und den Rekonstruktionskomponenten vor.
+Jede Rekonstruktionseinheit wird als eigenständiges Modul konzipiert, das Daten nach einem gemeinsamen Schema entgegennimmt und verarbeitet.
+Die Schnittstelle definiert sowohl Eingabe- als auch Ausgabestrukturen und sorgt so für Interoperabilität zwischen verschiedenen Modellen.
+
+\medskip
+\noindent
+Kernaspekte des Schnittstellendesigns:
+\begin{enumerate}
+    \item Einheitliches Format für Sensordaten und Rekonstruktionsergebnisse
+    \item Standardisierte Übergabeprotokolle zwischen Hauptsystem und Modulen
+    \item Möglichkeit zur parallelen oder sequentiellen Ausführung mehrerer Module
+    \item Kapselung der Module, um gegenseitige Abhängigkeiten zu vermeiden
+\end{enumerate}
+% Die Schnittstelle ist so gestaltet, dass neue Rekonstruktionsverfahren hinzugefügt werden können, ohne bestehende Komponenten anpassen zu müssen.
+% Dadurch wird eine langfristige Erweiterbarkeit des Systems gewährleistet.
+
+\section{Kommunikations- und Datenfluss}
+Der Datenfluss folgt einem klar strukturierten streaming Pipeline-Modell:
+
+\begin{enumerate}
+    \item \textbf{Erfassung}:
+    Kameradaten und Bewegungsinformationen werden im VR-System kontinuierlich aufgenommen.
+
+    \item \textbf{Übertragung}:
+    Die Daten werden über eine persistente Verbindung zum Verarbeitungssystem übermittelt.
+
+    \item \textbf{Rekonstruktion}:
+    Die Datenströme werden an ein rekonstruktives Modul weitergeleitet, das fortlaufend 3D-Informationen generiert.
+
+    \item \textbf{Rückführung}:
+    Rekonstruktionsresultate werden an das Frontend zurückgesendet.
+
+    \item \textbf{Visualisierung}:
+    Die 3D-Informationen werden in der VR-Umgebung aktualisiert und dargestellt.
+\end{enumerate}
+Dieses Modell ermöglicht reaktive Aktualisierungen und stellt eine Echtzeit-Rückkopplungsschleife zwischen Nutzerbewegung, Kamerawahrnehmung und rekonstruktiver Szene dar.
