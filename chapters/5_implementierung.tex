@@ -1,7 +1,94 @@
 \chapter{Implementierung}
+Dieses Kapitel beschreibt die konkrete Umsetzung der in Kapitel 4 entworfenen Architektur. Es gliedert sich in einen Überblick zu Technologien und Laufzeitumgebung, die Backend- und Frontend-Realisierung, echtzeitkritische Pipeline-Aspekte, die Integration ins Va.Si.Li-Lab sowie reflektierte Designentscheidungen.
 
-\section{Backend-Implementierung}
+\section{Gesamtarchitektur \& Technologien}
+\textbf{Ziel der Implementierung}
 
-\section{Frontend-Implementierung}
+\noindent
+Das System realisiert eine modulare Streaming-Pipeline, in der ein Unity-Client Bild- und Pose-Daten fensterbasiert an einen WebSocket-Router sendet. Der Router verteilt Fragmente an modell­spezifische Worker (z. B. SLAM3R, MASt3R, VisFusion), sammelt deren Ergebnisse (GLB/Punktwolke/Mesh) und publiziert sie an alle Clients derselben Szene. Die Ergebnisse werden zusätzlich persistiert. Die Router-Seite ist als FastAPI-Anwendung umgesetzt; modellseitig fungieren asynchrone WebSocket-Worker als Producer/Consumer. 
+
+\medskip
+\noindent
+\textbf{Technologie-Stack}
+
+\noindent
+Backend: Python, FastAPI/Uvicorn, websockets, SQLite; Containerisierung via Docker Compose; GPU-fähige Worker-Container für Modelle (Neucon, VisFusion, SLAM3R, MASt3R). Frontend: Unity (C\#), NativeWebSocket, glTFast für GLB-Import, VFX-basierte Punktwolken-Darstellung. Die Compose-Orchestrierung startet den Router (Port 5000) und mehrere GPU-Worker; Quellverzeichnisse werden in die Container gemountet.
+
+\section{Backend}
+
+\subsection{Architektur und Komponenten}
+
+\textbf{Router (FastAPI) }
+
+\noindent
+Der Router stellt zwei WebSocket-Endpunkte bereit:
+\begin{enumerate}
+    \item \verb|/ws/client| für Unity-Clients (Handshake, Ergebnis-Fan-out)
+    \item \verb|/ws/model/{model_name}| für Modell-Worker (Fragment-Zustellung, Ergebnis-Rückkanal)
+\end{enumerate}
+Der Router verwaltet außerdem den globalen Zustand von verbundenen Clients, welcher Szene diese zugeordnet sind, einer Eingabe-Queue für jedes Modell und eine Modelausgabe pro Modell pro Szene.
+
+Beim Verbindungsaufbau mit dem Client sendet der Router einen Handshake als JSON mit einer Liste an aktuell verfügbaren Modellen.
+
+\newpage
+\noindent
+\textbf{Modell-Worker}
+
+\noindent
+Ein Worker verbindet sich per WebSocket, lauscht auf eingehende Fragment, verarbeitet sie und sendet ein \texttt{ModelResult} zurück. Die abstrakte Basisklasse kapselt Verbindungs-/Sende-Logik und definiert die Funktionen \texttt{handle\_fragment(fragment)} sowie \texttt{send\_result(result)}.
+
+\medskip
+\noindent
+\textbf{Persistenz}
+
+\noindent
+Ergebnisse werden in SQLite (db/results.db) gespeichert, inklusive Szene, Transform, Pointcloud-Flag und GLB-Blob; parallel protokolliert der Router je Modell CSV-Zeilen (input size, inference time, output size) zur späteren Auswertung.
+
+\subsection{Kommunikationsprotokoll}
+Die Binärprotokolle nutzen einen vier-Byte-Magic-Header und eine Versionsnummer zur Unterscheidung.
+\begin{enumerate}
+    \item ModelFragment (Client $\rightarrow$ Router $\rightarrow$ Modell)
+    \par
+    \noindent
+    Header: `LEON', Version 1, Fenstergröße; dann Modellname und Szenenname. Es folgen Fensterweise:
+    \begin{itemize}
+        \item Bilddaten (JPEG-Bytes + Breite/Höhe)
+        \item Intrinsics (Fx, Fy, Cx, Cy)
+        \item Extrinsics (Kamera-Position xyz, Rotation xyzw)
+    \end{itemize}
+    Der Router erkennt Version 1, extrahiert Modell-/Szenennamen und legt das Fragment in die Queue des adressierten Modells.
+
+    \item ModelResult (Modell $\rightarrow$ Router $\rightarrow$ Client)
+    \par
+    \noindent
+    Header: LEON, Version 2, Szenenname; dann isPointcloud, Translation (xyz), Rotation (xyzw), Scale (xyz), gefolgt vom GLB-Payload. Der Router speichert pro Szene/Modell das jüngste Resultat und verteilt es an alle abonnierten Clients (bei bereits vorhandenen Ergebnissen direkt nach dem Handshake).
+
+    \item (optional) TransformFragment (Client $\rightarrow$ Router)
+    \par
+    \noindent
+    Header: LEON, Version 2, Szenenname; dann Translation (xyz), Rotation (Quaternion xyzw), Skalierung (xyz). Der Router aktualisiert damit die Pose aller bereits vorliegenden Ergebnisse der Szene und benachrichtigt verbundene Clients.
+\end{enumerate}
+
+\subsection{Datenfluss}
+\begin{itemize}
+    \item \textbf{Client-Endpoint} \verb|/ws/client|: Handshake (Rolle/Szene) → Modellliste senden → Empfang von LEON v1/v2 → v1 an Modell-Queue, v2 als Transform anwenden → Event-Signale an Szene-Abonnenten. Bereits vorhandene Ergebnisse der Szene werden unmittelbar gesendet.
+    \item \textbf{Modell-Endpoint} \verb|/ws/model/{model_name}|:
+Worker verbindet sich, erhält Fragmente aus der Queue, sendet nach Inferenz ModelResult v2 zurück; Router misst Latenz, schreibt CSV-Zeile, persistiert in SQLite und setzt Client-Events zur Auslieferung. Sondercodes b'0'/b'1' signalisieren Fehler bzw. „unwichtiges“ Ergebnis.
+\end{itemize}
+
+\subsection{Containerisierung}
+Die docker-compose.yml baut Router und Worker, setzt GPU-Reservierungen und übergibt Modell-Namen und Server-URL (ws://router:5000/ws/model) als Umgebungsvariablen; Worker-Entry-Points verbinden sich selbsttätig.
+
+\section{Frontend}
+
+\subsection{VR-Schnitstelle und Aufnahme}
+
+\subsection{Fragment-Erzeugung \& Serialisierung}
+
+\subsection{Netzwerk-Client \& Lebenszyklus}
+
+\subsection{Ergebnis-Visualisierung}
+
+\section{Pipeline-Synchronisation \& Echtzeitfähigkeit}
 
 \section{Integration in das Va.Si.Li-Lab}
