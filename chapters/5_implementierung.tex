@@ -14,38 +14,8 @@ Das System realisiert eine modulare Streaming-Pipeline, in der ein Unity-Client 
 \noindent
 Backend: Python, FastAPI/Uvicorn, websockets, SQLite; Containerisierung via Docker Compose; GPU-fähige Worker-Container für Modelle (Neucon, VisFusion, SLAM3R, MASt3R). Frontend: Unity (C\#), NativeWebSocket, glTFast für GLB-Import, VFX-basierte Punktwolken-Darstellung. Die Compose-Orchestrierung startet den Router (Port 5000) und mehrere GPU-Worker; Quellverzeichnisse werden in die Container gemountet.
 
-\section{Backend}
-
-\subsection{Architektur und Komponenten}
-
-\textbf{Router (FastAPI) }
-
-\noindent
-Der Router stellt zwei WebSocket-Endpunkte bereit:
-\begin{enumerate}
-    \item \verb|/ws/client| für Unity-Clients (Handshake, Ergebnis-Fan-out)
-    \item \verb|/ws/model/{model_name}| für Modell-Worker (Fragment-Zustellung, Ergebnis-Rückkanal)
-\end{enumerate}
-Der Router verwaltet außerdem den globalen Zustand von verbundenen Clients, welcher Szene diese zugeordnet sind, einer Eingabe-Queue für jedes Modell und eine Modelausgabe pro Modell pro Szene.
-
-Beim Verbindungsaufbau mit dem Client sendet der Router einen Handshake als JSON mit einer Liste an aktuell verfügbaren Modellen.
-
-\newpage
-\noindent
-\textbf{Modell-Worker}
-
-\noindent
-Ein Worker verbindet sich per WebSocket, lauscht auf eingehende Fragment, verarbeitet sie und sendet ein \texttt{ModelResult} zurück. Die abstrakte Basisklasse kapselt Verbindungs-/Sende-Logik und definiert die Funktionen \texttt{handle\_fragment(fragment)} sowie \texttt{send\_result(result)}.
-
-\medskip
-\noindent
-\textbf{Persistenz}
-
-\noindent
-Ergebnisse werden in SQLite (db/results.db) gespeichert, inklusive Szene, Transform, Pointcloud-Flag und GLB-Blob; parallel protokolliert der Router je Modell CSV-Zeilen (input size, inference time, output size) zur späteren Auswertung.
-
-\subsection{Kommunikationsprotokoll}
-Die Binärprotokolle nutzen einen vier-Byte-Magic-Header und eine Versionsnummer zur Unterscheidung.
+\section{Kommunikationsstandard}
+Um eine effiziente WebSocket-Kommunikation zwischen dem Front- und Backend zu gewährleisten, werden einige standardisierte Byte-Frames definiert. Die wichtigsten Nachrichtentypen sind:
 \begin{enumerate}
     \item ModelFragment (Client $\rightarrow$ Router $\rightarrow$ Modell)
     \par
@@ -69,6 +39,36 @@ Die Binärprotokolle nutzen einen vier-Byte-Magic-Header und eine Versionsnummer
     Header: LEON, Version 2, Szenenname; dann Translation (xyz), Rotation (Quaternion xyzw), Skalierung (xyz). Der Router aktualisiert damit die Pose aller bereits vorliegenden Ergebnisse der Szene und benachrichtigt verbundene Clients.
 \end{enumerate}
 
+\section{Backend}
+
+\subsection{Architektur und Komponenten}
+
+\textbf{Router (FastAPI) }
+
+\noindent
+Der Router stellt zwei WebSocket-Endpunkte bereit:
+\begin{enumerate}
+    \item \verb|/ws/client| für Unity-Clients (Handshake, Ergebnis-Fan-out)
+    \item \verb|/ws/model/{model_name}| für Modell-Worker (Fragment-Zustellung, Ergebnis-Rückkanal)
+\end{enumerate}
+Der Router verwaltet außerdem den globalen Zustand von verbundenen Clients, welcher Szene diese zugeordnet sind, einer Eingabe-Queue für jedes Modell und eine Modelausgabe pro Modell pro Szene.
+
+Beim Verbindungsaufbau mit dem Client sendet der Router einen Handshake als JSON mit einer Liste an aktuell verfügbaren Modellen.
+
+\medskip
+\noindent
+\textbf{Modell-Worker}
+
+\noindent
+Ein Worker verbindet sich per WebSocket, lauscht auf eingehende Fragment, verarbeitet sie und sendet ein \texttt{ModelResult} zurück. Die abstrakte Basisklasse kapselt Verbindungs-/Sende-Logik und definiert die Funktionen \texttt{handle\_fragment(fragment)} sowie \texttt{send\_result(result)}.
+
+\medskip
+\noindent
+\textbf{Persistenz}
+
+\noindent
+Ergebnisse werden in SQLite (db/results.db) gespeichert, inklusive Szene, Transform, Pointcloud-Flag und GLB-Blob; parallel protokolliert der Router je Modell CSV-Zeilen (input size, inference time, output size) zur späteren Auswertung.
+
 \subsection{Datenfluss}
 \begin{itemize}
     \item \textbf{Client-Endpoint} \verb|/ws/client|: Handshake (Rolle/Szene) → Modellliste senden → Empfang von LEON v1/v2 → v1 an Modell-Queue, v2 als Transform anwenden → Event-Signale an Szene-Abonnenten. Bereits vorhandene Ergebnisse der Szene werden unmittelbar gesendet.
@@ -81,14 +81,86 @@ Die docker-compose.yml baut Router und Worker, setzt GPU-Reservierungen und übe
 
 \section{Frontend}
 
-\subsection{VR-Schnitstelle und Aufnahme}
+\subsection{Architektur und Komponenten}
+Das Frontend ist in Unity umgesetzt und übernimmt die Rollen der Datenquelle und Darstellungseinheit innerhalb der VR- bzw. AR-Umgebung. Es realisiert insbesondere:
 
-\subsection{Fragment-Erzeugung \& Serialisierung}
+\begin{enumerate}
+    \item kontinuierliche Erfassung von Kamerabildern und Extrinsiken des Endgeräts
+    \item Ermittlung und Skalierung von Kamera-Intrinsiken
+    \item fensterbasierte Gruppierung von Frames zu rekonstruktionsfähigen Fragmenten
+    \item Übertragung dieser Fragmente via WebSocket an den Router
+    \item Empfang und Darstellung rekonstruktiver Ergebnisse in der Szene
+\end{enumerate}
 
-\subsection{Netzwerk-Client \& Lebenszyklus}
+Die Implementierung folgt einer modularisierten Komponentenarchitektur:
 
-\subsection{Ergebnis-Visualisierung}
+\begin{itemize}
+    \item \texttt{ICaptureDevice}: Abstraktionsschicht für Sensorzugriff (Quest-Passthrough, ARFoundation, Evaluation-Kamera)
+    \item \texttt{IModelCollector}: Ringpuffer für Intrinsiken, Extrinsiken und Bilddaten (Sliding-Window)
+    \item \texttt{ReconstructionClient}: WebSocket-Client, Sendeschlange, Handshake-Management
+    \item \texttt{RoomReconstructor}: Mesh- und Punktwolkenaufbereitung sowie Rendering in Unity
+\end{itemize}
 
-\section{Pipeline-Synchronisation \& Echtzeitfähigkeit}
+Die Trennung ermöglicht die plattformneutrale Nutzung des Systems. Ob Meta-Quest-Headset, Smartphone oder Evaluationsmodus: sämtliche Geräte implementieren identische Schnittstellen und erzeugen gleichartige Datenstrukturen.
+
+\subsection{Capture Pipeline}
+Die Datenerfassung ist frame-synchron gestaltet, um sicherzustellen, dass Bildinhalt und Pose exakt übereinstimmen.
+
+Pro Frame werden ausgeführt:
+
+\begin{enumerate}
+    \item Headset-Pose bestimmen
+    \item Intrinsiken aktualisieren und auf Bildauflösung skalieren
+    \item Kamerabild in RenderTexture rendern
+    \item GPU-Readback in Texture-Buffer
+    \item JPEG-Kodierung
+    \item Ablage im Sliding-Window-Puffer
+\end{enumerate}
+
+Damit bleibt die Datenrate steuerbar und Berechnungspfade deterministisch. Die Synchronisation erfolgt bewusst nach Abschluss des Renderzyklus, sodass die Kamera-Pose exakt dem dargestellten Bild entspricht.
+
+Intrinsiken werden automatisch an die tatsächlich genutzte Auflösung angepasst, um geometrische Konsistenz sicherzustellen (u. a. FOV-Ableitung und Lens-Shift-Berechnung).
+
+\subsection{Clientseitige Kommunikation}
+Das Frontend kommuniziert über eine dauerhafte WebSocket-Verbindung mit dem Router.
+Nach dem initialen Handshake werden rekonstruktionsrelevante Nachrichten im binären Format gemäß LEON-v1-Spezifikation übertragen.
+
+\begin{itemize}
+    \item Merkmale der Übertragungsschicht:
+    \item asynchrone Sendequeue zur Entkopplung der VR-Hauptschleife
+    \item Background-Thread-Serialisierung für geringe Latenz
+    \item Priorisierte Behandlung von Transform-Updates (räumliche Korrekturen sollen nicht hinter Bildmaterial warten)
+\end{itemize}
+
+Bereits vorhandene Rekonstruktionsergebnisse werden automatisch direkt nach Verbindungsaufbau zugestellt, was den fortlaufenden Einstieg in laufende Szenen unterstützt.
+
+\subsection{Verarbeitung und Rendering rekonstruktiver Ergebnisse}
+Ergebnisse treffen asynchron ein und werden über Ereignisse verarbeitet.
+Die Visualisierung erfolgt abhängig vom Ergebnistyp:
+
+\begin{itemize}
+    \item Mesh-Rekonstruktionen: glTF/GLB-Import via glTFast
+    \item Punktwolken: GPU-gestützter Visual-Effect-Graph
+\end{itemize}
+
+Alle Unity-Operationen werden thread-sicher auf den Hauptthread synchronisiert.
+Die empfangene Pose wird direkt auf das rekonstruierte Objekt übertragen, sodass sich Geometrie stabil in den physischen Raum einfügt.
+
+Optionale Debug-Overlays (Kamerafrustrum, Gerätedaten) können zur Laufzeit eingeblendet werden, ohne den Rekonstruktionspfad zu beeinflussen.
+
+\subsection{Geräteintegration}
+Das Frontend ist primär für Live-VR-Erfassung und -Darstellung auf Meta Quest ausgelegt.
+
+Weitere Sensorquellen (z. B. Smartphone-Kamera oder virtuelle Testkamera) werden über das gleiche Capture-Interface angebunden, bleiben jedoch implizite Entwicklungs- und Testoptionen und sind nicht Fokus der Laufzeitarchitektur.
+
+Die operative Nutzung basiert daher ausschließlich auf:
+
+\begin{itemize}
+    \item Passthrough-RGB-Kamera der Meta Quest
+    \item Original-Headset-Pose aus XR-Tracking
+    \item Unity-Render-Pipeline für Echtzeit-Anzeige
+\end{itemize}
+
+Damit wird ein konsistenter Echtzeit-Datenstrom gewährleistet, der die Latenzanforderungen immersiver VR-Interaktion erfüllt.
 
 \section{Integration in das Va.Si.Li-Lab}
