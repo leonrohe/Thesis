@@ -82,78 +82,48 @@ Die docker-compose.yml baut Router und Worker, setzt GPU-Reservierungen und übe
 \section{Frontend}
 
 \subsection{Architektur und Komponenten}
-Das Frontend ist in Unity umgesetzt und übernimmt die Rollen der Datenquelle und Darstellungseinheit innerhalb der VR- bzw. AR-Umgebung. Es realisiert insbesondere:
+Die Frontend-Architektur basiert auf vier zentralen Komponenten, die über definierte Schnittstellen miteinander interagieren.
 
-\begin{enumerate}
-    \item kontinuierliche Erfassung von Kamerabildern und Extrinsiken des Endgeräts
-    \item Ermittlung und Skalierung von Kamera-Intrinsiken
-    \item fensterbasierte Gruppierung von Frames zu rekonstruktionsfähigen Fragmenten
-    \item Übertragung dieser Fragmente via WebSocket an den Router
-    \item Empfang und Darstellung rekonstruktiver Ergebnisse in der Szene
-\end{enumerate}
+\medskip
 
-Die Implementierung folgt einer modularisierten Komponentenarchitektur:
+ICaptureDevice abstrahiert den hardwarespezifischen Sensorzugriff und ermöglicht plattformunabhängige Datenerfassung. Die Implementierung umfasst MetaQuestCaptureDevice für Passthrough-Kameras, SmartphoneCaptureDevice für ARFoundation-basierte mobile Geräte sowie Eval-Varianten zum Abspielen vorgezeichneter Pose-Sequenzen für reproduzierbare Tests. Alle Implementierungen liefern RGB-Bilder, Intrinsics (Brennweite, Hauptpunkt) und Extrinsics (Position, Rotation) in einheitlichem Format.
 
-\begin{itemize}
-    \item \texttt{ICaptureDevice}: Abstraktionsschicht für Sensorzugriff (Quest-Passthrough, ARFoundation, Evaluation-Kamera)
-    \item \texttt{IModelCollector}: Ringpuffer für Intrinsiken, Extrinsiken und Bilddaten (Sliding-Window)
-    \item \texttt{ReconstructionClient}: WebSocket-Client, Sendeschlange, Handshake-Management
-    \item \texttt{RoomReconstructor}: Mesh- und Punktwolkenaufbereitung sowie Rendering in Unity
-\end{itemize}
+\medskip
 
-Die Trennung ermöglicht die plattformneutrale Nutzung des Systems. Ob Meta-Quest-Headset, Smartphone oder Evaluationsmodus: sämtliche Geräte implementieren identische Schnittstellen und erzeugen gleichartige Datenstrukturen.
+IModelCollector verwaltet eingehende Frames in einem Sliding-Window-Puffer und entscheidet anhand von Schwellenwerten für Translation, Rotation und zeitlichen Abstand, ob ein Frame als Keyframe aufgenommen wird. Modellspezifische Varianten wie NeuralReconCollector und SLAM3RCollector definieren unterschiedliche Sampling-Strategien.
+
+\medskip
+
+ReconstructionClient implementiert die WebSocket-basierte Kommunikation mit dem Backend über NativeWebSocket. Nach dem Handshake sendet der Client Rolle und Szenenname und erhält die Liste verfügbarer Modelle zurück. Eine asynchrone Sendewarteschlange verwaltet die Nachrichtenserialisierung im Background-Thread, wobei Transform-Updates bevorzugt behandelt werden.
+
+\medskip
+
+RoomReconstructor verarbeitet eingehende Rekonstruktionsergebnisse thread-sicher und visualisiert sie in der Unity-Szene. Mesh-basierte Ergebnisse werden mit glTFast importiert und mittels MeshUtils.ChunkMesh() in kleinere Chunks unterteilt, Punktwolken werden über den Visual Effects Graph mit GPU-Buffern gerendert.
 
 \subsection{Capture Pipeline}
-Die Datenerfassung ist frame-synchron gestaltet, um sicherzustellen, dass Bildinhalt und Pose exakt übereinstimmen.
-
-Pro Frame werden ausgeführt:
-
-\begin{enumerate}
-    \item Headset-Pose bestimmen
-    \item Intrinsiken aktualisieren und auf Bildauflösung skalieren
-    \item Kamerabild in RenderTexture rendern
-    \item GPU-Readback in Texture-Buffer
-    \item JPEG-Kodierung
-    \item Ablage im Sliding-Window-Puffer
-\end{enumerate}
-
-Damit bleibt die Datenrate steuerbar und Berechnungspfade deterministisch. Die Synchronisation erfolgt bewusst nach Abschluss des Renderzyklus, sodass die Kamera-Pose exakt dem dargestellten Bild entspricht.
-
-Intrinsiken werden automatisch an die tatsächlich genutzte Auflösung angepasst, um geometrische Konsistenz sicherzustellen (u. a. FOV-Ableitung und Lens-Shift-Berechnung).
+Die Datenerfassung erfolgt frame-synchron als Coroutine, die mit Unity's Rendering-Zyklus koordiniert. Der ReconstructionManager führt CaptureLoop() aus, die nach WaitForEndOfFrame() Pose und Bilddaten zeitlich konsistent erfasst. Die Intrinsics werden basierend auf dem Verhältnis zwischen nativer und verwendeter Auflösung (640×480) skaliert, das Kamerabild wird in eine RenderTexture gerendert, per GPU-Readback kopiert und JPEG-kodiert. Die Keyframe-Selektion prüft mittels ShouldCollect(), ob räumliche oder zeitliche Schwellenwerte überschritten wurden.
 
 \subsection{Clientseitige Kommunikation}
-Das Frontend kommuniziert über eine dauerhafte WebSocket-Verbindung mit dem Router.
-Nach dem initialen Handshake werden rekonstruktionsrelevante Nachrichten im binären Format gemäß LEON-v1-Spezifikation übertragen.
+Das Frontend kommuniziert über eine dauerhafte WebSocket-Verbindung mit dem Router. Nach dem initialen Handshake werden Fragmente im binären LEON-v1-Format übertragen.
+Merkmale der Übertragungsschicht:
 
 \begin{itemize}
-    \item Merkmale der Übertragungsschicht:
-    \item asynchrone Sendequeue zur Entkopplung der VR-Hauptschleife
+    \item Asynchrone Sendequeue zur Entkopplung der VR-Hauptschleife
     \item Background-Thread-Serialisierung für geringe Latenz
-    \item Priorisierte Behandlung von Transform-Updates (räumliche Korrekturen sollen nicht hinter Bildmaterial warten)
+    \item Priorisierte Behandlung von Transform-Updates
 \end{itemize}
 
-Bereits vorhandene Rekonstruktionsergebnisse werden automatisch direkt nach Verbindungsaufbau zugestellt, was den fortlaufenden Einstieg in laufende Szenen unterstützt.
+Bereits vorhandene Rekonstruktionsergebnisse werden direkt nach Verbindungsaufbau zugestellt.
 
 \subsection{Verarbeitung und Rendering rekonstruktiver Ergebnisse}
-Ergebnisse treffen asynchron ein und werden über Ereignisse verarbeitet.
-Die Visualisierung erfolgt abhängig vom Ergebnistyp:
+Rekonstruktionsergebnisse werden asynchron empfangen und thread-sicher in die Unity-Szene integriert. Das LEON Version 2-Protokoll enthält neben Header und Szenenname ein Transform (Translation, Rotation, Scale) sowie die GLB-Payload.
 
-\begin{itemize}
-    \item Mesh-Rekonstruktionen: glTF/GLB-Import via glTFast
-    \item Punktwolken: GPU-gestützter Visual-Effect-Graph
-\end{itemize}
+Alle Unity-API-Operationen werden über eine mainThreadActions-Queue gesammelt und im Update()-Zyklus abgearbeitet. Mesh-basierte Rekonstruktionen werden mit glTFast geladen und mittels MeshUtils.ChunkMesh() in ein $n\times n \times n$ Grid unterteilt, um Frustum Culling zu verbessern.
 
-Alle Unity-Operationen werden thread-sicher auf den Hauptthread synchronisiert.
-Die empfangene Pose wird direkt auf das rekonstruierte Objekt übertragen, sodass sich Geometrie stabil in den physischen Raum einfügt.
-
-Optionale Debug-Overlays (Kamerafrustrum, Gerätedaten) können zur Laufzeit eingeblendet werden, ohne den Rekonstruktionspfad zu beeinflussen.
+Punktwolken nutzen strukturierte GPU-Buffer für Positionen und Farben, die an den Visual Effect Graph übergeben werden. Nach dem Setzen der Buffer triggert Reinit() die GPU-seitige Aktualisierung.
 
 \subsection{Geräteintegration}
-Das Frontend ist primär für Live-VR-Erfassung und -Darstellung auf Meta Quest ausgelegt.
-
-Weitere Sensorquellen (z. B. Smartphone-Kamera oder virtuelle Testkamera) werden über das gleiche Capture-Interface angebunden, bleiben jedoch implizite Entwicklungs- und Testoptionen und sind nicht Fokus der Laufzeitarchitektur.
-
-Die operative Nutzung basiert daher ausschließlich auf:
+Die Geräteintegration erfolgt über das ICaptureDevice-Interface, das hardwarespezifische Details abstrahiert. Das Frontend ist dennoch primär für Live-VR-Erfassung auf Meta Quest ausgelegt:
 
 \begin{itemize}
     \item Passthrough-RGB-Kamera der Meta Quest
@@ -161,6 +131,19 @@ Die operative Nutzung basiert daher ausschließlich auf:
     \item Unity-Render-Pipeline für Echtzeit-Anzeige
 \end{itemize}
 
-Damit wird ein konsistenter Echtzeit-Datenstrom gewährleistet, der die Latenzanforderungen immersiver VR-Interaktion erfüllt.
+Weitere Sensorquellen (Smartphone, virtuelle Testkamera) werden über das gleiche Capture-Interface angebunden.
 
 \section{Integration in das Va.Si.Li-Lab}
+Die Integration erfolgte in die bestehende Unity-basierte Va.Si.Li-Lab-Umgebung, die eine mehrbenutzerfähige VR-Plattform für simulationsbasiertes Lernen und Forschung bereitstellt. Ziel war eine nahtlose Einbindung der Rekonstruktionspipeline, ohne bestehende Mehrbenutzer- und Interaktionsmechaniken zu beeinträchtigen.
+
+\subsection{Zielumgebung und Anforderungen}
+Das Va.Si.Li-Lab basiert auf Unity mit Ubiq als Mehrbenutzer-Framework und erfasst multimodale Interaktionen in Echtzeit. Für die Einbindung war erforderlich, die Rekonstruktionsdaten als eigenständige, netzwerkagnostische Szeneinhalte zu führen und die Frontend-Clientlogik strikt von Lab-spezifischen Synchronisationsdiensten zu entkoppeln. Dadurch bleibt die Rekonstruktion unabhängig von Session-Logik und kann in beliebige Lernszenarien eingebettet werden.
+
+\subsection{Architekturankopplung}
+Die Integration nutzt den bestehenden Szenen-Lebenszyklus des Labs und bindet den ReconstructionManager sowie RoomReconstructor als additive Komponenten in die Lab-Hauptszene ein. Die Kommunikation mit dem Backend erfolgt ausschließlich über die WebSocket-Schnittstelle des ReconstructionClient, der zu keiner Zeit Lab-interne Netzwerkpfade (z. B. Ubiq-Channels) verwendet, um Kollisionen mit dem Mehrbenutzer-Stack zu vermeiden. Resultate werden als reguläre Unity-GameObjects instanziiert und über Parent-Transforms an die Lab-Koordinaten verankert, wodurch Persistenz- und Analyse-Logik des Labs unberührt bleibt.
+
+\subsection{Mehrbenutzer-Verhalten}
+Die Rekonstruktionspipeline ist netzwerkagnostisch und backendgetrieben: Der Router publiziert Ergebnisse szenenweit, sodass mehrere Clients im selben Lab-Raum identische Resultate erhalten, ohne dass die Lab-Mehrbenutzer-Logik erweitert werden muss. Für den Fall, dass Clients zu unterschiedlichen Zeiten beitreten, liefert der Router das jüngste Ergebnis unmittelbar nach dem Handshake nach, wodurch ein konsistenter Zustand über die Sitzung hinweg gewährleistet bleibt.
+
+\subsection{Deployment und Konfiguration}
+Die Backend-Seite wird mittels Docker Compose im  bereitgestellt; Router und Worker-Container starten mit vordefinierten Modellnamen und GPU-Ressourcenzuteilung. Der Unity-Client wird mit Lab-spezifischen Endpunkten und Szenennamen konfiguriert; Umschalten zwischen Meta Quest Live-Capture und Evaluationsmodus erfolgt über das ICaptureDevice ohne Änderungen an der Lab-Szene. Bestehende Logging- und Persistenzmechanismen des Routers sichern Ergebnisse pro Szene und Modell, was Lab-seitig die nachträgliche Analyse ermöglicht, ohne zusätzliche Integrationsarbeit im Lab-Projekt.

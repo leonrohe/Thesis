@@ -1,7 +1,80 @@
-\chapter{Zusammenfassung und Ausblick}
-
 \section{Zusammenfassung}
+
+Diese Arbeit behandelte die Konzeption, Implementierung und Evaluation eines modularen Systems zur Echtzeit-3D-Rekonstruktion in einer bestehenden VR-Umgebung. Ziel war es, eine Architektur zu entwerfen, die verschiedene Rekonstruktionsmodelle kapselt und über eine standardisierte Kommunikationsschnittstelle mit einem Unity-basierten Frontend interagiert.
+
+Im theoretischen Teil wurden zunächst die technischen Grundlagen zu Virtual Reality, 3D-Rekonstruktionsverfahren und Container-Technologien erläutert. Darauf aufbauend erfolgte die Konzeption einer containerisierten Gesamtarchitektur, die Frontend, Backend und einzelne Modellcontainer klar voneinander trennt. 
+
+In der anschließenden Implementierung wurde diese Architektur in Form eines funktionsfähigen Prototyps realisiert. Das Backend verwaltet modellübergreifend eingehende Bild- und Posendaten, verteilt sie an GPU-basierte Worker-Container und überträgt die rekonstruierten Ergebnisse an die verbundenen VR-Clients. Das Frontend wurde um eine Capture-Pipeline, asynchrone Netzwerklogik und Echtzeit-Visualisierung der Rekonstruktionen erweitert. Die Integration in die Va.Si.Li-Lab-Umgebung zeigte, dass sich die Pipeline nahtlos in bestehende Mehrbenutzerszenarien einfügt.
+
+Die durchgeführte Evaluation untersuchte die Systemleistung hinsichtlich Latenz, Durchsatz, Stabilität, Modularität und Rekonstruktionsqualität. 
+% Der F-Score-Vergleich verdeutlichte, dass strahlbasierte Verfahren (z.\,B.~SLAM3R) die höchste geometrische Präzision erreichten, 
+% während volumetrische Ansätze (NeuralRecon, VisFusion) eine besonders hohe Vollständigkeit zeigten. 
+% Die Implementierung bestätigte außerdem, dass neue Modelle mit minimalem Integrationsaufwand eingebunden werden können, 
+% was die Modularität und Erweiterbarkeit der Architektur unterstreicht.
+
+Insgesamt konnte gezeigt werden, dass das entwickelte System die gesteckten Anforderungen erfüllt: Es ermöglicht eine modulare, containerisierte Integration heterogener Rekonstruktionsmodelle in Echtzeit und erlaubt deren direkte Visualisierung in einer immersiven VR-Umgebung. 
 
 \section{Limitationen}
 
+Obwohl das System in allen Tests stabil arbeitete, zeigten sich mehrere Einschränkungen, 
+die bei zukünftigen Entwicklungen berücksichtigt werden sollten:
+
+\begin{itemize}
+    \item Die GPU-Leistung der verwendeten Hardware (GTX~1070~Ti) begrenzt die Anzahl parallel aktiver Modellcontainer und den maximal erreichbaren Durchsatz. 
+    Dadurch ist die Skalierbarkeit derzeit auf Einzel-GPU-Betrieb beschränkt.
+
+    \item Größere GLB-Modelle führten zeitweise zu kurzen Nachladeverzögerungen im Frontend von bis zu~[WERT]~ms. 
+    Diese Latenzen entstehen vor allem durch das serielle Laden und Parsen vollständiger GLB-Dateien.
+
+    \item Die Punktwolken-Visualisierung im Unity-Frontend ist aktuell auf \textbf{100\,000 Punkte} begrenzt. 
+    Unabhängig von der tatsächlichen Szenengröße oder Dichte kann die Darstellung daher keine detaillierteren Punktwolken wiedergeben. 
+    Diese Begrenzung resultiert aus dem Performance-Bottleneck der Meta Quest 3.
+
+    \item Die F-Score-Berechnung basiert auf statischen Testszenen und reflektiert dynamische Umgebungen (z.\,B. mit bewegten Objekten) nur eingeschränkt. 
+    Auch die Transformation der von SLAM-Modellen erzeugten Karten erfolgte bisher manuell.
+
+    \item Persistente Speicherung von Modellzuständen ist bisher nicht vorgesehen. 
+    Ein Neustart der Container führt zum Verlust der aktuellen Rekonstruktionsdaten.
+\end{itemize}
+
 \section{Zukünftige Arbeiten}
+
+Auf Basis der erzielten Ergebnisse und der identifizierten Limitationen ergeben sich mehrere Ansätze für weiterführende Arbeiten:
+
+\begin{itemize}
+    \item \textbf{Optimierung der Datenübertragung:} 
+    Um die Nachladeverzögerungen großer GLB-Modelle zu vermeiden, könnten zukünftig inkrementelle Updates implementiert werden. 
+    Statt vollständiger Modellübertragungen würden nur Änderungen einzelner Mesh-Segmente übertragen, was sowohl Latenz als auch Bandbreitenbedarf reduziert.
+
+    \item \textbf{Persistente Speicherung und Wiederherstellung:} 
+    Ein standardisiertes Speicherformat für interne Modellzustände könnte die Persistenz über Container-Neustarts hinweg gewährleisten. 
+    Dadurch ließen sich laufende Rekonstruktionsprozesse nach Unterbrechungen fortsetzen.
+
+    \item \textbf{Multi-GPU- und Cloud-Deployment:} 
+    Zur Überwindung der aktuellen Hardwaregrenzen bietet sich eine verteilte Orchestrierung über mehrere GPUs oder Cloud-Instanzen an. 
+    Dies würde die Skalierbarkeit und Performance insbesondere bei parallelen Rekonstruktionen deutlich verbessern.
+
+    \item \textbf{Dynamische Punktwolken-Größen:} 
+    Die aktuelle Grenze von 100\,000 Punkten könnte durch eine dynamische Speicherverwaltung und instanzbasiertes Nachladen von Chunks aufgehoben werden. 
+    Durch Analyse der Bounding-Box und der Kameradistanz zur Szene könnte automatisch bestimmt werden, 
+    wie viele Punkte jeweils aktiv im Sichtfeld gerendert werden. 
+    Dies würde eine adaptive Balance zwischen Detailtiefe, Speicherverbrauch und Framerate ermöglichen.
+
+    \item \textbf{Automatisches Matching der SLAM-Modelle:} 
+    Basierend auf den volumetrischen Referenzen (z.\,B. NeuralRecon, VisFusion) kann der Output von SLAM-basierten Modellen 
+    automatisch skaliert und transformiert werden, um maßstabsgetreue und konsistente Visualisierungen sicherzustellen.
+
+    \item \textbf{Echtzeit-Interaktion:} 
+    Künftige Versionen könnten Nutzerinteraktionen in die Rekonstruktionspipeline integrieren, 
+    etwa zur Annotation von Szenen oder zum gezielten Nachladen bestimmter Bereiche während der Laufzeit.
+
+    \item \textbf{Erweiterung der Modellbibliothek:} 
+    Die derzeitige Architektur unterstützt Punktwolken- und Mesh-basierte Verfahren. 
+    Eine Erweiterung um moderne Repräsentationen wie \textit{Gaussian Splatting} oder \textit{3D Gaussians} 
+    wäre insbesondere mit Blick auf aktuelle Forschung und Echtzeitanwendungen vielversprechend.
+\end{itemize}
+
+Zusammenfassend zeigt die Arbeit, dass ein containerisiertes, modular aufgebautes System 
+für Echtzeit-3D-Rekonstruktionen technisch realisierbar und praktikabel ist. 
+Die Ergebnisse legen den Grundstein für weiterführende Forschung zu interaktiven, verteilten 
+Rekonstruktionssystemen in immersiven Lern- und Forschungsumgebungen.

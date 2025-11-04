@@ -1,9 +1,116 @@
 \chapter{Evaluation}
+Dieses Kapitel beschreibt die Evaluation des entwickelten Systems. Ziel ist es, die Leistungsfähigkeit, Stabilität und Rekonstruktionsqualität der modularen Architektur zu überprüfen.
+Die Evaluation soll aufzeigen, inwieweit das System die Anforderungen an Echtzeitfähigkeit, Robustheit und Flexibilität aus Kapitel 4 erfüllt und welche Unterschiede zwischen den integrierten Rekonstruktionsmodellen bestehen.
 
 \section{Evaluationsziele}
+Im Mittelpunkt der Evaluation stehen drei zentrale Fragestellungen:
+
+\begin{enumerate}
+    \item Echtzeitfähigkeit: \newline
+    Kann das System eingehende Kameradaten so verarbeiten, dass Rekonstruktionen mit minimaler Latenz in der VR-Umgebung angezeigt werden?
+    \item Modularität und Skalierbarkeit: \newline
+    Wie einfach lassen sich verschiedene Rekonstruktionsmodelle gleichzeitig betreiben, und wie wirkt sich dies auf die Systemleistung aus?
+    \item Rekonstruktionsqualität: \newline
+    Wie präzise und vollständig sind die vom System erzeugten 3D-Rekonstruktionen unter Echtzeitbedingungen?
+\end{enumerate}
 
 \section{Evaluationsmethodik}
 
-\section{Ergebnisse}
+\subsection{Testumgebung}
+Die Evaluation wurde auf einer lokalen Testumgebung durchgeführt, um praxisnahe und reproduzierbare Ergebnisse zu erzielen.
+Zum Einsatz kam ein Heimrechner mit folgenden Spezifikationen:
+\begin{itemize}
+    \item Betriebssystem: Windows 11 (64 Bit)
+    \item GPU: NVIDIA GeForce GTX 1070 Ti (8 GB VRAM)
+    \item CPU: AMD Ryzen [MODELL EINFÜGEN]
+    \item Arbeitsspeicher: [WERT] GB RAM
+    \item VR-Headset: Meta Quest (im Passthrough-Modus, kabelgebunden)
+\end{itemize}
+Das Backend wurde über Docker Desktop betrieben, die Containerverwaltung erfolgte mit Docker Compose.
+Jedes Rekonstruktionsmodell (NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R) wurde in einem separaten Container ausgeführt.
+Der Unity-Client kommunizierte mit dem Router-Backend über eine permanente WebSocket-Verbindung nach dem in Kapitel 5 beschriebenen LEON-Protokoll.
+
+\subsection{Evaluationsaufbau}
+
+\subsection{Messverfahren und Metriken}
+
+Zur quantitativen Bewertung der Systemleistung und der Rekonstruktionsqualität wurden mehrere Metriken definiert, die sowohl technische als auch qualitative Aspekte des Systems erfassen.
+
+\paragraph{Latenz}
+Die \textit{Latenz} beschreibt die Zeitspanne zwischen dem Empfang eines Fragments im Router und der Darstellung des resultierenden Modells im VR-Frontend. 
+Eine niedrige Latenz ist entscheidend, um eine flüssige Echtzeitdarstellung sicherzustellen. 
+Die Messung erfolgte über Zeitstempel im Backend mittels der Python-Funktion \texttt{time.perf\_counter()}, 
+welche den gesamten Kommunikationszyklus vom Eingang bis zur Ausgabe des Modells erfasst.
+
+\paragraph{Durchsatz}
+Der \textit{Durchsatz} bezeichnet die Anzahl der pro Sekunde erfolgreich verarbeiteten Fragmente. 
+Er dient als Maß für die Streaming-Performance des Systems und wurde aus den im Router gespeicherten CSV-Logs berechnet, 
+welche pro Fragment die Verarbeitungsdauer und Datengröße aufzeichnen.
+
+\paragraph{Systemstabilität}
+Die \textit{Systemstabilität} wurde durch gezielte Störungstests untersucht. 
+Dazu wurden Verbindungsabbrüche, Paketverluste und Container-Neustarts simuliert. 
+Beobachtet wurde, ob der Router eine automatische Wiederverbindung der betroffenen Modellcontainer durchführen und 
+den internen Szenenzustand beibehalten konnte.
+
+\paragraph{Ressourcenauslastung}
+Zur Analyse der \textit{Ressourcenauslastung} wurden GPU- und CPU-Werte über die Werkzeuge \texttt{nvidia-smi} 
+und den Windows-Task-Manager erhoben. 
+Die Messung diente dazu, Performance-Engpässe bei steigender Modellzahl oder Fragmentrate zu identifizieren.
+
+\paragraph{Rekonstruktionsqualität (F-Score)}
+Die Bewertung der geometrischen Qualität der erzeugten 3D-Rekonstruktionen erfolgte anhand des \textit{F-Scores}, 
+welcher die beiden Kennzahlen \textit{Precision} (Genauigkeit) und \textit{Recall} (Vollständigkeit) kombiniert. 
+Er beschreibt den Anteil korrekt rekonstruierter Punkte im Vergleich zur Referenzszene und wird nach folgender Formel berechnet:
+
+\begin{equation}
+F = 2 \cdot \frac{Precision \cdot Recall}{Precision + Recall}
+\end{equation}
+
+Für jedes Modell wurde eine Referenzpunktwolke der realen Szene erzeugt. 
+Anschließend wurde überprüft, welcher Anteil der rekonstruierten Punkte innerhalb eines Distanzschwellwerts 
+$\tau = \text{[WERT]}$~cm liegt. 
+Die Berechnung der Kennzahlen erfolgte mit \textit{[TOOLNAME, z.\,B. Open3D oder CloudCompare]}.
+
+\paragraph{Visuelle Bewertung}
+Ergänzend zur numerischen Analyse wurden die Ergebnisse visuell im VR-Headset beurteilt. 
+Dabei standen insbesondere geometrische Stetigkeit, Detailgrad und Stabilität der Echtzeitdarstellung im Vordergrund.
+
+\vspace{0.5em}
+\noindent
+Tabelle~\ref{tab:metrics_overview} fasst alle verwendeten Metriken und deren jeweilige Messmethoden zusammen.
+
+\begin{table}[H]
+    \centering
+    \caption{Übersicht der verwendeten Evaluationsmetriken}
+    \label{tab:metrics_overview}
+    \begin{tabular}{p{3.2cm} p{5.5cm} p{5.5cm}}
+        \toprule
+        \textbf{Metrik} & \textbf{Beschreibung} & \textbf{Messmethode} \\
+        \midrule
+        Latenz & Zeitspanne zwischen Empfang eines Fragments und Darstellung des Modells & Zeitstempel im Router mit \texttt{time.perf\_counter()} \\
+        Durchsatz & Anzahl verarbeiteter Fragmente pro Sekunde & Auswertung der CSV-Logs \\
+        Systemstabilität & Verhalten bei Paketverlust oder Modelldisconnect & Beobachtung des Router-Logs während Störungstests \\
+        Ressourcenauslastung & GPU-/CPU-Verbrauch während der Laufzeit & Tools: \texttt{nvidia-smi}, Windows Task-Manager \\
+        F-Score & Geometrische Übereinstimmung der Rekonstruktion mit der Referenzszene & Berechnung über Precision und Recall mit $\tau = \text{[WERT]}$~cm \\
+        Visuelle Bewertung & Subjektive Beurteilung der Darstellung in der VR-Umgebung & Beobachtung im Headset \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\section{Ergebnisse und Analyse}
+Im Folgenden werden die Ergebnisse der Evaluation zusammengefasst.
+Zunächst werden die technischen Leistungskennzahlen dargestellt, anschließend die Analyse der Rekonstruktionsqualität auf Basis des F-Scores und visueller Beobachtungen.
+
+\subsection{Technische Leistungsbewertung}
+
+\subsection{Rekonstruktionsqualität}
 
 \section{Diskussion}
+Die Ergebnisse zeigen, dass das entwickelte System in der Lage ist, mehrere Rekonstruktionsmodelle parallel in einer containerisierten Echtzeitumgebung zu betreiben.
+Trotz der begrenzten GPU-Leistung der GTX 1070 Ti blieb die Latenz unter dem für VR-Anwendungen kritischen Schwellenwert von [WERT] ms.
+Der F-Score-Vergleich bestätigt die komplementären Stärken der integrierten Modelle: volumetrische Verfahren wie NeuralRecon und VisFusion bieten robuste Gesamtmodelle, während SLAM- und Strahlverfahren feinere Strukturen rekonstruieren, jedoch mehr Rechenleistung erfordern.
+
+Die Evaluation zeigt außerdem, dass die definierte Schnittstelle und Container-Struktur eine hohe Modularität gewährleisten.
+Neue Modelle können mit minimalem Integrationsaufwand eingebunden werden, ohne die bestehende Kommunikationslogik zu ändern.
+Damit bestätigt sich, dass die in Kapitel 4 entwickelte Architektur die Anforderungen an Echtzeitfähigkeit, Skalierbarkeit und Erweiterbarkeit erfüllt.
