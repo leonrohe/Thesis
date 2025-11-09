@@ -2,11 +2,16 @@
     \centering
     \vspace*{2cm}
     
-    {\Large \textbf{Abstract}}\\[1.5cm]
+    {\Large \textbf{Abstract}}\\[1cm]
     
     \begin{singlespace}
         \noindent
-        Your abstract text goes here. It should be concise and clearly summarize the goal, method, and findings of your work.\\
+        Diese Arbeit untersucht, wie sich eine modulare, containerisierte Systemarchitektur für die Echtzeit-Integration verschiedener 3D-Rekonstruktionsverfahren in Virtual-Reality-Umgebungen eignet.
+        Dazu wurde ein skalierbares System entwickelt, das ein Unity-basiertes VR-Frontend über ein WebSocket-Protokoll mit einem Python-Backend verbindet. Das Backend verteilt eingehende Kamera- und Posendaten an containerisierte Modelle (NeuralRecon, VisFusion, MASt3R-SLAM, SLAM3R) und sendet die rekonstruierten Szenen in Echtzeit zurück.
+
+        Die Evaluation zeigt, dass das System eine stabile, latenzarme Kommunikation ermöglicht und den Austausch unterschiedlicher Modelle mit minimalem Integrationsaufwand erlaubt. Volumetrische Verfahren lieferten robuste Gesamtmodelle, während SLAM- und strahlbasierte Ansätze feinere Details erzielten.
+
+        Insgesamt bestätigt die Arbeit, dass eine modulare, containerisierte Architektur eine geeignete Grundlage für flexible und erweiterbare Echtzeit-Rekonstruktionssysteme in immersiven VR-Anwendungen bietet.
     \end{singlespace}
     
     \vfill
