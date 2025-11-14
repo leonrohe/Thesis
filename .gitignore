@@ -82,3 +82,5 @@ latex.out/
 # Uncomment the next line if you don’t want to track generated PDFs
 # ------------------------------------------------------------------------------
 *.pdf
+*json
+**/svg-inkscape

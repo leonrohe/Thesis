@@ -1,0 +1,30 @@
+sequenceDiagram
+    participant Frontend as VR-Frontend<br/>(Unity)
+    participant Router as Router<br/>(Backend)
+    participant Worker as Rekonstruktions-<br/>Worker
+
+    Note over Frontend,Worker: 1. Verbindungsaufbau
+    
+    Frontend->>Router: WebSocket-Verbindung
+    Router->>Frontend: Handshake (verfügbare Modelle)
+    
+    Note over Frontend,Worker: 2. Datenerfassung & Übertragung
+    
+    loop Kontinuierliche Erfassung
+        Frontend->>Frontend: Bilder & Kameraposen erfassen
+        Frontend->>Frontend: Fragment bilden (Fenster + Metadaten)
+        Frontend->>Router: Fragment senden<br/>(Modell, Szene, Bilder, Intrinsics, Extrinsics)
+    end
+    
+    Note over Frontend,Worker: 3. Rekonstruktion
+    
+    Router->>Router: Fragment an Modell-Queue routen
+    Router->>Worker: Fragment weiterleiten
+    Worker->>Worker: 3D-Rekonstruktion durchführen<br/>(NeuralRecon, VisFusion, MASt3R, SLAM3R)
+    Worker->>Router: Rekonstruktionsergebnis<br/>(3D-Modell + Transform)
+    
+    Note over Frontend,Worker: 4. Verteilung & Visualisierung
+    
+    Router->>Router: Ergebnis pro Szene speichern
+    Router->>Frontend: Ergebnis an alle Szenen-Clients
+    Frontend->>Frontend: 3D-Modell in VR-Szene darstellen
