@@ -84,21 +84,21 @@
         <mxCell id="fiXpoLj8YX--YnCwhMwL-29" value="VR-Headset" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
           <mxGeometry x="290" y="160" width="150" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="fiXpoLj8YX--YnCwhMwL-30" value="Sensor- und Metadaten" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
-          <mxGeometry x="480" y="225" width="160" height="30" as="geometry" />
+        <mxCell id="fiXpoLj8YX--YnCwhMwL-30" value="Rekonstruktions-/&lt;br&gt;Konfigurationsnachricht" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
+          <mxGeometry x="480" y="220" width="160" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="fiXpoLj8YX--YnCwhMwL-31" value="Modell- und Metadaten" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
+        <mxCell id="fiXpoLj8YX--YnCwhMwL-31" value="Rekonstruktionsantwort" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;" parent="1" vertex="1">
           <mxGeometry x="480" y="305" width="160" height="30" as="geometry" />
         </mxCell>
-        <mxCell id="znR8OH6kaiZBjpCI5Y8I-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="znR8OH6kaiZBjpCI5Y8I-1" target="fiXpoLj8YX--YnCwhMwL-21">
+        <mxCell id="znR8OH6kaiZBjpCI5Y8I-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" parent="1" source="znR8OH6kaiZBjpCI5Y8I-1" target="fiXpoLj8YX--YnCwhMwL-21" edge="1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
-        <mxCell id="znR8OH6kaiZBjpCI5Y8I-3" value="Sensordaten" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;" vertex="1" connectable="0" parent="znR8OH6kaiZBjpCI5Y8I-2">
+        <mxCell id="znR8OH6kaiZBjpCI5Y8I-3" value="Sensordaten" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];fontSize=15;" parent="znR8OH6kaiZBjpCI5Y8I-2" vertex="1" connectable="0">
           <mxGeometry x="0.3704" y="2" relative="1" as="geometry">
             <mxPoint x="2" y="10" as="offset" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="znR8OH6kaiZBjpCI5Y8I-1" value="Kamera" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;" vertex="1" parent="1">
+        <mxCell id="znR8OH6kaiZBjpCI5Y8I-1" value="Kamera" style="rounded=0;whiteSpace=wrap;html=1;fontSize=15;" parent="1" vertex="1">
           <mxGeometry x="305" y="374" width="120" height="80" as="geometry" />
         </mxCell>
       </root>
