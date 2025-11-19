@@ -2,8 +2,8 @@
 
 Dieses Kapitel beschreibt die Konzeption des Systems \emph{RTReconstruct}, das im Rahmen
 dieser Arbeit entwickelt wurde. RTReconstruct wird als containerisierte, modellunabhängige
-Plattform verstanden, in der mehrere Rekonstruktionsverfahren eine gemeinsame
-Streaming-Pipeline teilen. Ziel ist es, Bild- und Posendaten aus einer Unity-basierten
+Plattform verstanden, auf der mehrere Rekonstruktionsverfahren eine gemeinsame
+Streaming-Pipeline nutzen. Ziel ist es, Bild- und Posendaten aus einer Unity-basierten
 VR-Umgebung im Va.Si.Li-Lab fortlaufend an ein Backend zu übertragen, dort durch
 modellspezifische Rekonstruktionsdienste verarbeiten zu lassen und die Ergebnisse in
 die laufende Szene zurückzuführen.
@@ -82,8 +82,8 @@ Diese Leitkriterien werden im Folgenden in funktionale und nicht-funktionale Anf
     Kommunikationslogik soll unabhängig von der internen Implementierung der
     Modelle bleiben.
 
-    \item \textbf{Wiederverwendbarkeit im Lab:} RTReconstruct soll als generische Infrastruktur-
-    komponenten betrachtet werden können, die in unterschiedlichen Va.Si.Li-Szenarien
+    \item \textbf{Wiederverwendbarkeit im Lab:} RTReconstruct soll als generische Infrastrukturkomponente
+    betrachtet werden können, die in unterschiedlichen Va.Si.Li-Szenarien
     (z.\,B.\ verschiedene Lernräume) wiederverwendet werden kann.
 \end{itemize}
 
@@ -96,7 +96,7 @@ aufeinander abgestimmt sind:
     \item ein \textbf{VR-Frontend} in Unity, das Bild- und Posendaten erzeugt und
     Rekonstruktionsresultate visualisiert,
     \item ein zentraler \textbf{Router} im Backend, der Fragmente verteilt und Ergebnisse
-    sammelt
+    sammelt,
     \item mehrere \textbf{modell-spezifische Worker}, die jeweils ein Rekonstruktionsverfahren
     ausführen.
 \end{itemize}
@@ -280,10 +280,10 @@ und Vermittlungsschicht gehandhabt werden.
 
 \section{Kommunikations- und Datenfluss}
 
-Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel 2 vorgestellten 
+Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel~2 vorgestellten 
 Konzept einer persistenten, bidirektionalen Verbindung. Die Pipeline arbeitet stromorientiert: 
 Eingabefragmente werden verarbeitet, sobald sie vorliegen, und die resultierenden 
-Rekonstruktionszustände werden fortlaufend an die Clients zurückgegeben.
+Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
 
 \bigskip
 
@@ -297,10 +297,10 @@ Rekonstruktionszustände werden fortlaufend an die Clients zurückgegeben.
 Die Pipeline durchläuft dabei vier zentrale Phasen:
 
 \begin{itemize}
-    \item \textbf{Verbindungsaufbau}: Das Frontend etabliert eine WebSocket-Verbindung zum Router und erhält im Handshake die Liste verfügbarer Rekonstruktionsmodelle.
+    \item \textbf{Verbindungsaufbau}: Das Frontend etabliert eine persistente, bidirektionale Verbindung zum Router und erhält im Handshake die Liste verfügbarer Rekonstruktionsmodelle.
     \item \textbf{Datenerfassung und Übertragung}: Die Capture-Pipeline im VR-Client fasst kontinuierlich Kamerabeobachtungen zu zeitlichen Fenstern zusammen. Jedes Fragment wird mit Szenen- und Modellkennung versehen und an den Router übertragen.
     \item \textbf{Rekonstruktion}: Der Router ordnet eingehende Fragmente dem adressierten Rekonstruktionsmodell zu und stellt sie als Eingabe bereit. Die Worker führen die modellspezifische 3D-Rekonstruktion durch und liefern das Ergebnis mit zugehöriger Transformation zurück.
-    \item \textbf{Verteilung und Visualisierung}: Der Router hält für jede Szene und jedes Modell den aktuellen Rekonstruktionszustand vor und verteilt ihn an alle Clients dieser Szene. Das Frontend integriert die empfangenen 3D-Repräsentationen in die laufende VR-Szene.
+    \item \textbf{Verteilung und Visualisierung}: Der Router hält für jede Szene und jedes Modell das aktuellste Rekonstruktionsergebnis vor und verteilt es an alle Clients dieser Szene. Das Frontend integriert die empfangenen 3D-Repräsentationen in die laufende VR-Szene.
 \end{itemize}
 
 Die Pipeline ist so ausgelegt, dass Frontends, Vermittlungsschicht und
@@ -314,16 +314,12 @@ unterstützt.
 \section{Zusammenfassung}
 
 In diesem Kapitel wurde die konzeptionelle Architektur von RTReconstruct
-hergeleitet. Im Zentrum steht ein VR-Frontend, das in Va.Si.Li-Lab
-eingebettet ist, eine zentrale Vermittlungskomponente und eine Menge
-containerisierter Rekonstruktionsmodule. Das Frontend erfasst Kameradaten,
-bündelt sie zu Fragmenten und visualisiert die vom Backend gelieferten
-Rekonstruktionsergebnisse. Die Vermittlungsschicht koppelt diese
-Fragmente über einheitliche Nachrichtenstrukturen an die verschiedenen
-Module und verteilt deren Ergebnisse szenenbasiert an die Clients.
-Durch die klare Trennung von Frontend, Router und Rekonstruktionsmodulen
-sowie das definierte Modul- und Schnittstellendesign entsteht eine
-modular erweiterbare Streaming-Architektur, auf deren Grundlage Kapitel~5
-die konkrete Implementierung und Kapitel~6 die Leistungsbewertung
-aufbauen.
-
+hergeleitet. Im Zentrum steht ein VR-Frontend in Va.Si.Li-Lab, eine zentrale
+Vermittlungskomponente und eine Menge containerisierter Rekonstruktionsmodule.
+Das Frontend erfasst Kameradaten, bündelt sie zu Fragmenten und visualisiert
+die vom Backend gelieferten Rekonstruktionsergebnisse. Die Vermittlungsschicht
+koppelt diese Fragmente über einheitliche Nachrichtenstrukturen an die
+Rekonstruktionsmodule und verteilt deren Ergebnisse szenenbasiert an die
+Clients. Auf dieser modularen Streaming-Architektur bauen die in Kapitel~5
+beschriebene Implementierung und die in Kapitel~6 analysierte Leistungsfähigkeit
+des Systems auf.
