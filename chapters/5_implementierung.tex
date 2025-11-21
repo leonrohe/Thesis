@@ -1,149 +1,107 @@
 \chapter{Implementierung}
-Dieses Kapitel beschreibt die konkrete Umsetzung der in Kapitel 4 entworfenen Architektur. Es gliedert sich in einen Überblick zu Technologien und Laufzeitumgebung, die Backend- und Frontend-Realisierung, echtzeitkritische Pipeline-Aspekte, die Integration ins Va.Si.Li-Lab sowie reflektierte Designentscheidungen.
 
-\section{Gesamtarchitektur \& Technologien}
-\textbf{Ziel der Implementierung}
+Dieses Kapitel beschreibt die technische Realisierung der in Kapitel 4 entworfenen Systemarchitektur. Es detailliert die Umsetzung des Backends als asynchronen Verteilknoten, die Entwicklung des Unity-basierten Frontends sowie das entworfene Kommunikationsprotokoll. Besonderes Augenmerk liegt dabei auf den Designentscheidungen, die getroffen wurden, um die Anforderungen an Echtzeitfähigkeit, Modularität und Thread-Sicherheit zu erfüllen.
 
-\noindent
-Das System realisiert eine modulare Streaming-Pipeline, in der ein Unity-Client Bild- und Pose-Daten fensterbasiert an einen WebSocket-Router sendet. Der Router verteilt Fragmente an modell­spezifische Worker (z. B. SLAM3R, MASt3R, VisFusion), sammelt deren Ergebnisse (GLB/Punktwolke/Mesh) und publiziert sie an alle Clients derselben Szene. Die Ergebnisse werden zusätzlich persistiert. Die Router-Seite ist als FastAPI-Anwendung umgesetzt; modellseitig fungieren asynchrone WebSocket-Worker als Producer/Consumer. 
+\section{Gesamtarchitektur und Technologie-Stack}
 
-\medskip
-\noindent
-\textbf{Technologie-Stack}
+Das System RTReconstruct realisiert eine modulare Streaming-Pipeline, die räumlich verteilte VR-Clients mit rechenintensiven Rekonstruktionsdiensten verbindet. Die Implementierung gliedert sich in zwei Hauptkomponenten: ein Python-basiertes Backend, das mittels Container-Virtualisierung orchestriert wird, und ein C\#-basiertes Frontend innerhalb der Unity-Engine.
 
-\noindent
-Backend: Python, FastAPI/Uvicorn, websockets, SQLite; Containerisierung via Docker Compose; GPU-fähige Worker-Container für Modelle (Neucon, VisFusion, SLAM3R, MASt3R). Frontend: Unity (C\#), NativeWebSocket, glTFast für GLB-Import, VFX-basierte Punktwolken-Darstellung. Die Compose-Orchestrierung startet den Router (Port 5000) und mehrere GPU-Worker; Quellverzeichnisse werden in die Container gemountet.
+\subsection{Backend-Technologien}
+
+Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen. Dies ist für die Architektur essenziell: Der zentrale Router agiert als Vermittlungsstelle, die gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
+
+Die Persistenz der Rekonstruktionsergebnisse wird durch eine SQLite-Datenbank gewährleistet, die Metadaten und Binär-Blobs (GLB-Dateien) speichert. Aufgrund der modularen Struktur werden alle Komponenten mittels Docker Compose orchestriert, wobei das NVIDIA Container Toolkit den Zugriff der Worker-Container auf die Host-GPU ermöglicht.
+
+\subsection{Frontend-Technologien}
+
+Das Frontend wurde in Unity 2022.3 LTS implementiert. Für die Netzwerkkommunikation kommt die Bibliothek \textit{NativeWebSocket} zum Einsatz, da sie im Gegensatz zu Standard-.NET-Sockets eine bessere Kompatibilität mit WebGL- und Android-Builds (Meta Quest) bietet. Das Rendering der 3D-Rekonstruktionen erfolgt hybrid: Punktwolken werden über den Visual Effect Graph (VFX Graph) GPU-beschleunigt dargestellt, während Mesh-Daten mittels der Bibliothek \textit{glTFast} zur Laufzeit importiert werden.
 
 \section{Kommunikationsstandard}
-Um eine effiziente WebSocket-Kommunikation zwischen dem Front- und Backend zu gewährleisten, werden einige standardisierte Byte-Frames definiert. Die wichtigsten Nachrichtentypen sind:
+
+Um die Latenz bei der Übertragung großer Bild- und Geometriedaten zu minimieren, wurde statt eines textbasierten Formats (wie JSON) ein maßgeschneidertes binäres Protokoll implementiert. Die Wahl eines binären Protokolls begründet sich durch die Vermeidung des ca.\ 33\,\% Overhead von Base64-Kodierung, was insbesondere im drahtlosen VR-Betrieb die Bandbreite signifikant schont.
+
+\subsection{Protokollstruktur}
+
+Jedes Paket beginnt mit einem 4-Byte Magic Header (\texttt{LEON}), der zur Validierung des Datenstroms und zur Synchronisation bei Verbindungsfehlern dient. Darauf folgt eine Versionierung, die eine spätere Erweiterbarkeit des Systems ohne Bruch der Abwärtskompatibilität gewährleistet. Tabelle \ref{tab:message_mapping} zeigt die Zuordnung zwischen den konzeptionellen Nachrichtentypen aus Kapitel 4 und deren konkreter Umsetzung im Protokoll.
+
+\begin{table}[h]
+\centering
+\caption{Mapping der konzeptionellen Nachrichtentypen auf implementierte Protokollstrukturen}
+\label{tab:message_mapping}
+\begin{tabular}{lll}
+\hline
+\textbf{Konzept (Kap.\ 4)} & \textbf{Implementierung} & \textbf{Version} \\
+\hline
+Rekonstruktionsanfragen & ModelFragment & 1 \\
+Rekonstruktionsantworten & ModelResult & 2 \\
+Sitzungs-/Konfigurationsnachrichten & TransformFragment & 2 \\
+\hline
+\end{tabular}
+\end{table}
+
+Die drei Nachrichtentypen sind wie folgt strukturiert:
+
+\begin{itemize}
+\item \textbf{ModelFragment} (Version 1): Enthält die Ziel-Modellkennung, den Szenennamen sowie eine variable Anzahl an Frames. Jeder Frame umfasst ein JPEG-kodiertes Bild, intrinsische Kameraparameter (Brennweite, Hauptpunkt) und extrinsische Parameter (Position, Rotation als Quaternion).
+
+\item \textbf{ModelResult} (Version 2): Transportiert die vom Worker berechnete 3D-Repräsentation zurück zum Client. Es enthält eine Transformation (Position, Rotation, Skalierung), ein Flag zur Unterscheidung zwischen Mesh und Punktwolke sowie die Geometriedaten als GLB-Binärstrom.
+
+\item \textbf{TransformFragment} (Version 2): Ermöglicht nachträgliche Pose-Korrekturen bestehender Rekonstruktionen, ohne eine erneute Inferenz anzustoßen. Es enthält lediglich Szenenname, Modellkennung und die aktualisierte Transformation.
+\end{itemize}
+
+JPEG-Kompression wurde gewählt, um Latenz zu minimieren, trotz geringer Qualitätsverluste gegenüber verlustfreien Formaten. GLB als Mesh-Format bietet den Vorteil, dass es Geometrie und Textur in einer Datei bündelt und von \textit{glTFast} effizient zur Laufzeit geladen werden kann. Die Entscheidung für manuelles Byte-Packing (mittels Python \texttt{struct} und C\# \texttt{BinaryWriter}) eliminiert den Overhead, der bei einer Base64-Kodierung von Binärdaten entstehen würde.
+
+\section{Backend-Implementierung}
+
+Das Backend fungiert als Schaltzentrale des Systems. Es besteht aus dem zentralen Router und den modellspezifischen Workern.
+
+\subsection{Asynchrones Routing und Fan-Out}
+
+Der Router (\texttt{fragment\_hub.py}) verwaltet den globalen Zustand aller verbundenen Clients und aktiven Szenen. Er implementiert zwei WebSocket-Endpunkte:
+
 \begin{enumerate}
-    \item ModelFragment (Client $\rightarrow$ Router $\rightarrow$ Modell)
-    \par
-    \noindent
-    Header: `LEON', Version 1, Fenstergröße; dann Modellname und Szenenname. Es folgen Fensterweise:
-    \begin{itemize}
-        \item Bilddaten (JPEG-Bytes + Breite/Höhe)
-        \item Intrinsics (Fx, Fy, Cx, Cy)
-        \item Extrinsics (Kamera-Position xyz, Rotation xyzw)
-    \end{itemize}
-    Der Router erkennt Version 1, extrahiert Modell-/Szenennamen und legt das Fragment in die Queue des adressierten Modells.
-
-    \item ModelResult (Modell $\rightarrow$ Router $\rightarrow$ Client)
-    \par
-    \noindent
-    Header: LEON, Version 2, Szenenname; dann isPointcloud, Translation (xyz), Rotation (xyzw), Scale (xyz), gefolgt vom GLB-Payload. Der Router speichert pro Szene/Modell das jüngste Resultat und verteilt es an alle abonnierten Clients (bei bereits vorhandenen Ergebnissen direkt nach dem Handshake).
-
-    \item (optional) TransformFragment (Client $\rightarrow$ Router)
-    \par
-    \noindent
-    Header: LEON, Version 2, Szenenname; dann Translation (xyz), Rotation (Quaternion xyzw), Skalierung (xyz). Der Router aktualisiert damit die Pose aller bereits vorliegenden Ergebnisse der Szene und benachrichtigt verbundene Clients.
+\item \texttt{/ws/client}: Hier verbinden sich Unity-Clients. Nach einem initialen Handshake, in dem der Client seine Rolle (Host/Visitor) und die gewünschte Szene übermittelt, registriert der Router den Client in der \texttt{connected\_clients}-Map.
+\item \texttt{/ws/model/\{name\}}: Hier verbinden sich die Rekonstruktions-Worker. Für jedes Modell wird eine \texttt{asyncio.Queue} angelegt.
 \end{enumerate}
 
-\section{Backend}
+Eingehende Fragmente von Clients werden vom Router validiert, deserialisiert und in die Warteschlange des adressierten Modells gelegt. Sobald ein Worker ein Ergebnis liefert, wird dieses zunächst in der Datenbank persistiert. Anschließend iteriert der Router über alle Clients, die der entsprechenden Szene zugeordnet sind, und sendet das Ergebnis asynchron über deren WebSocket-Verbindungen. Durch die Nutzung von \texttt{asyncio.gather()} werden diese Sendevorgänge parallel ausgeführt, ohne die Verarbeitung neuer Fragmente zu blockieren.
 
-\subsection{Architektur und Komponenten}
+\subsection{Modell-Worker}
 
-\textbf{Router (FastAPI) }
+Die Worker-Container basieren auf einer abstrakten Basisklasse \texttt{BaseReconstructionModel}. Diese kapselt die Boilerplate-Logik für Verbindungsaufbau und Fehlerbehandlung. Konkrete Implementierungen (z.\,B.\ \texttt{NeuralReconstructionModel}, \texttt{SLAM3RReconstructModel}) müssen lediglich die Methode \texttt{handle\_fragment()} überschreiben. Diese Architektur ermöglicht die Integration neuer Forschungsansätze mit minimalem Aufwand, solange sie das Ein- und Ausgabeformat einhalten. Fehlerbehandlung erfolgt über \texttt{try-except}-Blöcke in der \texttt{handle\_fragment()}-Methode, die bei GPU-Out-of-Memory-Fehlern oder korrupten Frames eine Fallback-Antwort generieren und den Worker-Zustand zurücksetzen.
 
-\noindent
-Der Router stellt zwei WebSocket-Endpunkte bereit:
-\begin{enumerate}
-    \item \verb|/ws/client| für Unity-Clients (Handshake, Ergebnis-Fan-out)
-    \item \verb|/ws/model/{model_name}| für Modell-Worker (Fragment-Zustellung, Ergebnis-Rückkanal)
-\end{enumerate}
-Der Router verwaltet außerdem den globalen Zustand von verbundenen Clients, welcher Szene diese zugeordnet sind, einer Eingabe-Queue für jedes Modell und eine Modelausgabe pro Modell pro Szene.
+\section{Frontend-Implementierung}
 
-Beim Verbindungsaufbau mit dem Client sendet der Router einen Handshake als JSON mit einer Liste an aktuell verfügbaren Modellen.
+Das Frontend ist für die Datenerfassung (Capture), die Netzwerkkommunikation und die Visualisierung zuständig.
 
-\medskip
-\noindent
-\textbf{Modell-Worker}
+\subsection{Hardware-Abstraktion mittels Strategy Pattern}
 
-\noindent
-Ein Worker verbindet sich per WebSocket, lauscht auf eingehende Fragment, verarbeitet sie und sendet ein \texttt{ModelResult} zurück. Die abstrakte Basisklasse kapselt Verbindungs-/Sende-Logik und definiert die Funktionen \texttt{handle\_fragment(fragment)} sowie \texttt{send\_result(result)}.
-
-\medskip
-\noindent
-\textbf{Persistenz}
-
-\noindent
-Ergebnisse werden in SQLite (db/results.db) gespeichert, inklusive Szene, Transform, Pointcloud-Flag und GLB-Blob; parallel protokolliert der Router je Modell CSV-Zeilen (input size, inference time, output size) zur späteren Auswertung.
-
-\subsection{Datenfluss}
-\begin{itemize}
-    \item \textbf{Client-Endpoint} \verb|/ws/client|: Handshake (Rolle/Szene) → Modellliste senden → Empfang von LEON v1/v2 → v1 an Modell-Queue, v2 als Transform anwenden → Event-Signale an Szene-Abonnenten. Bereits vorhandene Ergebnisse der Szene werden unmittelbar gesendet.
-    \item \textbf{Modell-Endpoint} \verb|/ws/model/{model_name}|:
-Worker verbindet sich, erhält Fragmente aus der Queue, sendet nach Inferenz ModelResult v2 zurück; Router misst Latenz, schreibt CSV-Zeile, persistiert in SQLite und setzt Client-Events zur Auslieferung. Sondercodes b'0'/b'1' signalisieren Fehler bzw. „unwichtiges“ Ergebnis.
-\end{itemize}
-
-\subsection{Containerisierung}
-Die docker-compose.yml baut Router und Worker, setzt GPU-Reservierungen und übergibt Modell-Namen und Server-URL (ws://router:5000/ws/model) als Umgebungsvariablen; Worker-Entry-Points verbinden sich selbsttätig.
-
-\section{Frontend}
-
-\subsection{Architektur und Komponenten}
-Die Frontend-Architektur basiert auf vier zentralen Komponenten, die über definierte Schnittstellen miteinander interagieren.
-
-\medskip
-
-ICaptureDevice abstrahiert den hardwarespezifischen Sensorzugriff und ermöglicht plattformunabhängige Datenerfassung. Die Implementierung umfasst MetaQuestCaptureDevice für Passthrough-Kameras, SmartphoneCaptureDevice für ARFoundation-basierte mobile Geräte sowie Eval-Varianten zum Abspielen vorgezeichneter Pose-Sequenzen für reproduzierbare Tests. Alle Implementierungen liefern RGB-Bilder, Intrinsics (Brennweite, Hauptpunkt) und Extrinsics (Position, Rotation) in einheitlichem Format.
-
-\medskip
-
-IModelCollector verwaltet eingehende Frames in einem Sliding-Window-Puffer und entscheidet anhand von Schwellenwerten für Translation, Rotation und zeitlichen Abstand, ob ein Frame als Keyframe aufgenommen wird. Modellspezifische Varianten wie NeuralReconCollector und SLAM3RCollector definieren unterschiedliche Sampling-Strategien.
-
-\medskip
-
-ReconstructionClient implementiert die WebSocket-basierte Kommunikation mit dem Backend über NativeWebSocket. Nach dem Handshake sendet der Client Rolle und Szenenname und erhält die Liste verfügbarer Modelle zurück. Eine asynchrone Sendewarteschlange verwaltet die Nachrichtenserialisierung im Background-Thread, wobei Transform-Updates bevorzugt behandelt werden.
-
-\medskip
-
-RoomReconstructor verarbeitet eingehende Rekonstruktionsergebnisse thread-sicher und visualisiert sie in der Unity-Szene. Mesh-basierte Ergebnisse werden mit glTFast importiert und mittels MeshUtils.ChunkMesh() in kleinere Chunks unterteilt, Punktwolken werden über den Visual Effects Graph mit GPU-Buffern gerendert.
-
-\subsection{Capture Pipeline}
-Die Datenerfassung erfolgt frame-synchron als Coroutine, die mit Unity's Rendering-Zyklus koordiniert. Der ReconstructionManager führt CaptureLoop() aus, die nach WaitForEndOfFrame() Pose und Bilddaten zeitlich konsistent erfasst. Die Intrinsics werden basierend auf dem Verhältnis zwischen nativer und verwendeter Auflösung (640×480) skaliert, das Kamerabild wird in eine RenderTexture gerendert, per GPU-Readback kopiert und JPEG-kodiert. Die Keyframe-Selektion prüft mittels ShouldCollect(), ob räumliche oder zeitliche Schwellenwerte überschritten wurden.
-
-\subsection{Clientseitige Kommunikation}
-Das Frontend kommuniziert über eine dauerhafte WebSocket-Verbindung mit dem Router. Nach dem initialen Handshake werden Fragmente im binären LEON-v1-Format übertragen.
-Merkmale der Übertragungsschicht:
+Um das System plattformunabhängig zu halten, wurde für den Zugriff auf Kamerasensoren das Strategy Pattern angewandt. Das Interface \texttt{ICaptureDevice} definiert Methoden zum Abruf von Bildern (\texttt{GetFrame}) sowie intrinsischen und extrinsischen Parametern. Es existieren spezifische Implementierungen für verschiedene Hardware-Typen:
 
 \begin{itemize}
-    \item Asynchrone Sendequeue zur Entkopplung der VR-Hauptschleife
-    \item Background-Thread-Serialisierung für geringe Latenz
-    \item Priorisierte Behandlung von Transform-Updates
+\item \textbf{MetaQuestCaptureDevice}: Nutzt die Passthrough-API der Meta Quest, um Zugriff auf die Umgebungskameras zu erhalten. Da die native Auflösung der Kameras variieren kann, werden die Intrinsics dynamisch auf die Zielauflösung (640$\times$480) skaliert.
+\item \textbf{SmartphoneCaptureDevice}: Basiert auf ARFoundation und ermöglicht die Nutzung von Android/iOS-Geräten als externe Kameraquellen.
+\item \textbf{EvalCaptureDevice}: Eine Implementierung für Reproduzierbarkeit, die statt echter Sensordaten eine virtuelle Kamera entlang aufgezeichneter Pfade bewegt.
 \end{itemize}
 
-Bereits vorhandene Rekonstruktionsergebnisse werden direkt nach Verbindungsaufbau zugestellt.
+\subsection{Thread-Sicherheit mittels Dispatcher Pattern}
 
-\subsection{Verarbeitung und Rendering rekonstruktiver Ergebnisse}
-Rekonstruktionsergebnisse werden asynchron empfangen und thread-sicher in die Unity-Szene integriert. Das LEON Version 2-Protokoll enthält neben Header und Szenenname ein Transform (Translation, Rotation, Scale) sowie die GLB-Payload.
+Eine zentrale Herausforderung bei der Integration in Unity ist die fehlende Thread-Sicherheit der Engine-API. Netzwerk-Nachrichten des \texttt{ReconstructionClient} werden asynchron in Hintergrund-Threads empfangen. Ein direkter Zugriff aus diesen Threads auf Szenen-Objekte (z.\,B.\ zum Instanziieren von Meshes) würde zu Laufzeitfehlern führen.
 
-Alle Unity-API-Operationen werden über eine mainThreadActions-Queue gesammelt und im Update()-Zyklus abgearbeitet. Mesh-basierte Rekonstruktionen werden mit glTFast geladen und mittels MeshUtils.ChunkMesh() in ein $n\times n \times n$ Grid unterteilt, um Frustum Culling zu verbessern.
+Um dieses Problem zu lösen, wurde ein Dispatcher-Pattern implementiert: Eingehende Nachrichten werden zunächst in einer thread-sicheren Warteschlange (\texttt{mainThreadActions}) zwischengespeichert. Die Komponente \texttt{RoomReconstructor} arbeitet diese Warteschlange innerhalb des Unity-Hauptzyklus (\texttt{Update}-Methode) ab. Dies stellt sicher, dass rechenintensive Deserialisierung parallel im Hintergrund läuft, während die eigentliche Manipulation der Szene synchronisiert im Haupt-Thread erfolgt.
 
-Punktwolken nutzen strukturierte GPU-Buffer für Positionen und Farben, die an den Visual Effect Graph übergeben werden. Nach dem Setzen der Buffer triggert Reinit() die GPU-seitige Aktualisierung.
+\subsection{Visualisierung mittels Spatial Hashing}
 
-\subsection{Geräteintegration}
-Die Geräteintegration erfolgt über das ICaptureDevice-Interface, das hardwarespezifische Details abstrahiert. Das Frontend ist dennoch primär für Live-VR-Erfassung auf Meta Quest ausgelegt:
+Die Darstellung der empfangenen 3D-Daten muss in Echtzeit erfolgen, ohne die Framerate der VR-Anwendung zu beeinträchtigen. Für Mesh-Daten (z.\,B.\ von NeuralRecon) wurde ein Chunking-Verfahren implementiert (\texttt{MeshUtils.ChunkMesh}). Da empfangene GLB-Modelle geometrisch komplex sein können, werden sie nach dem Import in ein $N \times N \times N$ Gitter unterteilt. Die Chunk-Größe wurde auf $5 \times 5 \times 5$ Meter festgelegt, was ein gutes Gleichgewicht zwischen Frustum-Culling-Effizienz und Verwaltungsoverhead darstellt. Dies ermöglicht der Unity-Engine, nicht sichtbare Bereiche mittels Frustum Culling effizient auszublenden und erhöht die Rendering-Performance auf mobiler Hardware signifikant.
 
-\begin{itemize}
-    \item Passthrough-RGB-Kamera der Meta Quest
-    \item Original-Headset-Pose aus XR-Tracking
-    \item Unity-Render-Pipeline für Echtzeit-Anzeige
-\end{itemize}
-
-Weitere Sensorquellen (Smartphone, virtuelle Testkamera) werden über das gleiche Capture-Interface angebunden.
+Punktwolken (z.\,B.\ von SLAM3R) werden nicht als klassische GameObjects, sondern über \texttt{GraphicsBuffer} direkt an die GPU übergeben und mittels eines Compute-Shaders im VFX Graph gerendert, um den Overhead der CPU zu umgehen. Die aktuelle Darstellung ist auf 100\,000 Punkte begrenzt, da die Meta Quest 3 bei höheren Punktzahlen deutliche Framerate-Einbrüche zeigt. Dieser Trade-off zwischen Detailgrad und Performance wurde bewusst zugunsten einer flüssigen VR-Erfahrung gewählt.
 
 \section{Integration in das Va.Si.Li-Lab}
-Die Integration erfolgte in die bestehende Unity-basierte Va.Si.Li-Lab-Umgebung, die eine mehrbenutzerfähige VR-Plattform für simulationsbasiertes Lernen und Forschung bereitstellt. Ziel war eine nahtlose Einbindung der Rekonstruktionspipeline, ohne bestehende Mehrbenutzer- und Interaktionsmechaniken zu beeinträchtigen.
 
-\subsection{Zielumgebung und Anforderungen}
-Das Va.Si.Li-Lab basiert auf Unity mit Ubiq als Mehrbenutzer-Framework und erfasst multimodale Interaktionen in Echtzeit. Für die Einbindung war erforderlich, die Rekonstruktionsdaten als eigenständige, netzwerkagnostische Szeneinhalte zu führen und die Frontend-Clientlogik strikt von Lab-spezifischen Synchronisationsdiensten zu entkoppeln. Dadurch bleibt die Rekonstruktion unabhängig von Session-Logik und kann in beliebige Lernszenarien eingebettet werden.
+Die Integration erfolgte in die bestehende Infrastruktur des Va.Si.Li-Labs. Ein wesentliches Entwurfsziel war die Separation of Concerns. Die Rekonstruktionspipeline nutzt daher nicht die bestehenden Ubiq-Netzwerkkanäle des Labs, sondern baut eine dedizierte WebSocket-Verbindung auf. Dies verhindert Kollisionen mit der synchronen Multi-User-Logik des Labs. Die Trennung der Netzwerk-Ports (Ubiq nutzt standardmäßig Port 8009, RTReconstruct verwendet Port 8765) stellt sicher, dass beide Systeme ohne Konflikte parallel betrieben werden können.
 
-\subsection{Architekturankopplung}
-Die Integration nutzt den bestehenden Szenen-Lebenszyklus des Labs und bindet den ReconstructionManager sowie RoomReconstructor als additive Komponenten in die Lab-Hauptszene ein. Die Kommunikation mit dem Backend erfolgt ausschließlich über die WebSocket-Schnittstelle des ReconstructionClient, der zu keiner Zeit Lab-interne Netzwerkpfade (z. B. Ubiq-Channels) verwendet, um Kollisionen mit dem Mehrbenutzer-Stack zu vermeiden. Resultate werden als reguläre Unity-GameObjects instanziiert und über Parent-Transforms an die Lab-Koordinaten verankert, wodurch Persistenz- und Analyse-Logik des Labs unberührt bleibt.
+Rekonstruktionsergebnisse werden als Kind-Objekte eines zentralen Referenzpunkts (``RoomAnchor'') instanziiert. Dies erlaubt es, die gesamte rekonstruierte Szene relativ zum virtuellen Raum des Labs zu transformieren, ohne die lokalen Koordinaten der einzelnen Fragmente neu berechnen zu müssen.
 
-\subsection{Mehrbenutzer-Verhalten}
-Die Rekonstruktionspipeline ist netzwerkagnostisch und backendgetrieben: Der Router publiziert Ergebnisse szenenweit, sodass mehrere Clients im selben Lab-Raum identische Resultate erhalten, ohne dass die Lab-Mehrbenutzer-Logik erweitert werden muss. Für den Fall, dass Clients zu unterschiedlichen Zeiten beitreten, liefert der Router das jüngste Ergebnis unmittelbar nach dem Handshake nach, wodurch ein konsistenter Zustand über die Sitzung hinweg gewährleistet bleibt.
+\section{Zusammenfassung}
 
-\subsection{Deployment und Konfiguration}
-Die Backend-Seite wird mittels Docker Compose im  bereitgestellt; Router und Worker-Container starten mit vordefinierten Modellnamen und GPU-Ressourcenzuteilung. Der Unity-Client wird mit Lab-spezifischen Endpunkten und Szenennamen konfiguriert; Umschalten zwischen Meta Quest Live-Capture und Evaluationsmodus erfolgt über das ICaptureDevice ohne Änderungen an der Lab-Szene. Bestehende Logging- und Persistenzmechanismen des Routers sichern Ergebnisse pro Szene und Modell, was Lab-seitig die nachträgliche Analyse ermöglicht, ohne zusätzliche Integrationsarbeit im Lab-Projekt.
+In diesem Kapitel wurde die Implementierung von RTReconstruct dargelegt. Durch den Einsatz von FastAPI und asynchronen Warteschlangen im Backend konnte ein performanter Router realisiert werden, der auch bei heterogenen Inferenzzeiten der Modelle stabil bleibt. Im Frontend ermöglichten Design-Patterns wie Strategy und Dispatcher eine saubere Trennung von Hardware-Zugriff, Netzwerklogik und Rendering. Das entwickelte binäre Protokoll sorgt dabei für eine effiziente Datenübertragung. Die Architektur ist somit robust genug, um in der anschließenden Evaluation (Kapitel 6) unter Echtzeitbedingungen geprüft zu werden.
