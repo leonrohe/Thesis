@@ -18,38 +18,115 @@ Das Frontend wurde in Unity 2022.3 LTS implementiert. Für die Netzwerkkommunika
 
 \section{Kommunikationsstandard}
 
-Um die Latenz bei der Übertragung großer Bild- und Geometriedaten zu minimieren, wurde statt eines textbasierten Formats (wie JSON) ein maßgeschneidertes binäres Protokoll implementiert. Die Wahl eines binären Protokolls begründet sich durch die Vermeidung des ca.\ 33\,\% Overhead von Base64-Kodierung, was insbesondere im drahtlosen VR-Betrieb die Bandbreite signifikant schont.
+Um die Latenz bei der Übertragung großer Bild- und Geometriedaten zu minimieren, wurde statt eines textbasierten Formats (wie JSON) ein maßgeschneidertes binäres Protokoll implementiert. Die Wahl eines binären Protokolls begründet sich durch die Vermeidung des ca.\ 33\,\% Overhead von Base64-Kodierung \needcitation, was insbesondere im drahtlosen VR-Betrieb die Bandbreite signifikant schont. Durch die JPEG-Komprimierung der Bilder und das GLB-Format für 3D-Modelle wird die Datenmenge weiter reduziert.
 
-\subsection{Protokollstruktur}
+\subsection{Allgemeiner Aufbau}
 
-Jedes Paket beginnt mit einem 4-Byte Magic Header (\texttt{LEON}), der zur Validierung des Datenstroms und zur Synchronisation bei Verbindungsfehlern dient. Darauf folgt eine Versionierung, die eine spätere Erweiterbarkeit des Systems ohne Bruch der Abwärtskompatibilität gewährleistet. Tabelle \ref{tab:message_mapping} zeigt die Zuordnung zwischen den konzeptionellen Nachrichtentypen aus Kapitel 4 und deren konkreter Umsetzung im Protokoll.
+Jedes Paket beginnt mit einem einheitlichen Header zur Validierung und Versionierung. Dies ermöglicht dem Empfänger, ungültige Pakete frühzeitig zu verwerfen und die Synchronisation im Fehlerfall wiederherzustellen. Der folgende C-Pseudocode, welcher der reinen Visualisierung dient, zeigt den allgemeinen Aufbau der Basistypen und des Headers:
 
-\begin{table}[h]
-\centering
-\caption{Mapping der konzeptionellen Nachrichtentypen auf implementierte Protokollstrukturen}
-\label{tab:message_mapping}
-\begin{tabular}{lll}
-\hline
-\textbf{Konzept (Kap.\ 4)} & \textbf{Implementierung} & \textbf{Version} \\
-\hline
-Rekonstruktionsanfragen & ModelFragment & 1 \\
-Rekonstruktionsantworten & ModelResult & 2 \\
-Sitzungs-/Konfigurationsnachrichten & TransformFragment & 2 \\
-\hline
-\end{tabular}
-\end{table}
+\begin{lstlisting}[caption={Definition der Basistypen und des Headers}, label={lst:protocol_basics}]
+// Basistypen
+type int32   = 4 Byte Signed Integer (Little Endian);
+type float32 = 4 Byte Floating Point (IEEE 754);
+type byte    = 1 Byte Unsigned Integer;
 
-Die drei Nachrichtentypen sind wie folgt strukturiert:
+// Zusammengesetzte Typen
+struct String {
+    int32  length;       // Laenge des Strings in Bytes
+    byte[] utf8_bytes;   // UTF-8 kodierter Inhalt
+};
 
-\begin{itemize}
-\item \textbf{ModelFragment} (Version 1): Enthält die Ziel-Modellkennung, den Szenennamen sowie eine variable Anzahl an Frames. Jeder Frame umfasst ein JPEG-kodiertes Bild, intrinsische Kameraparameter (Brennweite, Hauptpunkt) und extrinsische Parameter (Position, Rotation als Quaternion).
+struct Vector3 {
+    float32 x; float32 y; float32 z;
+};
 
-\item \textbf{ModelResult} (Version 2): Transportiert die vom Worker berechnete 3D-Repräsentation zurück zum Client. Es enthält eine Transformation (Position, Rotation, Skalierung), ein Flag zur Unterscheidung zwischen Mesh und Punktwolke sowie die Geometriedaten als GLB-Binärstrom.
+struct Quaternion {
+    float32 x; float32 y; float32 z; float32 w;
+};
 
-\item \textbf{TransformFragment} (Version 2): Ermöglicht nachträgliche Pose-Korrekturen bestehender Rekonstruktionen, ohne eine erneute Inferenz anzustoßen. Es enthält lediglich Szenenname, Modellkennung und die aktualisierte Transformation.
-\end{itemize}
+// Gemeinsamer Header fuer alle Pakete
+struct PacketHeader {
+    char[4] magic;      // ASCII
+    int32   version;    // Protokollversion
+};
+\end{lstlisting}
 
-JPEG-Kompression wurde gewählt, um Latenz zu minimieren, trotz geringer Qualitätsverluste gegenüber verlustfreien Formaten. GLB als Mesh-Format bietet den Vorteil, dass es Geometrie und Textur in einer Datei bündelt und von \textit{glTFast} effizient zur Laufzeit geladen werden kann. Die Entscheidung für manuelles Byte-Packing (mittels Python \texttt{struct} und C\# \texttt{BinaryWriter}) eliminiert den Overhead, der bei einer Base64-Kodierung von Binärdaten entstehen würde.
+\subsection{Pakettypen}
+
+Basierend auf den in Kapitel 4 definierten Anforderungen wurden drei Hauptpakettypen spezifiziert: \texttt{ModelFragment}, \texttt{ModelResult} und \texttt{TransformFragment}. Jeder Pakettyp ist für eine spezifische Kommunikationsrichtung und Funktionalität zuständig.
+
+\subsubsection{ModelFragment (Client an Server)}
+Das \texttt{ModelFragment} (Version 1) bündelt eine Sequenz von Frames (Fenster) für die Inferenz. Um die Serialisierung effizient zu gestalten, werden die Arrays für Bilder, Intrinsics und Extrinsics nacheinander geschrieben, anstatt sie pro Frame zu verschachteln.
+
+\begin{lstlisting}[caption={Struktur des ModelFragments (Upload)}, label={lst:struct_modelfragment}]
+struct ModelFragment {
+    PacketHeader header;      // Version = 1
+    int32        window_size; // Anzahl der Frames (N)
+    
+    // Metadaten
+    String       model_name;  // Zielmodell (z.B. "neucon")
+    String       scene_name;  // Eindeutige Szenen-ID
+    
+    // Nutzdaten (Sequentiell angeordnet)
+    FrameData[window_size]  frames;     // Liste der JPEG-Bilder
+    Intrinsics[window_size] intrinsics; // Liste der Kameraparameter
+    Extrinsics[window_size] extrinsics; // Liste der Kameraposen
+};
+
+// Hilfsstrukturen fuer ModelFragment
+struct FrameData {
+    int32   image_size;
+    byte[]  jpeg_data;
+    float32 width;
+    float32 height;
+};
+
+struct Intrinsics {
+    float32 fx; float32 fy;   // Brennweite
+    float32 cx; float32 cy;   // Hauptpunkt
+};
+
+struct Extrinsics {
+    Vector3    position;
+    Quaternion rotation;
+};
+\end{lstlisting}
+
+\subsubsection{ModelResult (Server an Client)}
+Das \texttt{ModelResult} (Version 2) enthält das Ergebnis einer Rekonstruktion. Es besteht aus Transformationsdaten für die Ausrichtung in der Unity-Szene und einem binären Blob, der das 3D-Modell im GLB-Format (glTF Binary) enthält. Das GLB-Format wurde gewählt, da es Geometrie und Texturen effizient bündelt.
+
+\begin{lstlisting}[caption={Struktur des ModelResults (Download)}, label={lst:struct_modelresult}]
+struct ModelResult {
+    PacketHeader header;         // Version = 2
+    
+    String       scene_name;     // Referenzierte Szene
+    bool         is_pointcloud;  // 1 Byte (True/False)
+    
+    // Globale Transformation fuer Unity
+    Vector3      position;
+    Quaternion   rotation;
+    Vector3      scale;
+    
+    // 3D-Modell
+    byte[]       glb_payload;    // Rest des Datenstroms bis EOF
+};
+\end{lstlisting}
+
+\subsubsection{TransformFragment (Client an Server)}
+Das \texttt{TransformFragment} (Version 2) ist ein leichtgewichtiges Steuerpaket. Es dient dazu, die Position eines Modells auf dem Server nachträglich zu korrigieren (z.\,B. bei manuellem Alignment durch den Nutzer), ohne die rechenintensiven Bilddaten erneut zu übertragen.
+
+\begin{lstlisting}[caption={Struktur des TransformFragments (Sync)}, label={lst:struct_transformfragment}]
+struct TransformFragment {
+    PacketHeader header;      // Version = 2
+    
+    String       scene_name;  // Zielszene
+    
+    // Neue Transformationsdaten
+    Vector3      position;
+    Quaternion   rotation;
+    Vector3      scale;
+};
+\end{lstlisting}
 
 \section{Backend-Implementierung}
 
@@ -58,17 +135,54 @@ Das Backend fungiert als Schaltzentrale des Systems. Es besteht aus dem zentrale
 \subsection{Asynchrones Routing und Fan-Out}
 
 Der Router (\texttt{fragment\_hub.py}) verwaltet den globalen Zustand aller verbundenen Clients und aktiven Szenen. Er implementiert zwei WebSocket-Endpunkte:
-
 \begin{enumerate}
-\item \texttt{/ws/client}: Hier verbinden sich Unity-Clients. Nach einem initialen Handshake, in dem der Client seine Rolle (Host/Visitor) und die gewünschte Szene übermittelt, registriert der Router den Client in der \texttt{connected\_clients}-Map.
-\item \texttt{/ws/model/\{name\}}: Hier verbinden sich die Rekonstruktions-Worker. Für jedes Modell wird eine \texttt{asyncio.Queue} angelegt.
+    \item \texttt{/ws/client}: Hier verbinden sich Unity-Clients. Nach einem initialen Handshake, in dem der Client seine Rolle (Host/Visitor) und die gewünschte Szene übermittelt, registriert der Router den Client in der \texttt{connected\_clients}-Map.
+    \item \texttt{/ws/model/\{name\}}: Hier verbinden sich die Rekonstruktions-Worker. Für jedes Modell wird eine \texttt{asyncio.Queue} angelegt.
 \end{enumerate}
-
-Eingehende Fragmente von Clients werden vom Router validiert, deserialisiert und in die Warteschlange des adressierten Modells gelegt. Sobald ein Worker ein Ergebnis liefert, wird dieses zunächst in der Datenbank persistiert. Anschließend iteriert der Router über alle Clients, die der entsprechenden Szene zugeordnet sind, und sendet das Ergebnis asynchron über deren WebSocket-Verbindungen. Durch die Nutzung von \texttt{asyncio.gather()} werden diese Sendevorgänge parallel ausgeführt, ohne die Verarbeitung neuer Fragmente zu blockieren.
+Eingehende Fragmente von Clients werden vom Router validiert, deserialisiert und in die Warteschlange des adressierten Modells gelegt. Sobald ein Worker ein Ergebnis liefert, wird dieses zunächst in der Datenbank persistiert gespeichert. Anschließend iteriert der Router über alle Clients, die der entsprechenden Szene zugeordnet sind, und sendet das Ergebnis asynchron über deren WebSocket-Verbindungen nach dem Fan-Out Prinzip. Durch die Nutzung von \texttt{asyncio.gather()} werden diese Sendevorgänge parallel ausgeführt, ohne die Verarbeitung neuer Fragmente zu blockieren.
 
 \subsection{Modell-Worker}
 
-Die Worker-Container basieren auf einer abstrakten Basisklasse \texttt{BaseReconstructionModel}. Diese kapselt die Boilerplate-Logik für Verbindungsaufbau und Fehlerbehandlung. Konkrete Implementierungen (z.\,B.\ \texttt{NeuralReconstructionModel}, \texttt{SLAM3RReconstructModel}) müssen lediglich die Methode \texttt{handle\_fragment()} überschreiben. Diese Architektur ermöglicht die Integration neuer Forschungsansätze mit minimalem Aufwand, solange sie das Ein- und Ausgabeformat einhalten. Fehlerbehandlung erfolgt über \texttt{try-except}-Blöcke in der \texttt{handle\_fragment()}-Methode, die bei GPU-Out-of-Memory-Fehlern oder korrupten Frames eine Fallback-Antwort generieren und den Worker-Zustand zurücksetzen.
+Die Modell-Worker implementieren die eigentliche 3D-Rekonstruktion und laufen als eigenständige Prozesse, die über WebSockets mit dem Backend-Router kommunizieren. Grundlage ist die abstrakte Klasse \texttt{BaseReconstructionModel}, die die gemeinsame Kommunikationslogik kapselt und von allen konkreten Modellen erweitert wird.
+
+\subsubsection{Basisklasse und Kommunikationsfluss}
+
+Die Klasse \texttt{BaseReconstructionModel} initialisiert sich mit einem Modellnamen und einer Server-URL und leitet daraus den WebSocket-Endpunkt \texttt{/ws/model/<modelname>} des Backends ab. Die Methode \texttt{connect()} stellt die WebSocket-Verbindung her und startet asynchron die Schleife: \texttt{listen()} zum Empfangen von Fragmenten. Eingehende Nachrichten werden in \texttt{listen()} mittels der Hilfsfunktion zur Fragment-Deserialisierung in Python Datenstrukturen überführt und jeweils an die abstrakte Methode \texttt{handle\_fragment()} weitergegeben, die von den Unterklassen implementiert wird.
+
+\begin{lstlisting}[language=python]
+class BaseReconstructionModel(ABC):
+    def __init__(self, model_name: str, server_url: str):
+        # speichert Modellname und abgeleitete WebSocket-URL
+        ...
+
+    async def connect(self):
+        # WebSocket-Verbindung herstellen und listen/processloop starten
+        ...
+
+    async def listen(self):
+        # eingehende Bytes lesen, zu Fragmenten deserialisieren
+        # und für jedes Fragment handle_fragment aufrufen
+        ...
+
+    async def send_result(self, result: ModelResult, success: bool = True):
+        # Ergebnis serialisieren und als Bytes senden
+        # Sonderfälle: Fehler (ein Null-Byte),
+        # oder kein relevantes Ergebnis (ein Eins-Byte)
+        ...
+
+    @abstractmethod
+    async def handle_fragment(self, fragment: dict):
+        # von Unterklassen zu implementieren
+        ...
+\end{lstlisting}
+
+\subsubsection{Spezialisierte Rekonstruktionsmodelle}
+
+Die konkreten Modell-Worker laden jeweils ein externes Rekonstruktionsmodell (NeuralRecon, MASt3R-SLAM, SLAM3R oder VisFusion) und implementieren \texttt{handle\_fragment()}, um die empfangenen Fragmente in das jeweils benötigte Eingabeformat zu transformieren. Nach der Inferenz wird das Ergebnis als \texttt{ModelResult} mit der rekonstruierten Szene (GLB-Datei) und optionalen Transformationen erzeugt und über \texttt{send\_result()} an den Router zurückgesendet.
+
+\subsubsection{Einsatz im Container-Setup}
+
+Für den produktiven Betrieb werden die Worker-Skripte als eigenständige Prozesse bzw. Container gestartet, denen über Umgebungsvariablen der jeweilige Modellname (\texttt{MODELNAME}) und die Server-URL (\texttt{SERVERURL}) übergeben werden. Das Skript initialisiert daraus die passende Unterklasse von \texttt{BaseReconstructionModel} und startet mit \texttt{asyncio.run(model.connect())} die oben beschriebene Kommunikationsschleife, sodass sich jeder Modell-Worker automatisch beim zentralen Backend-Router registriert.
 
 \section{Frontend-Implementierung}
 
@@ -84,11 +198,18 @@ Um das System plattformunabhängig zu halten, wurde für den Zugriff auf Kameras
 \item \textbf{EvalCaptureDevice}: Eine Implementierung für Reproduzierbarkeit, die statt echter Sensordaten eine virtuelle Kamera entlang aufgezeichneter Pfade bewegt.
 \end{itemize}
 
-\subsection{Thread-Sicherheit mittels Dispatcher Pattern}
+\subsection{Fragmentsammlung mittels ModelCollector}
 
-Eine zentrale Herausforderung bei der Integration in Unity ist die fehlende Thread-Sicherheit der Engine-API. Netzwerk-Nachrichten des \texttt{ReconstructionClient} werden asynchron in Hintergrund-Threads empfangen. Ein direkter Zugriff aus diesen Threads auf Szenen-Objekte (z.\,B.\ zum Instanziieren von Meshes) würde zu Laufzeitfehlern führen.
+Der \texttt{ModelCollector} sammelt pro Frame Bilddaten und Kamera­parameter aus dem aktiven \texttt{ICaptureDevice} und nimmt einen Frame nur dann in das aktuelle Fenster auf, wenn eine ausreichende Bewegung seit dem letzten gültigen Frame vorliegt. Dafür müssen zwei Bedingungen erfüllt sein:
+\begin{enumerate}
+    \item eine Positionsänderung von mindestens \(\approx n\,\text{m}\),
+    \item oder eine Rotationsänderung von mindestens \(\approx n^\circ\).
+\end{enumerate}
+Frames, die diese Kriterien sowie die Verfügbarkeit aller notwendigen Sensordaten erfüllen, werden gepuffert, bis die konfigurierte Fenstergröße erreicht ist und das vollständige Fragment an den \texttt{ReconstructionClient} weitergereicht wird. Auf diese Weise stellt der \texttt{ModelCollector} sicher, dass nur informative und ausreichend unterschiedliche Ansichten an das Backend übertragen werden.
 
-Um dieses Problem zu lösen, wurde ein Dispatcher-Pattern implementiert: Eingehende Nachrichten werden zunächst in einer thread-sicheren Warteschlange (\texttt{mainThreadActions}) zwischengespeichert. Die Komponente \texttt{RoomReconstructor} arbeitet diese Warteschlange innerhalb des Unity-Hauptzyklus (\texttt{Update}-Methode) ab. Dies stellt sicher, dass rechenintensive Deserialisierung parallel im Hintergrund läuft, während die eigentliche Manipulation der Szene synchronisiert im Haupt-Thread erfolgt.
+\subsection{Thread-Sicherheit und Synchronisation}
+
+Eine zentrale Herausforderung in der Entwicklung des Unity-Frontends stellt die fehlende Thread-Sicherheit der Engine-API dar. Da der \texttt{ReconstructionClient} eingehende Netzwerkpakete asynchron in Hintergrund-Threads empfängt, ist ein direkter Zugriff auf Szenenobjekte zur Laufzeit nicht möglich. Zur Lösung dieses Konflikts wurde im \texttt{RoomReconstructor} ein Dispatcher-Pattern implementiert. Eingehende Daten werden hierbei zunächst in einer thread-sicheren Warteschlange (\texttt{mainThreadActions}) gepuffert und anschließend synchronisiert im Hauptzyklus (Main Thread) der Engine verarbeitet. Dieser Ansatz entkoppelt die rechenintensive Deserialisierung von der Darstellung und gewährleistet eine stabile Szenenmanipulation ohne Blockierung des Render-Threads.
 
 \subsection{Visualisierung mittels Spatial Hashing}
 
@@ -96,11 +217,20 @@ Die Darstellung der empfangenen 3D-Daten muss in Echtzeit erfolgen, ohne die Fra
 
 Punktwolken (z.\,B.\ von SLAM3R) werden nicht als klassische GameObjects, sondern über \texttt{GraphicsBuffer} direkt an die GPU übergeben und mittels eines Compute-Shaders im VFX Graph gerendert, um den Overhead der CPU zu umgehen. Die aktuelle Darstellung ist auf 100\,000 Punkte begrenzt, da die Meta Quest 3 bei höheren Punktzahlen deutliche Framerate-Einbrüche zeigt. Dieser Trade-off zwischen Detailgrad und Performance wurde bewusst zugunsten einer flüssigen VR-Erfahrung gewählt.
 
-\section{Integration in das Va.Si.Li-Lab}
+\subsection{Integration in das Va.Si.Li-Lab}
 
-Die Integration erfolgte in die bestehende Infrastruktur des Va.Si.Li-Labs. Ein wesentliches Entwurfsziel war die Separation of Concerns. Die Rekonstruktionspipeline nutzt daher nicht die bestehenden Ubiq-Netzwerkkanäle des Labs, sondern baut eine dedizierte WebSocket-Verbindung auf. Dies verhindert Kollisionen mit der synchronen Multi-User-Logik des Labs. Die Trennung der Netzwerk-Ports (Ubiq nutzt standardmäßig Port 8009, RTReconstruct verwendet Port 8765) stellt sicher, dass beide Systeme ohne Konflikte parallel betrieben werden können.
+Die Integration von \emph{RTReconstruct} in das Va.Si.Li-Lab verfolgt das Ziel, die bestehende Mehrbenutzerumgebung um einen rekonstruierbaren Raumkontext zu erweitern, ohne die etablierte Szenenlogik und Interaktionsmechanik des Labors grundlegend zu verändern. Statt eine separate Anwendung einzuführen, wird die Rekonstruktionsfunktionalität als optionaler Dienst in bestehende Szenen eingebettet und orientiert sich dabei an den vorhandenen Bedienkonzepten des Labors.
+\subsubsection{Rollen- und Szenenkonzept}
 
-Rekonstruktionsergebnisse werden als Kind-Objekte eines zentralen Referenzpunkts (``RoomAnchor'') instanziiert. Dies erlaubt es, die gesamte rekonstruierte Szene relativ zum virtuellen Raum des Labs zu transformieren, ohne die lokalen Koordinaten der einzelnen Fragmente neu berechnen zu müssen.
+Die Einbindung in die Nutzerführung des Va.Si.Li-Lab erfolgt über ein Rollen- und Szenenkonzept, das direkt in die bestehende UI integriert ist. Beim Start wählen die Nutzenden zunächst eine Rolle (\emph{Host} oder \emph{Visitor}) und anschließend eine Szene, die als gemeinsamer Bezeichner für die Sitzung dient. Diese Entscheidung legt fest, ob ein Client lediglich rekonstruierte Inhalte konsumiert oder zusätzlich die Datenerfassung initiiert.
+
+\emph{Hosts} übernehmen die aktive Rolle in der Rekonstruktion, indem sie der gewählten Szene Sensordaten zuordnen und den Aufbau eines räumlichen Modells anstoßen. \emph{Visitors} treten derselben Szene bei, erhalten jedoch ausschließlich die daraus resultierenden Rekonstruktionen zur Visualisierung. Auf diese Weise wird verhindert, dass mehrere Teilnehmende parallel identische Umgebungen erfassen, während alle weiterhin in die gemeinsame Mehrbenutzersitzung des Va.Si.Li-Lab eingebunden bleiben.
+
+\subsubsection{Integrationsprinzipien}
+
+Zentral für die Gestaltung der Integration ist eine additive und möglichst invasive Einbindung in die bestehende Infrastruktur. \emph{RTReconstruct} wird nicht als neuer Hauptakteur der Anwendung eingeführt, sondern ergänzt das Va.Si.Li-Lab um einen weiteren, bei Bedarf zuschaltbaren Kontextkanal: Neben Avataren, Sprache und Objekten existiert nun ein rekonstruierter Raumzustand, der derselben Szene zugeordnet ist.
+
+Daraus ergeben sich drei Integrationsprinzipien: Erstens wird an bestehende Konzepte angeknüpft (Rollenwahl, Szenenbezeichner), statt neue Metaphern einzuführen. Zweitens bleibt die Kopplung zwischen Rekonstruktionsdienst und Laborsystem lose, indem die Kommunikation im Wesentlichen über Szenennamen und räumliche Anker erfolgt. Drittens bleibt die Mehrbenutzerumgebung funktionsfähig, auch wenn die Rekonstruktion nicht genutzt oder temporär deaktiviert wird; die Rekonstruktionskomponente verhält sich in diesem Fall passiv und greift nicht in die restliche Szenenlogik ein.
 
 \section{Zusammenfassung}
 

@@ -24,6 +24,44 @@
 \usepackage{float}
 \usepackage{svg}
 \svgpath{{figures/}}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolor}{rgb}{0.98,0.98,0.98}
+
+\lstdefinestyle{PythonStyle}{
+    backgroundcolor=\color{backcolor},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue}\bfseries,
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    captionpos=b,
+    extendedchars=true,
+    literate={ä}{{\"a}}1
+             {ö}{{\"o}}1
+             {ü}{{\"u}}1
+             {Ä}{{\"A}}1
+             {Ö}{{\"O}}1
+             {Ü}{{\"U}}1
+             {ß}{{\ss}}1,
+    % Schlüsselwörter hinzufügen, inklusive des Decorators
+    morekeywords={async, await, abstractmethod}, 
+    % Rahmen und Zeilennummerierung
+    frame=single, 
+    frameround=tttt,
+    rulesepcolor=\color{codegray},
+    numbersep=5pt,
+    numberstyle=\color{codegray},
+    showspaces=false,                
+    showtabs=false,                  
+    tabsize=2                        
+}
+\lstset{style=PythonStyle}
 
 \addbibresource{quellen.bib}
 \newcounter{needcitationcounter}
