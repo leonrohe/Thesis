@@ -207,15 +207,21 @@ Der \texttt{ModelCollector} sammelt pro Frame Bilddaten und Kamera­parameter au
 \end{enumerate}
 Frames, die diese Kriterien sowie die Verfügbarkeit aller notwendigen Sensordaten erfüllen, werden gepuffert, bis die konfigurierte Fenstergröße erreicht ist und das vollständige Fragment an den \texttt{ReconstructionClient} weitergereicht wird. Auf diese Weise stellt der \texttt{ModelCollector} sicher, dass nur informative und ausreichend unterschiedliche Ansichten an das Backend übertragen werden.
 
-\subsection{Thread-Sicherheit und Synchronisation}
-
-Eine zentrale Herausforderung in der Entwicklung des Unity-Frontends stellt die fehlende Thread-Sicherheit der Engine-API dar. Da der \texttt{ReconstructionClient} eingehende Netzwerkpakete asynchron in Hintergrund-Threads empfängt, ist ein direkter Zugriff auf Szenenobjekte zur Laufzeit nicht möglich. Zur Lösung dieses Konflikts wurde im \texttt{RoomReconstructor} ein Dispatcher-Pattern implementiert. Eingehende Daten werden hierbei zunächst in einer thread-sicheren Warteschlange (\texttt{mainThreadActions}) gepuffert und anschließend synchronisiert im Hauptzyklus (Main Thread) der Engine verarbeitet. Dieser Ansatz entkoppelt die rechenintensive Deserialisierung von der Darstellung und gewährleistet eine stabile Szenenmanipulation ohne Blockierung des Render-Threads.
+% \subsection{Thread-Sicherheit und Synchronisation}
+% 
+% Eine zentrale Herausforderung in der Entwicklung des Unity-Frontends stellt die fehlende Thread-Sicherheit der Engine-API dar. Da der \texttt{ReconstructionClient} eingehende Netzwerkpakete asynchron in Hintergrund-Threads empfängt, ist ein direkter Zugriff auf Szenenobjekte zur Laufzeit nicht möglich. Zur Lösung dieses Konflikts wurde im \texttt{RoomReconstructor} ein Dispatcher-Pattern implementiert. Eingehende Daten werden hierbei zunächst in einer thread-sicheren Warteschlange (\texttt{mainThreadActions}) gepuffert und anschließend synchronisiert im Hauptzyklus (Main Thread) der Engine verarbeitet. Dieser Ansatz entkoppelt die rechenintensive Deserialisierung von der Darstellung und gewährleistet eine stabile Szenenmanipulation ohne Blockierung des Render-Threads.
 
 \subsection{Visualisierung mittels Spatial Hashing}
 
 Die Darstellung der empfangenen 3D-Daten muss in Echtzeit erfolgen, ohne die Framerate der VR-Anwendung zu beeinträchtigen. Für Mesh-Daten (z.\,B.\ von NeuralRecon) wurde ein Chunking-Verfahren implementiert (\texttt{MeshUtils.ChunkMesh}). Da empfangene GLB-Modelle geometrisch komplex sein können, werden sie nach dem Import in ein $N \times N \times N$ Gitter unterteilt. Die Chunk-Größe wurde auf $5 \times 5 \times 5$ Meter festgelegt, was ein gutes Gleichgewicht zwischen Frustum-Culling-Effizienz und Verwaltungsoverhead darstellt. Dies ermöglicht der Unity-Engine, nicht sichtbare Bereiche mittels Frustum Culling effizient auszublenden und erhöht die Rendering-Performance auf mobiler Hardware signifikant.
 
 Punktwolken (z.\,B.\ von SLAM3R) werden nicht als klassische GameObjects, sondern über \texttt{GraphicsBuffer} direkt an die GPU übergeben und mittels eines Compute-Shaders im VFX Graph gerendert, um den Overhead der CPU zu umgehen. Die aktuelle Darstellung ist auf 100\,000 Punkte begrenzt, da die Meta Quest 3 bei höheren Punktzahlen deutliche Framerate-Einbrüche zeigt. Dieser Trade-off zwischen Detailgrad und Performance wurde bewusst zugunsten einer flüssigen VR-Erfahrung gewählt.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{images/mesh_pointcloud_vis.png}
+    \caption{Visualisierung einer Mesh-Rekonstruktion (VisFusion, links) und einer Punktwolken-Rekonstruktion (MASt3Rrechts)}
+\end{figure}
 
 \subsection{Integration in das Va.Si.Li-Lab}
 
