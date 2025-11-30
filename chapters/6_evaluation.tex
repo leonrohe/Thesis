@@ -34,10 +34,11 @@ Die Evaluationsmethodik beschreibt die Testumgebung, die verwendeten Testszenari
 \subsection{Test- und Evaluationsumgebung}
 \label{sec:testumgebung}
 
-Um die \textbf{Reproduzierbarkeit} der Performance-Messungen und die \textbf{Vergleichbarkeit} der erzielten Ergebnisse zu gewährleisten, wurde die gesamte Evaluation in einer dedizierten und \textbf{kontrollierten Hard- und Software-Umgebung} durchgeführt. Die zentralen Komponenten und Spezifikationen dieser Umgebung sind in Tabelle \ref{tab:spezifikationen_umgebung} zusammengefasst.
+Um die \textbf{Reproduzierbarkeit} der Performance-Messungen und die \textbf{Vergleichbarkeit} der erzielten Ergebnisse zu gewährleisten, wurde die gesamte Evaluation in einer dedizierten und \textbf{kontrollierten Hard- und Software-Umgebung} durchgeführt. Die zentralen Komponenten und Spezifikationen dieser Umgebung sind in Tabelle~\ref{tab:hardware_and_software} zusammengefasst.
 
 \begin{table}[H]
     \centering
+    \label{tab:hardware_and_software}
     \caption{Spezifikationen der Hard- und Software-Umgebung}
     \begin{tabularx}{\textwidth}{l X}
         \toprule
@@ -69,7 +70,7 @@ Alle Messungen erfolgten unter \textbf{kontrollierten Bedingungen}. Es wurde str
 
 Für die Evaluation wurden fünf Testszenen mit unterschiedlichen Komplexitätsstufen 
 konzipiert: drei virtuelle Szenen mit verfügbarem Ground-Truth zur quantitativen 
-Bewertung sowie zwei reale Szenen aus dem Va.Si.Li-Lab-Kontext zur Validierung der 
+Bewertung sowie zwei reale Szenen aus einem typischen Alltagsumfeld zur Validierung der
 Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in Tabelle~\ref{tab:test_scenes_overview}.
 
 \begin{table}[H]
@@ -85,8 +86,8 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
         V3 & $8\times 6\times 3.5$ & [240] & [60] & \textit{Komplexe Einrichtung}, Okklusionen, Reflexionen \\
         \midrule
         \multicolumn{5}{l}{\textbf{Reale Szenen}} \\
-        R1 & $4\times 4\times 3$ & [150] & [40] & \textit{Dynamischer Arbeitsbereich}, Beleuchtungswechsel und kleine Objekte \\
-        R2 & $6\times 5\times 3$ & [200] & [50] & \textit{Großer Seminarraum}, weite und ebene Flächen, wenig Textur \\
+        R1 & $4\times 4\times 3$ & [150] & [40] & \textit{Schlafzimmer}, Details, Schrägen, Okklusionen \\
+        R2 & $6\times 5\times 3$ & [200] & [50] & \textit{Wohnzimmer}, Glas, Reflexionen, große homogene Flächen \\
         \bottomrule
     \end{tabularx}
     \caption{Übersicht und Klassifikation der Testszenen}
@@ -125,15 +126,13 @@ reflexiven Oberflächen und feinen Details.
 
 Die beiden realen Szenen wurden im Va.Si.Li-Lab aufgenommen und validieren die Praxistauglichkeit des Systems unter realen Bedingungen mit natürlichen Störfaktoren.
 
-\paragraph{Szene R1 -- Arbeitsbereich}
-Diese Szene repräsentiert den Hauptanwendungsfall der Arbeit: die Rekonstruktion 
-eines realen Arbeitsbereichs für kollaborative VR-Szenarien im Va.Si.Li-Lab.
+\paragraph{Szene R1 -- Schlafzimmer}
 
-\paragraph{Szene R2 -- Seminarraum}
-Szene R2 testet das System in einem Bildungskontext mit für Feature-basierte 
-Verfahren problematischen großen ebenen Flächen. Sie validiert die Eignung für 
-den in Abschnitt \ref{sec:motivation} beschriebenen Use Case der immersiven 
-Lernumgebungen.
+Szene R1 simuliert ein kleines, dicht möbliertes, privates Umfeld. Details, Schrägen, Okklusionen. Der Testfokus liegt auf der Robustheit gegenüber Textiloberflächen und diffuser Beleuchtung, welche die Rekonstruktion feiner Details und das Verhalten bei Oberflächenhomogenität überprüfen.
+
+\paragraph{Szene R2 -- Wohnzimmer}
+
+Szene R2 simuliert ein großes Wohnzimmer mit offener Gestaltung. Große Flächen, Glas, Reflexionen. Die Szene dient als Skalierbarkeits- und Materialstresstest. Im Fokus stehen die Handhabung großer, glänzender Flächen und Fenster, die Reflexionen verursachen, sowie repetitive Dekorelemente, welche die globale Konsistenz und Anfälligkeit für visuellen Drift testen.
 
 \subsubsection{Ground-Truth-Generierung}
 
@@ -164,80 +163,80 @@ durch Vergleich der rekonstruierten Punktwolken mit den exakten geometrischen Da
 
 \subsubsection{Aufnahmeparameter}
 
-Tabelle \ref{tab:capture_params} beschreibt die verwendeten Aufnahmeparameter für 
-alle Szenen. Die Fenstergröße wurde modellspezifisch angepasst, um den 
-Anforderungen volumetrischer und SLAM-basierter Verfahren gerecht zu werden.
+Um einen fairen und direkten Vergleich zwischen den verschiedenen Rekonstruktionsmodellen zu ermöglichen, wurden für alle Modelle \textbf{einheitliche Aufnahmeparameter} verwendet. Diese Designentscheidung stellt sicher, dass beobachtete Unterschiede in Performance und Rekonstruktionsqualität ausschließlich auf die Modellarchitektur und nicht auf unterschiedliche Eingabebedingungen zurückzuführen sind
+
+\medskip
 
 % TODO: Frame-Zahlen nach Testing finalisieren
-\begin{table}[h]
+\begin{table}[H]
     \centering
-    \caption{Aufnahmeparameter und Fragmentkonfiguration}
     \label{tab:capture_params}
-    \begin{tabular}{lcc}
+    \begin{tabularx}{\textwidth}{lX}
         \toprule
-        \textbf{Parameter} & \textbf{Volumetrisch} & \textbf{SLAM-basiert} \\
-        & \textbf{(NeuralRecon, VisFusion)} & \textbf{(MASt3R, SLAM3R)} \\
+        \textbf{Parameter} & \textbf{Wert} \\
         \midrule
-        Fenstergröße (Frames) & [9] & [15] \\
-        Overlap zwischen Fragmenten & [3] Frames & [5] Frames \\
-        Bildauflösung & 640 × 480 & 640 × 480 \\
-        Bildformat & RGB (3 Kanäle, 8-bit) & RGB (3 Kanäle, 8-bit) \\
+        Fenstergröße (Frames pro Fragment) & [15] \\
+        Bildauflösung & 640 × 480 Pixel \\
+        Bildformat & RGB (3 Kanäle, 8-bit) \\
         \midrule
-        Kamerabewegung & \multicolumn{2}{c}{Langsam, kontinuierlich (ca. 0.2 m/s)} \\
-        Rotationsgeschwindigkeit & \multicolumn{2}{c}{Max. 30°/s} \\
-        Intrinsiken-Quelle & \multicolumn{2}{c}{Unity XR-Subsystem (automatisch)} \\
-        Extrinsiken-Quelle & \multicolumn{2}{c}{Unity XR-Subsystem (6DoF-Tracking)} \\
+        Kamerabewegung & Langsam, kontinuierlich (ca. 0.2 m/s) \\
+        Rotationsgeschwindigkeit & Max. 30°/s \\
+        Intrinsiken-Quelle & Unity XR-Subsystem (automatisch) \\
+        Extrinsiken-Quelle & Unity XR-Subsystem (6DoF-Tracking) \\
         \midrule
-        Wiederholungen pro Szene & \multicolumn{2}{c}{[3] Takes (für Stabilitätsbewertung)} \\
+        Wiederholungen pro Szene & [3] Takes (für Stabilitätsbewertung) \\
         \bottomrule
-    \end{tabular}
+    \end{tabularx}
+    \caption{Einheitliche Aufnahmeparameter für alle Modelle}
 \end{table}
 
-Die gewählten Aufnahmeparameter orientieren sich an den Originalimplementierungen der 
-integrierten Modelle und wurden in Vorversuchen hinsichtlich Stabilität und 
-Rekonstruktionsqualität optimiert.
+\noindent
+Die Wahl einheitlicher Parameter über alle Modelle hinweg dient der \textbf{Vergleichbarkeit} und \textbf{wissenschaftlichen Fairness} der Evaluation. Unterschiedliche Modellarchitekturen -- volumetrische Verfahren (NeuralRecon, VisFusion) und SLAM-basierte Ansätze (MASt3R-SLAM, SLAM3R) -- weisen zwar unterschiedliche optimale Fenstergößen auf, jedoch würde eine modellspezifische Anpassung die direkte Vergleichbarkeit der Ergebnisse erschweren. Die gewählte Fenstergröße von [15] Frames stellt einen Kompromiss dar, der für alle Modelle verarbeitbar ist.
 
-\subsubsection{Evaluationsziele pro Szenentyp}
+\medskip
+\noindent
+Es ist zu erwarten, dass durch \textbf{modellspezifisches Tuning} der Aufnahmeparameter, insbesondere der Fenstergröße, für jedes Modell individuell bessere Rekonstruktionsergebnisse erzielt werden könnten. Volumetrische Verfahren profitieren beispielsweise von kleineren Fenstern (typisch 9 Frames), während SLAM-basierte Ansätze größere Kontexte (15-20 Frames) bevorzugen. Die in dieser Arbeit gemessenen Performance-Werte und Qualitätsmetriken repräsentieren daher die Leistungsfähigkeit der Modelle unter standardisierten, aber nicht notwendigerweise optimalen Bedingungen.
 
-Tabelle \ref{tab:evaluation_goals_per_scene} fasst zusammen, welche spezifischen 
-Evaluationsziele mit den einzelnen Szenentypen verfolgt werden.
-
-\begin{table}[h]
-    \centering
-    \caption{Evaluationsziele nach Szenentyp}
-    \label{tab:evaluation_goals_per_scene}
-    \begin{tabular}{lp{10cm}}
-        \toprule
-        \textbf{Szene} & \textbf{Evaluationsziele} \\
-        \midrule
-        V1 -- Geometrische Primitive & Quantitative Baseline (F-Score), Bewertung geometrischer \\
-        & Grundfähigkeiten (Kanten, Kurven), Reproduzierbarkeit \\
-        \midrule
-        V2 -- Einfacher Lernraum & Erste realistische Komplexität, Verhalten bei Okklusionen, \\
-        & Vollständigkeit bei Möbelstrukturen \\
-        \midrule
-        V3 -- Großes Labor & Skalierbarkeitstest, GPU-Memory-Grenzen, Verhalten bei \\
-        & Details und Reflexionen, Inferenzzeit-Steigerung \\
-        \midrule
-        R1 -- Arbeitsbereich & Praxistauglichkeit für Hauptanwendungsfall, Robustheit \\
-        & gegen Beleuchtungswechsel und Bewegungsunschärfe \\
-        \midrule
-        R2 -- Seminarraum & Educational Use Case, Verhalten bei homogenen Flächen, \\
-        & Fensterreflexionen, repetitiven Strukturen \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
-Diese Struktur ermöglicht eine systematische Evaluation entlang der Dimensionen 
-geometrische Genauigkeit (V1), realistische Komplexität (V2), Skalierbarkeit (V3) 
-und Praxistauglichkeit (R1, R2).
+% \subsubsection{Evaluationsziele pro Szenentyp}
+% 
+% Tabelle \ref{tab:evaluation_goals_per_scene} fasst zusammen, welche spezifischen 
+% Evaluationsziele mit den einzelnen Szenentypen verfolgt werden.
+% 
+% \begin{table}[h]
+%     \centering
+%     \caption{Evaluationsziele nach Szenentyp}
+%     \label{tab:evaluation_goals_per_scene}
+%     \begin{tabular}{lp{10cm}}
+%         \toprule
+%         \textbf{Szene} & \textbf{Evaluationsziele} \\
+%         \midrule
+%         V1 -- Geometrische Primitive & Quantitative Baseline (F-Score), Bewertung geometrischer \\
+%         & Grundfähigkeiten (Kanten, Kurven), Reproduzierbarkeit \\
+%         \midrule
+%         V2 -- Einfacher Lernraum & Erste realistische Komplexität, Verhalten bei Okklusionen, \\
+%         & Vollständigkeit bei Möbelstrukturen \\
+%         \midrule
+%         V3 -- Großes Labor & Skalierbarkeitstest, GPU-Memory-Grenzen, Verhalten bei \\
+%         & Details und Reflexionen, Inferenzzeit-Steigerung \\
+%         \midrule
+%         R1 -- Arbeitsbereich & Praxistauglichkeit für Hauptanwendungsfall, Robustheit \\
+%         & gegen Beleuchtungswechsel und Bewegungsunschärfe \\
+%         \midrule
+%         R2 -- Seminarraum & Educational Use Case, Verhalten bei homogenen Flächen, \\
+%         & Fensterreflexionen, repetitiven Strukturen \\
+%         \bottomrule
+%     \end{tabular}
+% \end{table}
+% 
+% Diese Struktur ermöglicht eine systematische Evaluation entlang der Dimensionen 
+% geometrische Genauigkeit (V1), realistische Komplexität (V2), Skalierbarkeit (V3) 
+% und Praxistauglichkeit (R1, R2).
 
 \subsection{Messverfahren und Metriken}
 
 \subsubsection{Performance-Metriken}
 
-\textbf{Latenz}
-
+\paragraph{Latenz}
 Die End-to-End-Latenz misst die Zeitspanne zwischen dem Versenden eines Fragments 
 durch das Unity-Frontend und der Visualisierung der aktualisierten Rekonstruktion 
 im VR-Headset. Sie setzt sich aus folgenden Komponenten zusammen:
@@ -246,6 +245,7 @@ im VR-Headset. Sie setzt sich aus folgenden Komponenten zusammen:
     L_{\text{total}} = L_{\text{network\_up}} + L_{\text{inference}} + L_{\text{network\_down}} + L_{\text{render}}
 \end{align}
 
+\noindent
 wobei $L_{\text{network\_up}}$ die Netzwerklatenz für den Fragment-Upload, 
 $L_{\text{inference}}$ die Modell-Inferenzzeit im Backend, $L_{\text{network\_down}}$ 
 die Netzwerklatenz für den Ergebnis-Download und $L_{\text{render}}$ die 
@@ -256,15 +256,13 @@ der Pipeline. Pro Testszene und Modell wurden \textit{[X]} Messungen durchgefüh
 statistische Aussagen über Mittelwert, Standardabweichung und Perzentile (P50, P95, 
 P99) treffen zu können.
 
-\textbf{Durchsatz}
-
+\paragraph{Durchsatz}
 Der Durchsatz quantifiziert, wie viele Fragmente pro Sekunde durch das System 
 verarbeitet werden können. Ein höherer Durchsatz ermöglicht häufigere Updates der 
 Rekonstruktion und trägt zur Immersion bei. Gemessen wurde der Durchsatz auf 
 Backend-Seite für jedes Worker-Modell separat.
 
-\textbf{Ressourcenauslastung}
-
+\paragraph{Ressourcenauslastung}
 Die GPU- und CPU-Auslastung wurde kontinuierlich während der Rekonstruktion 
 aufgezeichnet. GPU-Utilization und GPU-Memory wurden via \texttt{nvidia-smi} 
 erfasst, CPU-Auslastung und RAM-Verbrauch pro Container via Docker Stats. Diese 
@@ -273,8 +271,7 @@ Metriken ermöglichen die Bewertung der Ressourceneffizienz und geben Aufschluss
 
 \subsubsection{Qualitätsmetriken}
 
-\textbf{Quantitative Bewertung}
-
+\paragraph{Quantitative Bewertung}
 Für Szenen mit verfügbarem Ground-Truth-Mesh wurde der F-Score als kombinierte 
 Metrik für Präzision und Recall berechnet:
 
@@ -284,11 +281,11 @@ Metrik für Präzision und Recall berechnet:
     \text{F-Score} &= 2 \cdot \frac{\text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}}
 \end{align}
 
+\noindent
 Rekonstruierte Punkte werden als True Positive (TP) gezählt, wenn ihr Abstand zum 
 Ground-Truth-Mesh unter einem Schwellenwert von \textit{[X]} cm liegt.
 
-\textbf{Qualitative Bewertung}
-
+\paragraph{Qualitative Bewertung}
 Die rekonstruierten Meshes wurden anhand folgender Kriterien bewertet:
 
 \begin{itemize}
@@ -298,6 +295,7 @@ Die rekonstruierten Meshes wurden anhand folgender Kriterien bewertet:
     \item \textbf{Oberflächenqualität}: Glattheit und Konsistenz der Rekonstruktion
 \end{itemize}
 
+\noindent
 Die Bewertung erfolgte durch visuelle Inspektion der Rekonstruktionen in Unity 
 sowie durch exportierte Screenshots.
 
@@ -306,11 +304,9 @@ sowie durch exportierte Screenshots.
 
 \subsection{Funktionale Validierung}
 
-Die funktionale Validierung bestätigt, dass RTReconstruct alle in Abschnitt 
-\textbf{[REF: sec:anforderungen]} definierten Kernfunktionalitäten erfüllt.
+Die funktionale Validierung bestätigt, dass RTReconstruct alle definierten Kernfunktionalitäten erfüllt.
 
-\textbf{End-to-End-Kommunikation}
-
+\paragraph{End-to-End-Kommunikation}
 Die vollständige Kommunikationskette von der Fragmenterfassung im Unity-Client über 
 die WebSocket-Verbindung zum Router bis zur Verteilung an die Worker-Container und 
 zurück funktioniert stabil. In \textit{[X]} Testläufen über eine Gesamtdauer von \textit{[Y]} Stunden 
@@ -330,27 +326,24 @@ traten \textit{[Z]} Verbindungsabbrüche auf.
 %         \bottomrule
 %     \end{tabular}
 % \end{table}
-
-\textbf{Parallele Modellausführung}
-
+    
+\paragraph{Parallele Modellausführung}
 Alle vier integrierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, 
 SLAM3R) konnten gleichzeitig betrieben werden. Die containerisierte Architektur 
 ermöglichte eine vollständige Isolierung, sodass unterschiedliche Python- und 
-PyTorch-Versionen parallel lauffähig waren.
+PyTorch-Versionen parallel lauffähig waren. Einzig limitierender Faktor war die einzelne GPU,
+die durch die Modelle gemeinsam genutzt wurde.
 
-\textbf{Multi-Szenen-Unterstützung}
-
+\paragraph{Multi-Szenen-Unterstützung}
 Das System unterstützt die gleichzeitige Verarbeitung mehrerer Szenen. In Tests 
 mit \textit{[X]} parallelen Szenen und \textit{[Y]} verbundenen Clients blieb die Funktionalität 
 erhalten. Die szenenspezifische Zuordnung der Rekonstruktionsergebnisse erfolgte 
 fehlerfrei.
 
-\textbf{Visualisierung in VR}
-
+\paragraph{Visualisierung in VR}
 Die über das Backend empfangenen Meshes wurden erfolgreich im Unity-Client 
-visualisiert. Das in Abschnitt \textbf{[REF: subsec:visualisierung]} beschriebene Spatial 
-Hashing ermöglichte eine performante Darstellung auch bei größeren Punktwolken 
-mit bis zu \textit{[X]} Vertices.
+visualisiert. Das in Kapitel 5 beschriebene Spatial 
+Hashing ermöglichte eine performante Darstellung auch bei größeren Meshes und Punktwolken mit bis zu 100.000 Punkten.
 
 \subsection{Performance-Analyse}
 
@@ -375,6 +368,7 @@ alle vier Rekonstruktionsmodelle über \textit{[X]} Testläufe pro Szene.
     \end{tabular}
 \end{table}
 
+\noindent
 Die Aufteilung der Gesamtlatenz in ihre Komponenten zeigt, dass \textit{[X]}\% der Zeit 
 auf die Modell-Inferenz entfällt, während Netzwerkkommunikation nur \textit{[Y]}\% ausmacht. 
 
@@ -399,13 +393,13 @@ Der Durchsatz der einzelnen Modelle wurde über eine kontinuierliche Aufnahme vo
     \end{tabular}
 \end{table}
 
+\noindent
 Die Frame Rate im Unity-Client blieb während der Rekonstruktion bei durchschnittlich 
 \textit{[X]} fps. Ein Einbruch auf \textit{[Y]} fps wurde nur bei \textit{[Extremsituation]} beobachtet.
 
 \subsubsection{Ressourcenauslastung}
 
-\textbf{GPU-Auslastung}
-
+\paragraph{GPU-Auslastung}
 Die durchschnittliche GPU-Auslastung während der Rekonstruktion lag bei:
 
 \begin{itemize}
@@ -415,11 +409,11 @@ Die durchschnittliche GPU-Auslastung während der Rekonstruktion lag bei:
     \item SLAM3R: \textit{[X]}\%
 \end{itemize}
 
+\noindent
 Der GPU-Speicherverbrauch erreichte maximal \textit{[X]} GB bei \textit{[Modellname]}, was 
 \textit{[unter/nahe an]} der verfügbaren VRAM-Kapazität von 8 GB liegt.
 
-\textbf{CPU und RAM}
-
+\paragraph{CPU und RAM}
 Die CPU-Last der Container lag im Durchschnitt bei \textit{[X]}\% pro Kern. Der 
 Router-Container verbrauchte durchschnittlich \textit{[Y]} MB RAM, während die 
 Worker-Container zwischen \textit{[Z]} und \textit{[A]} MB benötigten.
@@ -447,6 +441,7 @@ berechnet. Tabelle \ref{tab:fscore_results} zeigt die Ergebnisse.
     \end{tabular}
 \end{table}
 
+\noindent
 \textit{[Modellname]} erreichte den höchsten F-Score von \textit{[X]}, was auf \textit{[Erklärung]} 
 zurückzuführen ist. Im Vergleich dazu zeigte \textit{[anderes Modell]} eine höhere 
 Precision bei niedrigerem Recall, was für \textit{[Interpretation]} spricht.
@@ -455,8 +450,7 @@ Precision bei niedrigerem Recall, was für \textit{[Interpretation]} spricht.
 
 Die visuelle Inspektion der Rekonstruktionen ergab folgende Beobachtungen:
 
-\textbf{NeuralRecon}
-
+\paragraph{NeuralRecon}
 Die Rekonstruktion zeigte \textit{[Beschreibung: z.B. robuste Gesamtmodelle mit glatter 
 Oberflächenqualität]}. Abbildung \textbf{[REF: fig:neuralrecon\_result]} zeigt exemplarisch 
 die Rekonstruktion von Szene \textit{[X]}. \textit{[Stärken und Schwächen beschreiben]}
@@ -468,26 +462,22 @@ die Rekonstruktion von Szene \textit{[X]}. \textit{[Stärken und Schwächen besc
 %     \label{fig:neuralrecon_result}
 % \end{figure}
 
-\textbf{VisFusion}
-
+\paragraph{VisFusion}
 Im Vergleich zu NeuralRecon zeigte VisFusion \textit{[Unterschiede: z.B. feinere Details 
 in texturierten Bereichen]}. Besonders in Bereichen mit \textit{[Merkmal wie Okklusionen]} 
 war \textit{[Beobachtung wie bessere Oberflächenkonsistenz]} erkennbar.
 
-\textbf{MASt3R-SLAM}
-
+\paragraph{MASt3R-SLAM}
 Das SLAM-basierte Verfahren lieferte \textit{[Charakteristik: z.B. detaillierte 
 Punktwolken mit hoher lokaler Genauigkeit]}. Während \textit{[positive Aspekte wie 
 Echtzeitfähigkeit]}, traten vereinzelt \textit{[negative Aspekte wie Drift]} auf.
 
-\textbf{SLAM3R}
-
+\paragraph{SLAM3R}
 SLAM3R zeichnete sich durch \textit{[Merkmale wie dichte Punktwolken]} aus. Die 
 Rekonstruktion war \textit{[Bewertung: z.B. konsistent, aber mit geringerer Vollständigkeit 
 als volumetrische Verfahren]}.
 
-\textbf{Vergleichende Bewertung}
-
+\paragraph{Vergleichende Bewertung}
 Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen 
 zusammen.
 
@@ -524,6 +514,7 @@ in das System integriert. Der Integrationsaufwand umfasste:
     \item Gesamtdauer: \textit{[A]} Stunden
 \end{itemize}
 
+\noindent
 Dies bestätigt, dass die einheitliche Schnittstelle den Integrationsaufwand 
 erheblich reduziert.
 
@@ -531,20 +522,17 @@ erheblich reduziert.
 
 Das System wurde unter folgenden Fehlerszenarien getestet:
 
-\textbf{Container-Neustart während Rekonstruktion}
-
+\paragraph{Container-Neustart während Rekonstruktion}
 Ein Worker-Container wurde manuell gestoppt und nach \textit{[X]} Sekunden neu gestartet. 
 Das System erkannte den Ausfall und \textit{[Beschreibung des Verhaltens]}. Die 
 Wiederherstellungszeit betrug \textit{[Y]} Sekunden.
 
-\textbf{Netzwerkunterbrechung}
-
+\paragraph{Netzwerkunterbrechung}
 Die WiFi-Verbindung wurde für \textit{[X]} Sekunden unterbrochen. Das Frontend behielt 
 das letzte Mesh \textit{[bei/zeigte Fehlermeldung]}. Nach Wiederherstellung der Verbindung 
 konnte die Rekonstruktion \textit{[fortgesetzt/musste neu gestartet]} werden.
 
-\textbf{Gleichzeitige Last}
-
+\paragraph{Gleichzeitige Last}
 Bei parallelem Betrieb von \textit{[X]} Clients und \textit{[Y]} Szenen blieb die Performance 
 \textit{[stabil/verschlechterte sich um Z\%]}. Die Latenz stieg auf durchschnittlich \textit{[A]} ms.
 
