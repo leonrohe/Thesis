@@ -49,7 +49,7 @@ Um die \textbf{Reproduzierbarkeit} der Performance-Messungen und die \textbf{Ver
         Backend-Server CPU & AMD Ryzen 9 5900X (12 Kerne, 24 Threads) \\
         GPU & NVIDIA GeForce GTX 1070 Ti, 8 GB VRAM \\
         VR-System (Frontend) & Meta Quest 3 \\
-        Netzwerk & WiFi 6 (IEEE 802.11ax) \\
+        Netzwerk & WiFi 6 Heimnetzwerk \\
         \midrule
         \multicolumn{2}{l}{\textbf{Software-Umgebung und Frameworks}} \\
         \midrule
@@ -57,14 +57,12 @@ Um die \textbf{Reproduzierbarkeit} der Performance-Messungen und die \textbf{Ver
         Containerisierung & Docker (\textit{[Version einfügen, z.B. 24.0.7]}) \\
         GPU-Unterstützung & NVIDIA Container Toolkit \\
         VR-Frontend & Unity (\textit{2022.3 LTS}) \\
-        ML-Entwicklung & Python (\textit{3.10}) \\
-        ML-Frameworks \& Bibliotheken & PyTorch (\textit{2.0.1}), CUDA (\textit{11.8}) \\
         \bottomrule
     \end{tabularx}
 \end{table}
 
 \noindent
-Alle Messungen erfolgten unter \textbf{kontrollierten Bedingungen}. Es wurde strikt darauf geachtet, dass während der Performance-Tests \textbf{keine weiteren rechenintensiven Hintergrundprozesse} liefen, um Verzerrungen der Messergebnisse durch externe Einflüsse zu minimieren.
+Alle Messungen erfolgten unter \textbf{kontrollierten Bedingungen}. Es wurde strikt darauf geachtet, dass während der Performance-Tests \textbf{keine weiteren rechenintensiven Hintergrundprozesse} liefen, um Verzerrungen zu minimieren.
 
 \subsection{Testszenarien und Datensätze}
 
@@ -76,18 +74,18 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
 \begin{table}[H]
     \centering
     \label{tab:test_scenes_overview}
-    \begin{tabularx}{\textwidth}{lcccX}
+    \begin{tabularx}{\textwidth}{lcclX}
         \toprule
         \textbf{Szene} & \textbf{Größe (m)} & \textbf{Frames} & \textbf{Dauer (s)} & \textbf{Merkmale und Testfokus} \\
         \midrule
         \multicolumn{5}{l}{\textbf{Virtuelle Szenen}} \\
-        V1 & $4\times 4\times 3$ & [100] & [25] & \textit{Einfache Geometrie}, scharfe Kanten \\
-        V2 & $4\times 4\times 3$ & [150] & [40] & \textit{Standard Einrichtung}, simple Texturierung \\
-        V3 & $8\times 6\times 3.5$ & [240] & [60] & \textit{Komplexe Einrichtung}, Okklusionen, Reflexionen \\
+        V1 -- Primitive & $5\times 5\times 5$ & [100] & [25] & Geometrische Grundformen, unifarbige Oberflächen \\
+        V2 -- Schlafzimmer & $6\times 5\times 3$ & [150] & [40] & moderate Komplexität, Okklusionen \\
+        V3 -- Mehrzweckraum & $10\times 5\times 3$ & [240] & [60] & Hohe Dichte, komplexe Geometrie \\
         \midrule
         \multicolumn{5}{l}{\textbf{Reale Szenen}} \\
         R1 & $4\times 4\times 3$ & [150] & [40] & \textit{Schlafzimmer}, Details, Schrägen, Okklusionen \\
-        R2 & $6\times 5\times 3$ & [200] & [50] & \textit{Wohnzimmer}, Glas, Reflexionen, große homogene Flächen \\
+        R2 & $6\times 5\times 3$ & [200] & [50] & \textit{Wohnzimmer}, Glas, Reflexionen, große Flächen \\
         \bottomrule
     \end{tabularx}
     \caption{Übersicht und Klassifikation der Testszenen}
@@ -95,32 +93,25 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
 
 \subsubsection{Virtuelle Szenen}
 
-Die drei virtuellen Szenen wurden in Unity erstellt und ermöglichen durch verfügbare \textit{Ground-Truth-Meshes} eine quantitative Evaluation mittels F-Score. Die Szenen folgen einer progressiven Komplexitätssteigerung, um verschiedene Aspekte der Rekonstruktionsverfahren isoliert zu testen.
+Die drei virtuellen Szenen wurden in Unity erstellt und ermöglichen durch verfügbare \textit{Ground-Truth-Meshes} eine quantitative Evaluation mittels F-Score. Die Szenen folgen einer progressiven Komplexitätssteigerung, um verschiedene Aspekte der Rekonstruktionsverfahren isoliert zu testen. Abbildung~\ref{fig:virtual_scenes} zeigt eine Übersicht aller drei Szenen.
 
 \paragraph{Szene V1 -- Geometrische Primitive}
+Szene V1 dient als Baseline-Test und enthält ausschließlich einfache geometrische Primitive (Quader, Pyramide, Zylinder, Kapsel) in einem hexagonalen Raum mit farbigen Wänden. Die unifarbigen, matten Oberflächen ohne Texturen ermöglichen die isolierte Bewertung fundamentaler Rekonstruktionsfähigkeiten: scharfe Kanten, gekrümmte Oberflächen und feature-arme Flächen.
 
-Szene V1 dient als Baseline-Test und enthält ausschließlich einfache geometrische 
-Primitive ohne realistische Texturen oder komplexe Beleuchtung.
-Der Zweck dieser Szene liegt in der isolierten Bewertung der fundamentalen 
-Rekonstruktionsfähigkeiten. Durch das Fehlen von Texturen und komplexen 
-Beleuchtungseffekten lassen sich geometrische Genauigkeit und die Erfassung 
-unterschiedlicher Oberflächentypen (eben, gekrümmt, spitz) direkt bewerten.
+\paragraph{Szene V2 -- Möbliertes Schlafzimmer}
+Szene V2 repräsentiert einen möblierten Innenraum mittlerer Komplexität mit Doppelbett, Sessel, Sideboard, Wandbildern und Stehlampe. Diese Szene testet die Rekonstruktion komplexer Möbelgeometrie, das Verhalten bei Okklusionen, die Texturverarbeitung sowie die Detailerfassung kleiner Dekorationsobjekte.
 
-\paragraph{Szene V2 -- Einfacher Lernraum}
+\paragraph{Szene V3 -- Komplexer Mehrzweckraum}
+Szene V3 stellt einen Stresstest für Skalierbarkeit und Detailtreue dar und simuliert einen multifunktionalen Raum mit Schlaf-, Wohn- und Arbeitsbereich. Die hohe Objektdichte mit zwei Betten, Esstisch, Stühlen und diversen Kleinobjekten erzeugt multiple Okklusionsebenen. Erwartet werden längere Inferenzzeiten, höhere GPU-Auslastung und potenzielle Artefakte bei geometrisch komplexen Strukturen und teilweise verdeckten Bereichen.
 
-Szene V2 repräsentiert einen typischen kleinen Lernraum mit einfachen Möbeln. Sie 
-bildet den Übergang zwischen geometrischen Primitiven und realistischer Komplexität.
-Diese Szene testet die Rekonstruktionsqualität bei einfachen Möbelstrukturen und 
-ersten Okklusionen. Die uniforme Texturierung verhindert jedoch noch 
-Feature-Matching-Probleme, die bei sehr homogenen Oberflächen auftreten können.
-
-\paragraph{Szene V3 -- Großes Labor}
-Szene V3 stellt einen Stresstest für Skalierbarkeit, Detailtreue und 
-Ressourcenauslastung dar. Sie simuliert ein großes Forschungslabor mit hoher 
-geometrischer und textureller Komplexität.
-Szene V3 dient der Bewertung von Grenzen der integrierten Modelle. Erwartet werden 
-längere Inferenzzeiten, höhere GPU-Speicherauslastung und erste Artefakte bei 
-reflexiven Oberflächen und feinen Details.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.32\textwidth]{images/room00.png}
+    \includegraphics[width=0.32\textwidth]{images/room01.png}
+    \includegraphics[width=0.32\textwidth]{images/Room02.png}
+    \caption{Übersicht der drei virtuellen Testszenen: V1 (Geometrische Primitive), V2 (Möbliertes Schlafzimmer), V3 (Komplexer Mehrzweckraum)}
+    \label{fig:virtual_scenes}
+\end{figure}
 
 \subsubsection{Reale Szenen}
 
@@ -134,103 +125,13 @@ Szene R1 simuliert ein kleines, dicht möbliertes, privates Umfeld. Details, Sch
 
 Szene R2 simuliert ein großes Wohnzimmer mit offener Gestaltung. Große Flächen, Glas, Reflexionen. Die Szene dient als Skalierbarkeits- und Materialstresstest. Im Fokus stehen die Handhabung großer, glänzender Flächen und Fenster, die Reflexionen verursachen, sowie repetitive Dekorelemente, welche die globale Konsistenz und Anfälligkeit für visuellen Drift testen.
 
-\subsubsection{Ground-Truth-Generierung}
-
-Die Generation der Ground-Truth-Meshes für die virtuellen Szenen erfolgte in mehreren Schritten, die in Tabelle \ref{tab:ground_truth_generation} zusammengefasst sind.
-\begin{table}[H]
+\begin{figure}[H]
     \centering
-    \caption{Detaillierter Prozess der Ground-Truth-Generierung für virtuelle Szenen}
-    \label{tab:ground_truth_generation}
-    % Korrektur: Die Umgebung muss \tabularx{\textwidth}{...} lauten!
-    \begin{tabularx}{\textwidth}{l X} 
-        \toprule
-        \textbf{Schritt} & \textbf{Beschreibung und Werkzeug} \\
-        \midrule
-        \textbf{Modellierung} & Erstellung der Szenengeometrie in \textbf{Unity} (\textit{ProBuilder}) unter Verwendung von 3D-Assets und Standard-Primitiven. \\
-        \textbf{Export (Unity)} & Export des vollständigen Szenen-Meshes aus Unity als \texttt{.fbx}-Datei. \\
-        \textbf{Import \& Bereinigung} & Import des \texttt{.fbx}-Meshes in \textbf{MeshLab} zur Post-Processing-Bereinigung. \\
-        \textbf{Geometrie-Optimierung} & Entfernung nicht-sichtbarer, interner Faces sowie Duplikaten zur Optimierung des Ground-Truth-Meshes. \\
-        \textbf{Speicherung} & Export des finalen Meshes aus MeshLab als \texttt{.ply}-Datei ohne Texturinformationen. \\
-        \midrule
-        \textbf{Qualitätssicherung} & Visuelle Inspektion in \textbf{MeshLab} und \textbf{CloudCompare} \\
-        \bottomrule
-    \end{tabularx}
-\end{table}
-
-\noindent
-Die Ground-Truth-Meshes ermöglichen die Berechnung von Precision, Recall und F-Score 
-durch Vergleich der rekonstruierten Punktwolken mit den exakten geometrischen Daten.
-
-\subsubsection{Aufnahmeparameter}
-
-Um einen fairen und direkten Vergleich zwischen den verschiedenen Rekonstruktionsmodellen zu ermöglichen, wurden für alle Modelle \textbf{einheitliche Aufnahmeparameter} verwendet. Diese Designentscheidung stellt sicher, dass beobachtete Unterschiede in Performance und Rekonstruktionsqualität ausschließlich auf die Modellarchitektur und nicht auf unterschiedliche Eingabebedingungen zurückzuführen sind
-
-\medskip
-
-% TODO: Frame-Zahlen nach Testing finalisieren
-\begin{table}[H]
-    \centering
-    \label{tab:capture_params}
-    \begin{tabularx}{\textwidth}{lX}
-        \toprule
-        \textbf{Parameter} & \textbf{Wert} \\
-        \midrule
-        Fenstergröße (Frames pro Fragment) & [15] \\
-        Bildauflösung & 640 × 480 Pixel \\
-        Bildformat & RGB (3 Kanäle, 8-bit) \\
-        \midrule
-        Kamerabewegung & Langsam, kontinuierlich (ca. 0.2 m/s) \\
-        Rotationsgeschwindigkeit & Max. 30°/s \\
-        Intrinsiken-Quelle & Unity XR-Subsystem (automatisch) \\
-        Extrinsiken-Quelle & Unity XR-Subsystem (6DoF-Tracking) \\
-        \midrule
-        Wiederholungen pro Szene & [3] Takes (für Stabilitätsbewertung) \\
-        \bottomrule
-    \end{tabularx}
-    \caption{Einheitliche Aufnahmeparameter für alle Modelle}
-\end{table}
-
-\noindent
-Die Wahl einheitlicher Parameter über alle Modelle hinweg dient der \textbf{Vergleichbarkeit} und \textbf{wissenschaftlichen Fairness} der Evaluation. Unterschiedliche Modellarchitekturen -- volumetrische Verfahren (NeuralRecon, VisFusion) und SLAM-basierte Ansätze (MASt3R-SLAM, SLAM3R) -- weisen zwar unterschiedliche optimale Fenstergößen auf, jedoch würde eine modellspezifische Anpassung die direkte Vergleichbarkeit der Ergebnisse erschweren. Die gewählte Fenstergröße von [15] Frames stellt einen Kompromiss dar, der für alle Modelle verarbeitbar ist.
-
-\medskip
-\noindent
-Es ist zu erwarten, dass durch \textbf{modellspezifisches Tuning} der Aufnahmeparameter, insbesondere der Fenstergröße, für jedes Modell individuell bessere Rekonstruktionsergebnisse erzielt werden könnten. Volumetrische Verfahren profitieren beispielsweise von kleineren Fenstern (typisch 9 Frames), während SLAM-basierte Ansätze größere Kontexte (15-20 Frames) bevorzugen. Die in dieser Arbeit gemessenen Performance-Werte und Qualitätsmetriken repräsentieren daher die Leistungsfähigkeit der Modelle unter standardisierten, aber nicht notwendigerweise optimalen Bedingungen.
-
-% \subsubsection{Evaluationsziele pro Szenentyp}
-% 
-% Tabelle \ref{tab:evaluation_goals_per_scene} fasst zusammen, welche spezifischen 
-% Evaluationsziele mit den einzelnen Szenentypen verfolgt werden.
-% 
-% \begin{table}[h]
-%     \centering
-%     \caption{Evaluationsziele nach Szenentyp}
-%     \label{tab:evaluation_goals_per_scene}
-%     \begin{tabular}{lp{10cm}}
-%         \toprule
-%         \textbf{Szene} & \textbf{Evaluationsziele} \\
-%         \midrule
-%         V1 -- Geometrische Primitive & Quantitative Baseline (F-Score), Bewertung geometrischer \\
-%         & Grundfähigkeiten (Kanten, Kurven), Reproduzierbarkeit \\
-%         \midrule
-%         V2 -- Einfacher Lernraum & Erste realistische Komplexität, Verhalten bei Okklusionen, \\
-%         & Vollständigkeit bei Möbelstrukturen \\
-%         \midrule
-%         V3 -- Großes Labor & Skalierbarkeitstest, GPU-Memory-Grenzen, Verhalten bei \\
-%         & Details und Reflexionen, Inferenzzeit-Steigerung \\
-%         \midrule
-%         R1 -- Arbeitsbereich & Praxistauglichkeit für Hauptanwendungsfall, Robustheit \\
-%         & gegen Beleuchtungswechsel und Bewegungsunschärfe \\
-%         \midrule
-%         R2 -- Seminarraum & Educational Use Case, Verhalten bei homogenen Flächen, \\
-%         & Fensterreflexionen, repetitiven Strukturen \\
-%         \bottomrule
-%     \end{tabular}
-% \end{table}
-% 
-% Diese Struktur ermöglicht eine systematische Evaluation entlang der Dimensionen 
-% geometrische Genauigkeit (V1), realistische Komplexität (V2), Skalierbarkeit (V3) 
-% und Praxistauglichkeit (R1, R2).
+    \includegraphics[width=0.49\textwidth]{images/room01.png}
+    \includegraphics[width=0.49\textwidth]{images/room01.png}
+    \caption{Übersicht der beiden realen Testszenen: R1 (Schlafzimmer), R2 (Wohnzimmer)}
+    \label{fig:real_scenes}
+\end{figure}
 
 \subsection{Messverfahren und Metriken}
 
@@ -240,21 +141,31 @@ Es ist zu erwarten, dass durch \textbf{modellspezifisches Tuning} der Aufnahmepa
 Die End-to-End-Latenz misst die Zeitspanne zwischen dem Versenden eines Fragments 
 durch das Unity-Frontend und der Visualisierung der aktualisierten Rekonstruktion 
 im VR-Headset. Sie setzt sich aus folgenden Komponenten zusammen:
-
 \begin{align}
-    L_{\text{total}} = L_{\text{network\_up}} + L_{\text{inference}} + L_{\text{network\_down}} + L_{\text{render}}
+    L_{\text{total}} = L_{\text{inference}} + L_{\text{render}}
 \end{align}
+wobei $L_{\text{inference}}$ die Modell-Inferenzzeit im Backend (GPU-Verarbeitung) 
+und $L_{\text{render}}$ die Rendering-Zeit im Unity-Client (GLB-Import und 
+Mesh-Visualisierung) bezeichnet.
 
+\medskip
 \noindent
-wobei $L_{\text{network\_up}}$ die Netzwerklatenz für den Fragment-Upload, 
-$L_{\text{inference}}$ die Modell-Inferenzzeit im Backend, $L_{\text{network\_down}}$ 
-die Netzwerklatenz für den Ergebnis-Download und $L_{\text{render}}$ die 
-Rendering-Zeit im Unity-Client bezeichnet.
+Netzwerklatenz wird nicht als separate Komponente gemessen, da sie keine inhärente 
+Systemeigenschaft darstellt, sondern von der Deployment-Infrastruktur (LAN, WiFi, 
+Cloud) abhängt. Stattdessen werden die \textbf{Fragmentgröße} $S_{\text{fragment}}$ 
+(Upload-Volumen pro Fragment) und \textbf{Resultgröße} $S_{\text{result}}$ 
+(Download-Volumen der Rekonstruktion) erfasst. Diese Metriken ermöglichen die 
+infrastrukturunabhängige Bewertung der Dateneffizienz und die Extrapolation auf 
+beliebige Netzwerkszenarien durch $L_{\text{up}} = S_{\text{fragment}} / B_{\text{upload}}$ 
+bzw. $L_{\text{down}} = S_{\text{result}} / B_{\text{download}}$.
 
+\medskip
+\noindent
 Die Messung erfolgte durch präzise Zeitstempel an den jeweiligen Übergangspunkten 
-der Pipeline. Pro Testszene und Modell wurden \textit{[X]} Messungen durchgeführt, um 
-statistische Aussagen über Mittelwert, Standardabweichung und Perzentile (P50, P95, 
-P99) treffen zu können.
+der Pipeline: $t_{\text{send}}$ beim Fragment-Versand, $t_{\text{inference\_start}}$ 
+und $t_{\text{inference\_end}}$ im Backend-Worker sowie $t_{\text{render}}$ nach 
+erfolgreicher Visualisierung. Pro Testszene und Modell wurden \textit{[X]} Messungen 
+durchgeführt.
 
 \paragraph{Durchsatz}
 Der Durchsatz quantifiziert, wie viele Fragmente pro Sekunde durch das System 
