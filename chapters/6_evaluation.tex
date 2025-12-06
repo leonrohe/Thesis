@@ -76,12 +76,12 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
     \label{tab:test_scenes_overview}
     \begin{tabularx}{\textwidth}{lcclX}
         \toprule
-        \textbf{Szene} & \textbf{Größe (m)} & \textbf{Frames} & \textbf{Dauer (s)} & \textbf{Merkmale und Testfokus} \\
+        \textbf{Szene} & \textbf{Größe (m)} & \textbf{Fragments} & \textbf{Frames} & \textbf{Merkmale} \\
         \midrule
         \multicolumn{5}{l}{\textbf{Virtuelle Szenen}} \\
-        V1 -- Primitive & $5\times 5\times 5$ & [100] & [25] & Geometrische Grundformen, unifarbige Oberflächen \\
-        V2 -- Schlafzimmer & $6\times 5\times 3$ & [150] & [40] & moderate Komplexität, Okklusionen \\
-        V3 -- Mehrzweckraum & $10\times 5\times 3$ & [240] & [60] & Hohe Dichte, komplexe Geometrie \\
+        V1 -- Primitive & $5\times 5\times 5$ & 24 & 216 & Geometrische Grundformen, unifarbige Oberflächen \\
+        V2 -- Schlafzimmer & $6\times 5\times 3$ & 44 & 396 & moderate Komplexität, Okklusionen \\
+        V3 -- Mehrzweckraum & $10\times 5\times 3$ & 58 & 522 & Hohe Dichte, komplexe Geometrie \\
         \midrule
         \multicolumn{5}{l}{\textbf{Reale Szenen}} \\
         R1 & $4\times 4\times 3$ & [150] & [40] & \textit{Schlafzimmer}, Details, Schrägen, Okklusionen \\
@@ -217,24 +217,9 @@ Die funktionale Validierung bestätigt, dass RTReconstruct alle definierten Kern
 \paragraph{End-to-End-Kommunikation}
 Die vollständige Kommunikationskette von der Fragmenterfassung im Unity-Client über 
 die WebSocket-Verbindung zum Router bis zur Verteilung an die Worker-Container und 
-zurück funktioniert stabil. In \textit{[X]} Testläufen über eine Gesamtdauer von \textit{[Y]} Stunden 
-traten \textit{[Z]} Verbindungsabbrüche auf.
+zurück funktioniert stabil. In \textit{15} Testläufen über eine Gesamtdauer von \textit{6} Stunden 
+traten \textit{0} Verbindungsabbrüche auf.
 
-% \begin{table}[h]
-%     \centering
-%     \caption{Übersicht der funktionalen Tests}
-%     \label{tab:functional_tests}
-%     \begin{tabular}{lcc}
-%         \toprule
-%         \textbf{Funktionalität} & \textbf{Status} & \textbf{Anmerkungen} \\
-%         \midrule
-%         Fragment-Versand & \checkmark & Alle Modelle erreichbar \\
-%         Mesh-Rückgabe & \checkmark & GLB-Import funktioniert \\
-%         Multi-Szenen-Support & \checkmark & 2 parallele Szenen getestet \\
-%         \bottomrule
-%     \end{tabular}
-% \end{table}
-    
 \paragraph{Parallele Modellausführung}
 Alle vier integrierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, 
 SLAM3R) konnten gleichzeitig betrieben werden. Die containerisierte Architektur 
@@ -244,7 +229,7 @@ die durch die Modelle gemeinsam genutzt wurde.
 
 \paragraph{Multi-Szenen-Unterstützung}
 Das System unterstützt die gleichzeitige Verarbeitung mehrerer Szenen. In Tests 
-mit \textit{[X]} parallelen Szenen und \textit{[Y]} verbundenen Clients blieb die Funktionalität 
+mit \textit{2} parallelen Szenen und \textit{4} verbundenen Clients blieb die Funktionalität 
 erhalten. Die szenenspezifische Zuordnung der Rekonstruktionsergebnisse erfolgte 
 fehlerfrei.
 
@@ -327,27 +312,27 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
     \caption{Durchschnittliche Datenvolumina und genutzte Bandbreite aufgeschlüsselt nach Szene und Modell (gemittelt über drei Testläufe).}
     \label{tab:data_volumes}
     \resizebox{\textwidth}{!}{%
-    \begin{tabular}{llcccc}
+    \begin{tabular}{l|l|c|c|c|c}
         \toprule
-        \textbf{Szene} & \textbf{Modell} & \makecell{\textbf{Ø Fragment-} \\ \textbf{größe [MB]}} & \makecell{\textbf{Ø Ergebnis-} \\ \textbf{größe [MB]}} & \makecell{\textbf{Upload} \\ \textbf{[Mbps]}} & \makecell{\textbf{Download} \\ \textbf{[Mbps]}} \\
+        \textbf{Szene} & \textbf{Modell} & \makecell{\textbf{\O~$\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{\O~$\text{Frag}_{\text{out}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{out}}$~[MB]}} \\
         \midrule
         \multirow{4}{*}{V1} 
-            & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
-            & VisFusion    &                      & Y.Y &                      & A.A \\
-            & MASt3R-SLAM  &                      & Y.Y &                      & A.A \\
-            & SLAM3R       &                      & Y.Y &                      & A.A \\
+            & NeuralRecon  & \multirow{4}{*}{0.82} & 1.83 & \multirow{4}{*}{19.57} & 44.04 \\
+            & VisFusion    &                       & 2.73 &                        & 65.40 \\
+            & MASt3R-SLAM  &                       & 1.60 &                        & 38.42 \\
+            & SLAM3R       &                       & 1.60 &                        & 38.42 \\
         \midrule
         \multirow{4}{*}{V2} 
-            & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
-            & VisFusion    &                      & Y.Y &                      & A.A \\
-            & MASt3R-SLAM  &                      & Y.Y &                      & A.A \\
-            & SLAM3R       &                      & Y.Y &                      & A.A \\
+            & NeuralRecon  & \multirow{4}{*}{1.62} & 2.84 & \multirow{4}{*}{69.57} & 122.28 \\
+            & VisFusion    &                      & 3.25  &                        & 139.85 \\
+            & MASt3R-SLAM  &                      & 1.60  &                        & 68.60 \\
+            & SLAM3R       &                      & 1.60  &                        & 68.84 \\
         \midrule
         \multirow{4}{*}{V3} 
-            & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
-            & VisFusion    &                      & Y.Y &                      & A.A \\
-            & MASt3R-SLAM  &                      & Y.Y &                      & A.A \\
-            & SLAM3R       &                      & Y.Y &                      & A.A \\
+            & NeuralRecon  & \multirow{4}{*}{1.56} & 3.60 & \multirow{4}{*}{88.70} & 204.93 \\
+            & VisFusion    &                      & 4.24  &                        & 241.51 \\
+            & MASt3R-SLAM  &                      & 1.59  &                        & 90.69 \\
+            & SLAM3R       &                      & 1.60  &                        & 91.26 \\
         \midrule
         \multirow{4}{*}{R1} 
             & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
@@ -374,31 +359,25 @@ Die Tabelle zeigt, dass die Fragmentgrößen zwischen den Modellen variieren, wo
 \noindent
 Die präsentierten Latenzmessungen bilden zusammen mit den Datenvolumina die Grundlage für die Bewertung der Echtzeitfähigkeit und Skalierbarkeit des Systems in Abschnitt~\ref{sec:diskussion}.
 
-
 \subsubsection{Durchsatz}
 
-Der Durchsatz der einzelnen Modelle wurde über eine kontinuierliche Aufnahme von 
-\textit{[X]} Sekunden gemessen. Tabelle \ref{tab:throughput_results} zeigt die Ergebnisse.
+Der Durchsatz ergibt sich aus der Anzahl von Fragmenten des Szene, geteilt durch den Mittelwert der Dauer in Sekunden. Tabelle \ref{tab:throughput_results} fasst die gemessenen Durchsatzwerte für alle Modelle und Szenen zusammen.
 
 \begin{table}[h]
     \centering
     \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
     \label{tab:throughput_results}
-    \begin{tabular}{lcc}
+    \begin{tabular}{lccccc}
         \toprule
-        \textbf{Modell} & \textbf{Durchsatz (fps)} & \textbf{Unity FPS} \\
+        \textbf{Modell} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2}\\
         \midrule
-        NeuralRecon     & \textit{[X]} & \textit{[Y]} \\
-        VisFusion       & \textit{[X]} & \textit{[Y]} \\
-        MASt3R-SLAM     & \textit{[X]} & \textit{[Y]} \\
-        SLAM3R          & \textit{[X]} & \textit{[Y]} \\
+        NeuralRecon     & 0.62 & 0.45 & 0.32 &  &  \\
+        VisFusion       & 0.38 & 0.35 & 0.30 &  &  \\
+        MASt3R-SLAM     & 0.13 & 0.12 & 0.12 &  &  \\
+        SLAM3R          & 0.07 & 0.06 & 0.03 &  &  \\
         \bottomrule
     \end{tabular}
 \end{table}
-
-\noindent
-Die Frame Rate im Unity-Client blieb während der Rekonstruktion bei durchschnittlich 
-\textit{[X]} fps. Ein Einbruch auf \textit{[Y]} fps wurde nur bei \textit{[Extremsituation]} beobachtet.
 
 \subsubsection{Ressourcenauslastung}
 
