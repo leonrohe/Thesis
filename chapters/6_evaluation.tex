@@ -465,19 +465,22 @@ sowie die Differenz zwischen beiden Modi.
 
 \begin{table}[h]
     \centering
-    \caption{Durchschnittliche Frame Rate im VR-Frontend}
+    \caption{Frame Rate-Einbußen durch Rekonstruktion nach Modell [fps]}
     \label{tab:frame_rate}
     \begin{tabular}{lccccc}
         \toprule
-        \textbf{Testlauf} & \textbf{V1 [fps]} & \textbf{V2 [fps]} & \textbf{V3 [fps]} & \textbf{R1 [fps]} & \textbf{R2 [fps]}\\
+        \textbf{Modell} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2} \\
         \midrule
-        Baseline (ohne Rekonstruktion) & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} \\
-        Mit Rekonstruktion             & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} \\
+        NeuralRecon    & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps \\
+        VisFusion      & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps \\
+        SLAM3R         & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps \\
+        MASt3R-SLAM    & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps \\
         \midrule
-        \textbf{Differenz}             & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} \\
+        \textit{Baseline (alle Modelle)} & \multicolumn{5}{c}{72 fps} \\
         \bottomrule
     \end{tabular}
 \end{table}
+
 
 \subsection{Rekonstruktionsqualität}
 
