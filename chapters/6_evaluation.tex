@@ -361,11 +361,11 @@ Die präsentierten Latenzmessungen bilden zusammen mit den Datenvolumina die Gru
 
 \subsubsection{Durchsatz}
 
-Der Durchsatz ergibt sich aus der Anzahl von Fragmenten des Szene, geteilt durch den Mittelwert der Dauer in Sekunden. Tabelle \ref{tab:throughput_results} fasst die gemessenen Durchsatzwerte für alle Modelle und Szenen zusammen.
+Der Durchsatz ergibt sich für diese Evaluation aus der Anzahl der verarbeiteten Fragmente pro Szene, geteilt durch die mittlere End-To-End Latenz \(L_{total}\) über alle 3 Testläufe. Diese Metrik gibt an, wie viele Fragmente pro Sekunde durch das System verarbeitet werden können und ist ein Indikator für die Aktualisierungsrate der Rekonstruktion im VR-Frontend. Die folgende Tabelle \ref{tab:throughput_results} fasst diese gemessenen Durchsatzwerte für alle Modelle und Szenen zusammen.
 
+\medskip
 \begin{table}[h]
     \centering
-    \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
     \label{tab:throughput_results}
     \begin{tabular}{lccccc}
         \toprule
@@ -377,28 +377,107 @@ Der Durchsatz ergibt sich aus der Anzahl von Fragmenten des Szene, geteilt durch
         SLAM3R          & 0.07 & 0.06 & 0.03 &  &  \\
         \bottomrule
     \end{tabular}
+    \bigskip
+    \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
 \end{table}
+\newpage
 
 \subsubsection{Ressourcenauslastung}
 
-\paragraph{GPU-Auslastung}
-Die durchschnittliche GPU-Auslastung während der Rekonstruktion lag bei:
+Die Ressourcenauslastung wurde sowohl für das Backend (Server-seitige Rekonstruktion) 
+als auch für das Frontend (VR-Client-seitige Visualisierung) getrennt erfasst. Diese 
+Trennung ermöglicht die Identifikation von Engpässen in der Pipeline und gibt 
+Aufschluss darüber, welche Systemkomponente limitierend wirkt.
 
-\begin{itemize}
-    \item NeuralRecon: \textit{[X]}\%
-    \item VisFusion: \textit{[X]}\%
-    \item MASt3R-SLAM: \textit{[X]}\%
-    \item SLAM3R: \textit{[X]}\%
-\end{itemize}
+\paragraph{Backend-Ressourcen}
 
+Die Backend-Ressourcenauslastung wurde kontinuierlich während der Rekonstruktionsläufe 
+auf dem dedizierten Server (AMD Ryzen 9 5900X, NVIDIA GTX 1070 Ti) erfasst. Die 
+Messungen umfassen GPU-Auslastung und GPU-Speicherverbrauch (erfasst mittels 
+\texttt{nvidia-smi} in 1-Sekunden-Intervallen) sowie CPU- und RAM-Nutzung der 
+containerisierten Komponenten (erfasst mittels \texttt{docker stats}).
+
+\medskip
 \noindent
-Der GPU-Speicherverbrauch erreichte maximal \textit{[X]} GB bei \textit{[Modellname]}, was 
-\textit{[unter/nahe an]} der verfügbaren VRAM-Kapazität von 8 GB liegt.
+\textbf{GPU-Ressourcen:} Tabelle~\ref{tab:gpu_resources} zeigt die durchschnittliche 
+GPU-Utilization und den maximalen GPU-Speicherverbrauch während der Rekonstruktion, 
+aufgeschlüsselt nach Modell und Testszene.
 
-\paragraph{CPU und RAM}
-Die CPU-Last der Container lag im Durchschnitt bei \textit{[X]}\% pro Kern. Der 
-Router-Container verbrauchte durchschnittlich \textit{[Y]} MB RAM, während die 
-Worker-Container zwischen \textit{[Z]} und \textit{[A]} MB benötigten.
+\begin{table}[h]
+    \centering
+    \caption{GPU-Auslastung und GPU-Speicherverbrauch während der Rekonstruktion}
+    \label{tab:gpu_resources}
+    \begin{tabular}{lcccccc}
+        \toprule
+        \textbf{Modell} & \textbf{Metrik} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2}\\
+        \midrule
+        \multirow{2}{*}{NeuralRecon} 
+            & \O GPU-Utilization [\%] & \textit{44} & \textit{43} & \textit{47} & \textit{[X]} & \textit{[X]} \\
+            & Max. VRAM [MB]          & \textit{3825} & \textit{4770} & \textit{7993} & \textit{[X.X]} & \textit{[X.X]} \\
+        \midrule
+        \multirow{2}{*}{VisFusion} 
+            & \O GPU-Utilization [\%] & \textit{49} & \textit{53} & \textit{55} & \textit{[X]} & \textit{[X]} \\
+            & Max. VRAM [MB]          & \textit{4877} & \textit{4599} & \textit{4418} & \textit{[X.X]} & \textit{[X.X]} \\
+        \midrule
+        \multirow{2}{*}{MASt3R-SLAM} 
+            & \O GPU-Utilization [\%] & \textit{100} & \textit{100} & \textit{100} & \textit{[X]} & \textit{[X]} \\
+            & Max. VRAM [MB]          & \textit{7969} & \textit{8016} & \textit{7984} & \textit{[X.X]} & \textit{[X.X]} \\
+        \midrule
+        \multirow{2}{*}{SLAM3R} 
+            & \O GPU-Utilization [\%] & \textit{98.5} & \textit{99} & \textit{99} & \textit{[X]} & \textit{[X]} \\
+            & Max. VRAM [MB]          & \textit{8022} & \textit{7986} & \textit{8012} & \textit{[X.X]} & \textit{[X.X]} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\medskip
+\noindent
+\textbf{CPU- und RAM-Auslastung:} Die Ressourcennutzung der einzelnen Docker-Container 
+ist in Tabelle~\ref{tab:container_resources} dargestellt. Die Werte zeigen die 
+durchschnittliche CPU-Last und den RAM-Verbrauch für Router- und Worker-Container, 
+gemittelt über alle Testszenen.
+
+\begin{table}[h]
+    \centering
+    \caption{Durchschnittliche CPU- und RAM-Auslastung der Backend-Container}
+    \label{tab:container_resources}
+    \begin{tabular}{lcc}
+        \toprule
+        \textbf{Container} & \textbf{\O CPU-Auslastung [\%]} & \textbf{\O RAM-Verbrauch [MB]} \\
+        \midrule
+        Router                    & \textit{0.2} & \textit{200} \\
+        \midrule
+        Worker: NeuralRecon       & \textit{32} & \textit{2780} \\
+        Worker: VisFusion         & \textit{17.25} & \textit{3015} \\
+        Worker: MASt3R-SLAM       & \textit{14.35} & \textit{3466} \\
+        Worker: SLAM3R            & \textit{15.37} & \textit{4070} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\paragraph{Frontend-Ressourcen}
+
+Die Frontend-Performance wurde auf dem Meta Quest 3 VR-Headset gemessen. Die 
+durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb 
+(ohne aktive Rekonstruktion) als auch während der Rekonstruktions- und 
+Visualisierungsphase gemessen. Tabelle~\ref{tab:frame_rate} zeigt die Ergebnisse 
+sowie die Differenz zwischen beiden Modi.
+
+\begin{table}[h]
+    \centering
+    \caption{Durchschnittliche Frame Rate im VR-Frontend}
+    \label{tab:frame_rate}
+    \begin{tabular}{lccccc}
+        \toprule
+        \textbf{Testlauf} & \textbf{V1 [fps]} & \textbf{V2 [fps]} & \textbf{V3 [fps]} & \textbf{R1 [fps]} & \textbf{R2 [fps]}\\
+        \midrule
+        Baseline (ohne Rekonstruktion) & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} \\
+        Mit Rekonstruktion             & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} & \textit{[XX]} \\
+        \midrule
+        \textbf{Differenz}             & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} & \textit{[±X]} \\
+        \bottomrule
+    \end{tabular}
+\end{table}
 
 \subsection{Rekonstruktionsqualität}
 
