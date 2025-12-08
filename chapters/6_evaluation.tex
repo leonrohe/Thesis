@@ -190,8 +190,19 @@ Metrik für Präzision und Recall berechnet:
 \end{align}
 
 \noindent
-Rekonstruierte Punkte werden als True Positive (TP) gezählt, wenn ihr Abstand zum 
-Ground-Truth-Mesh unter einem Schwellenwert von \textit{[X]} cm liegt.
+Rekonstruierte Punkte gelten als \textbf{True Positive (TP)}, wenn ihr Abstand zum 
+Ground-Truth unter \textit{10} cm liegt, andernfalls als \textbf{False Positive (FP)}. 
+\textbf{False Negatives (FN)} sind Ground-Truth-Punkte ohne entsprechenden 
+rekonstruierten Punkt innerhalb des Schwellenwerts.
+
+\medskip
+\noindent
+\textbf{Precision} misst die Genauigkeit der Rekonstruktion, indem sie den Anteil 
+korrekt rekonstruierter Punkte angibt. \textbf{Recall} bewertet die 
+Vollständigkeit und gibt an, wie viele Ground-Truth-Punkte erfasst wurden. 
+Der \textbf{F-Score} kombiniert beide Metriken als harmonisches Mittel und liefert einen 
+ausgewogenen Gesamtwert. Je näher der F-Score bei \textit{1.0} liegt, 
+desto höher ist die Qualität der Rekonstruktion.
 
 \paragraph{Qualitative Bewertung}
 Die rekonstruierten Meshes wurden anhand folgender Kriterien bewertet:
@@ -252,10 +263,6 @@ Zur Evaluierung der Systemperformance wurde die End-to-End-Latenz \\ \(L_{total}
 \noindent
 Die Darstellung zeigt auf der x-Achse die vier evaluierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, SLAM3R), während die y-Achse die gemessene Latenz in Millisekunden angibt. Pro Modell sind drei Boxplots dargestellt, die jeweils die Latenzverteilung eines Testlaufs repräsentieren. Die farbliche Kodierung kennzeichnet dabei denselben Testlauf über alle Modelle hinweg.
 
-\medskip
-\noindent
-Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche und minimale Ausreißer, was auf eine stabile und reproduzierbare Latenzcharakteristik des Systems hinweist. Aufgrund dieser geringen Varianz zwischen den drei Testläufen werden in den folgenden Analysen zur Zusammensetzung der Gesamtlatenz sowie zu Datenvolumina die Messwerte der drei Testläufe aggregiert dargestellt. Dies ermöglicht eine kompaktere Präsentation ohne relevanten Informationsverlust.
-
 \begin{figure}[H]
     \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=\linewidth]{images/room00_latency.png}
@@ -281,6 +288,10 @@ Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche un
     \caption{Gesamtlatenz \(L_{total}\) für alle Testszenen und Modelle über drei Testläufe. Die Boxen zeigen den Interquartilbereich (25.\,--\,75.\,Perzentil), die horizontale Linie den Median und die Whiskers den Wertebereich ohne Ausreißer.}
     \label{fig:latency_boxplots}
 \end{figure}
+
+\newpage
+\noindent
+Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche und minimale Ausreißer, was auf eine stabile und reproduzierbare Latenzcharakteristik des Systems hinweist. Aufgrund dieser geringen Varianz zwischen den drei Testläufen werden in den folgenden Analysen zur Zusammensetzung der Gesamtlatenz sowie zu Datenvolumina die Messwerte der drei Testläufe aggregiert dargestellt. Dies ermöglicht eine kompaktere Präsentation ohne relevanten Informationsverlust.
 
 \medskip
 \noindent
@@ -335,16 +346,16 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
             & SLAM3R       &                      & 1.60  &                        & 91.26 \\
         \midrule
         \multirow{4}{*}{R1} 
-            & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
-            & VisFusion    &                      & Y.Y &                      & A.A \\
-            & MASt3R-SLAM  &                      & Y.Y &                      & A.A \\
-            & SLAM3R       &                      & Y.Y &                      & A.A \\
+            & NeuralRecon  & \multirow{4}{*}{} &  & \multirow{4}{*}{} &  \\
+            & VisFusion    &                      &  &                      &  \\
+            & MASt3R-SLAM  &                      &  &                      &  \\
+            & SLAM3R       &                      &  &                      &  \\
         \midrule
         \multirow{4}{*}{R2} 
-            & NeuralRecon  & \multirow{4}{*}{X.X} & Y.Y & \multirow{4}{*}{Z.Z} & A.A \\
-            & VisFusion    &                      & Y.Y &                      & A.A \\
-            & MASt3R-SLAM  &                      & Y.Y &                      & A.A \\
-            & SLAM3R       &                      & Y.Y &                      & A.A \\
+            & NeuralRecon  & \multirow{4}{*}{} &  & \multirow{4}{*}{} &  \\
+            & VisFusion    &                      &  &                      &  \\
+            & MASt3R-SLAM  &                      &  &                      &  \\
+            & SLAM3R       &                      &  &                      &  \\
         \bottomrule
     \end{tabular}%
     }
@@ -380,7 +391,6 @@ Der Durchsatz ergibt sich für diese Evaluation aus der Anzahl der verarbeiteten
     \bigskip
     \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
 \end{table}
-\newpage
 
 \subsubsection{Ressourcenauslastung}
 
@@ -412,20 +422,20 @@ aufgeschlüsselt nach Modell und Testszene.
         \textbf{Modell} & \textbf{Metrik} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2}\\
         \midrule
         \multirow{2}{*}{NeuralRecon} 
-            & \O GPU-Utilization [\%] & \textit{44} & \textit{43} & \textit{47} & \textit{[X]} & \textit{[X]} \\
-            & Max. VRAM [MB]          & \textit{3825} & \textit{4770} & \textit{7993} & \textit{[X.X]} & \textit{[X.X]} \\
+            & \O GPU-Utilization [\%] & \textit{44} & \textit{43} & \textit{47} & \textit{} & \textit{} \\
+            & Max. VRAM [MB]          & \textit{3825} & \textit{4770} & \textit{7993} & \textit{} & \textit{} \\
         \midrule
         \multirow{2}{*}{VisFusion} 
-            & \O GPU-Utilization [\%] & \textit{49} & \textit{53} & \textit{55} & \textit{[X]} & \textit{[X]} \\
-            & Max. VRAM [MB]          & \textit{4877} & \textit{4599} & \textit{4418} & \textit{[X.X]} & \textit{[X.X]} \\
+            & \O GPU-Utilization [\%] & \textit{49} & \textit{53} & \textit{55} & \textit{} & \textit{} \\
+            & Max. VRAM [MB]          & \textit{4877} & \textit{4599} & \textit{4418} & \textit{} & \textit{} \\
         \midrule
         \multirow{2}{*}{MASt3R-SLAM} 
-            & \O GPU-Utilization [\%] & \textit{100} & \textit{100} & \textit{100} & \textit{[X]} & \textit{[X]} \\
-            & Max. VRAM [MB]          & \textit{7969} & \textit{8016} & \textit{7984} & \textit{[X.X]} & \textit{[X.X]} \\
+            & \O GPU-Utilization [\%] & \textit{100} & \textit{100} & \textit{100} & \textit{} & \textit{} \\
+            & Max. VRAM [MB]          & \textit{7969} & \textit{8016} & \textit{7984} & \textit{} & \textit{} \\
         \midrule
         \multirow{2}{*}{SLAM3R} 
-            & \O GPU-Utilization [\%] & \textit{98.5} & \textit{99} & \textit{99} & \textit{[X]} & \textit{[X]} \\
-            & Max. VRAM [MB]          & \textit{8022} & \textit{7986} & \textit{8012} & \textit{[X.X]} & \textit{[X.X]} \\
+            & \O GPU-Utilization [\%] & \textit{98.5} & \textit{99} & \textit{99} & \textit{} & \textit{} \\
+            & Max. VRAM [MB]          & \textit{8022} & \textit{7986} & \textit{8012} & \textit{} & \textit{} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -457,98 +467,67 @@ gemittelt über alle Testszenen.
 
 \paragraph{Frontend-Ressourcen}
 
-Die Frontend-Performance wurde auf dem Meta Quest 3 VR-Headset gemessen. Die 
-durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb 
+Die durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb 
 (ohne aktive Rekonstruktion) als auch während der Rekonstruktions- und 
-Visualisierungsphase gemessen. Tabelle~\ref{tab:frame_rate} zeigt die Ergebnisse 
-sowie die Differenz zwischen beiden Modi.
+Visualisierungsphase gemessen. Tabelle~\ref{frame_rate} zeigt die Ergebnisse.
 
-\begin{table}[h]
+\begin{figure}[H]
     \centering
-    \caption{Frame Rate-Einbußen durch Rekonstruktion nach Modell [fps]}
-    \label{tab:frame_rate}
-    \begin{tabular}{lccccc}
-        \toprule
-        \textbf{Modell} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2} \\
-        \midrule
-        NeuralRecon    & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps & \textit{72}~fps \\
-        VisFusion      & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps & \textit{68}~fps \\
-        SLAM3R         & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps \\
-        MASt3R-SLAM    & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps & \textit{37}~fps \\
-        \midrule
-        \textit{Baseline (alle Modelle)} & \multicolumn{5}{c}{72 fps} \\
-        \bottomrule
-    \end{tabular}
-\end{table}
-
+    \label{frame_rate}
+    % \caption{FPS des Unity-Clients im Baseline-Betrieb und während der Rekonstruktion}
+    \includegraphics[width=0.65\textwidth]{images/frontend_fps.png}
+\end{figure}
 
 \subsection{Rekonstruktionsqualität}
 
 \subsubsection{Quantitative Bewertung}
 
-Für Szene \textit{[Name]} mit verfügbarem Ground-Truth wurde der F-Score für alle Modelle 
-berechnet. Tabelle \ref{tab:fscore_results} zeigt die Ergebnisse.
+Tabelle \ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit verfügbarem Ground-Truth für einen Schwellenwert von \textit{10}cm.
 
-\begin{table}[h]
+\medskip
+\noindent
+Die dafür benötigten Daten wurden mit der quelloffenen Software CloudCompare gesammelt, indem zunächst die Cloud-to-Cloud Distance-Funktion verwendet wurde, um für jeden Punkt der Rekonstruktion den Abstand zum nächsten Ground-Truth-Punkt zu berechnen. Anschließend wurden die Punkte über \textit{Filter Points by Value} anhand des 10\,cm Schwellenwerts klassifiziert: Abstände \(\leq 10\)\,cm ergeben True Positives, größere Abstände False Positives. False Negatives wurden durch die umgekehrte Distanzberechnung von Ground-Truth zu Rekonstruktion ermittelt, woraus Precision, Recall und F-Score berechnet wurden.
+
+
+\begin{table}[H]
     \centering
-    \caption{F-Score-Ergebnisse für Szene [Name] (Schwellenwert: [X] cm)}
-    \label{tab:fscore_results}
-    \begin{tabular}{lccc}
+    \label{tab:fscore_all}
+    \caption{F-Score-Ergebnisse nach Modell und Szene}
+    \begin{tabular}{lccc|ccc|ccc}
         \toprule
-        \textbf{Modell} & \textbf{Precision} & \textbf{Recall} & \textbf{F-Score} \\
+        & \multicolumn{3}{c}{\textbf{V1}} & \multicolumn{3}{c}{\textbf{V2}} & \multicolumn{3}{c}{\textbf{V3}} \\
+        \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
+        \textbf{Modell} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} \\
         \midrule
-        NeuralRecon     & \textit{[X]} & \textit{[Y]} & \textit{[Z]} \\
-        VisFusion       & \textit{[X]} & \textit{[Y]} & \textit{[Z]} \\
-        MASt3R-SLAM     & \textit{[X]} & \textit{[Y]} & \textit{[Z]} \\
-        SLAM3R          & \textit{[X]} & \textit{[Y]} & \textit{[Z]} \\
+        NeuralRecon     & \textit{0.45} & \textit{0.39} & \textit{0.41} & \textit{0.69} & \textit{0.67} & \textit{0.68} & \textit{0.59} & \textit{0.59} & \textit{0.59} \\
+        VisFusion       & \textit{0.57} & \textit{0.52} & \textit{0.54} & \textit{0.57} & \textit{0.65} & \textit{0.61} & \textit{0.57} & \textit{0.68} & \textit{0.62} \\
+        SLAM3R          & \textit{0.66} & \textit{0.56} & \textit{0.61} & \textit{0.67} & \textit{0.59} & \textit{0.63} & \textit{0.41} & \textit{0.43} & \textit{0.42} \\
+        MASt3R-SLAM     & \textit{0.52} & \textit{0.48} & \textit{0.50} & \textit{0.47} & \textit{0.53} & \textit{0.50} & \textit{0.43} & \textit{0.48} & \textit{0.45} \\
         \bottomrule
     \end{tabular}
 \end{table}
 
-\noindent
-\textit{[Modellname]} erreichte den höchsten F-Score von \textit{[X]}, was auf \textit{[Erklärung]} 
-zurückzuführen ist. Im Vergleich dazu zeigte \textit{[anderes Modell]} eine höhere 
-Precision bei niedrigerem Recall, was für \textit{[Interpretation]} spricht.
-
 \subsubsection{Qualitative Bewertung}
 
-Die visuelle Inspektion der Rekonstruktionen ergab folgende Beobachtungen:
-
 \paragraph{NeuralRecon}
-Die Rekonstruktion zeigte \textit{[Beschreibung: z.B. robuste Gesamtmodelle mit glatter 
-Oberflächenqualität]}. Abbildung \textbf{[REF: fig:neuralrecon\_result]} zeigt exemplarisch 
-die Rekonstruktion von Szene \textit{[X]}. \textit{[Stärken und Schwächen beschreiben]}
-
-% \begin{figure}[h]
-%     \centering
-%     \includegraphics[width=0.7\textwidth]{figures/neuralrecon_scene1.png}
-%     \caption{Rekonstruktion von Szene [Name] mit NeuralRecon}
-%     \label{fig:neuralrecon_result}
-% \end{figure}
+NeuralRecon lieferte robuste Gesamtmodelle mit glatter Oberflächenqualität. Die Rekonstruktionen zeigten eine hohe globale Konsistenz durch die GRU-basierte TSDF-Fusion über mehrere Frames hinweg. Besonders in feature-armen Bereichen wie Wänden (Szene V2, V3) produzierte NeuralRecon saubere, artefaktfreie Oberflächen. Scharfe Kanten (Szene V1) wurden tendenziell durch die volumetrische Glättung abgerundet.
 
 \paragraph{VisFusion}
-Im Vergleich zu NeuralRecon zeigte VisFusion \textit{[Unterschiede: z.B. feinere Details 
-in texturierten Bereichen]}. Besonders in Bereichen mit \textit{[Merkmal wie Okklusionen]} 
-war \textit{[Beobachtung wie bessere Oberflächenkonsistenz]} erkennbar.
-
-\paragraph{MASt3R-SLAM}
-Das SLAM-basierte Verfahren lieferte \textit{[Charakteristik: z.B. detaillierte 
-Punktwolken mit hoher lokaler Genauigkeit]}. Während \textit{[positive Aspekte wie 
-Echtzeitfähigkeit]}, traten vereinzelt \textit{[negative Aspekte wie Drift]} auf.
+VisFusion zeigte im direkten Vergleich zu NeuralRecon deutliche Verbesserungen in der Detailtreue. Die visibility-aware Merkmalsfusion ermöglichte eine bessere Handhabung von Okklusionen, was sich besonders in den komplexen Szenen V2 und V3 mit überlagerten Möbeln manifestierte. Die ray-based sparsification führte zu vollständigeren Rekonstruktionen mit erhaltenen feinen Strukturen wie Bilderrahmen und Lampendetails. Wandoberflächen wirkten kohärenter als bei NeuralRecon.
 
 \paragraph{SLAM3R}
-SLAM3R zeichnete sich durch \textit{[Merkmale wie dichte Punktwolken]} aus. Die 
-Rekonstruktion war \textit{[Bewertung: z.B. konsistent, aber mit geringerer Vollständigkeit 
-als volumetrische Verfahren]}.
+SLAM3R zeichnete sich durch sehr dichte Punktwolken aus, die direkt aus dem Image-to-Points-Netzwerk generiert wurden. Die feed-forward-Architektur ermöglichte die höchste Verarbeitungsgeschwindigkeit (20+ FPS). Allerdings war die Vollständigkeit geringer als bei volumetrischen Verfahren – insbesondere in schwer einsehbaren Bereichen wie unter Möbeln entstanden Lücken. Die Local-to-World-Registrierung zeigte in Szene V3 vereinzelt Inkonsistenzen bei der Ausrichtung aufeinanderfolgender Fragmente.
+
+\paragraph{MASt3R-SLAM}
+MASt3R-SLAM erzeugte detaillierte, dichte Punktwolken mit hoher lokaler Genauigkeit. Die transformer-basierte Feature-Extraktion ermöglichte robustes Matching auch bei texturarmen Oberflächen. In den realen Szenen R1 und R2 zeigte sich jedoch gelegentlich Drift bei längeren Trajektorien, erkennbar an leichten Verschiebungen zwischen Rekonstruktionsfragmenten verschiedener Zeitpunkte. Die punktbasierte Darstellung erreichte nicht die Oberflächenkohärenz der volumetrischen Verfahren.
 
 \paragraph{Vergleichende Bewertung}
-Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen 
-zusammen.
+Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zusammen und bewertet sie entweder negativ, neutral oder positiv gegnüber den anderen Modellen.
 
 \begin{table}[h]
     \centering
-    \caption{Qualitative Bewertung der Rekonstruktionsmodelle}
     \label{tab:qualitative_comparison}
+    \caption{Qualitative Bewertung der Rekonstruktionsmodelle}
     \begin{tabular}{lcccc}
         \toprule
         \textbf{Kriterium} & \textbf{NeuralRecon} & \textbf{VisFusion} & \textbf{MASt3R} & \textbf{SLAM3R} \\
@@ -559,9 +538,7 @@ zusammen.
         Oberflächenqualität & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} \\
         \bottomrule
     \end{tabular}
-    \begin{flushleft}
-        \footnotesize Legende: + = gut, o = mittel, - = schwach
-    \end{flushleft}
+    \medskip
 \end{table}
 
 \subsection{Modularität und Systemstabilität}
