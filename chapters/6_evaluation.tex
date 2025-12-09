@@ -482,12 +482,11 @@ Visualisierungsphase gemessen. Tabelle~\ref{frame_rate} zeigt die Ergebnisse.
 
 \subsubsection{Quantitative Bewertung}
 
-Tabelle \ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit verfügbarem Ground-Truth für einen Schwellenwert von \textit{10}cm.
+Tabelle~\ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit verfügbarem Ground-Truth für einen Schwellenwert von \textit{10}cm.
 
 \medskip
 \noindent
 Die dafür benötigten Daten wurden mit der quelloffenen Software CloudCompare gesammelt, indem zunächst die Cloud-to-Cloud Distance-Funktion verwendet wurde, um für jeden Punkt der Rekonstruktion den Abstand zum nächsten Ground-Truth-Punkt zu berechnen. Anschließend wurden die Punkte über \textit{Filter Points by Value} anhand des 10\,cm Schwellenwerts klassifiziert: Abstände \(\leq 10\)\,cm ergeben True Positives, größere Abstände False Positives. False Negatives wurden durch die umgekehrte Distanzberechnung von Ground-Truth zu Rekonstruktion ermittelt, woraus Precision, Recall und F-Score berechnet wurden.
-
 
 \begin{table}[H]
     \centering
@@ -507,38 +506,167 @@ Die dafür benötigten Daten wurden mit der quelloffenen Software CloudCompare g
     \end{tabular}
 \end{table}
 
+\noindent
+Für die Modelle SLAM3R und MASt3R-SLAM musste vor der Berechnung der Metriken eine Registrierung der rekonstruierten Punktwolken mit dem Ground-Truth-Mesh durchgeführt werden. Dies erfolgte mittels des Iterative Closest Point (ICP)-Algorithmus in CloudCompare, um eine optimale Ausrichtung zu gewährleisten, da diese Modelle in lokalen Koordinatensystemen arbeiten.
+
 \subsubsection{Qualitative Bewertung}
 
 \paragraph{NeuralRecon}
-NeuralRecon lieferte robuste Gesamtmodelle mit glatter Oberflächenqualität. Die Rekonstruktionen zeigten eine hohe globale Konsistenz durch die GRU-basierte TSDF-Fusion über mehrere Frames hinweg. Besonders in feature-armen Bereichen wie Wänden (Szene V2, V3) produzierte NeuralRecon saubere, artefaktfreie Oberflächen. Scharfe Kanten (Szene V1) wurden tendenziell durch die volumetrische Glättung abgerundet.
+
+Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testszenarien hinweg. Besonders in Szene V1 wurden schräge Flächen vollständig ausgelassen, während horizontale und vertikale Strukturen zumindest teilweise erfasst wurden. In den komplexeren Szenen V2 (F-Score: 0.68) und V3 setzte sich diese Lückenhaftigkeit fort, wobei V2 noch die stabilste Performance lieferte. Neben den fehlenden Bereichen fielen auch vereinfachte Geometrien auf – feine Details gingen verloren, während gröbere Strukturen noch erkennbar blieben. Positiv hervorzuheben ist hingegen die Qualität der tatsächlich erfassten Bereiche: Die Meshes wiesen glatte, geschlossene Oberflächen auf und waren frei von Fehlgeometrien oder Flimmerartefakten. Die globale Koherenz blieb durchgängig erhalten.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \caption{Ground Truth}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/neucon00.png}
+        \caption{NeuralRecon Rekonstruktion}
+    \end{subfigure}
+    \caption{NeuralRecon Rekonstruktion von Szene V1. Deutlich erkennbar sind die fehlenden schrägen Flächen, während horizontale und vertikale Strukturen teilweise erfasst wurden.}
+    \label{fig:neuralrecon_v1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/gt00.png}
+        \caption{Ground Truth Detail}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/neucon00.png}
+        \caption{NeuralRecon Detail}
+    \end{subfigure}
+    \caption{Detailverlust bei NeuralRecon. Objekte wie die Stehlampe oder der TV-Schrank in Szene V2 gehen in der Rekonstruktion größtenteils verloren.}
+    \label{fig:neuralrecon_detail}
+\end{figure}
 
 \paragraph{VisFusion}
-VisFusion zeigte im direkten Vergleich zu NeuralRecon deutliche Verbesserungen in der Detailtreue. Die visibility-aware Merkmalsfusion ermöglichte eine bessere Handhabung von Okklusionen, was sich besonders in den komplexen Szenen V2 und V3 mit überlagerten Möbeln manifestierte. Die ray-based sparsification führte zu vollständigeren Rekonstruktionen mit erhaltenen feinen Strukturen wie Bilderrahmen und Lampendetails. Wandoberflächen wirkten kohärenter als bei NeuralRecon.
+
+VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRecon. Schräge Flächen in Szene V1, die zuvor komplett fehlten, wurden nun erfolgreich rekonstruiert, und insgesamt blieben weniger Bereiche lückenhaft. Die F-Scores stiegen über die Szenen hinweg kontinuierlich an (V1: 0.54, V2: 0.61, V3: 0.62), was auf eine robuste Performance auch bei zunehmender Komplexität hindeutet. Auch im Detail zeigte sich eine Verbesserung: Feinere Strukturen blieben besser erhalten, während gröbere Geometrien ähnlich zuverlässig erfasst wurden wie bei NeuralRecon. Die Meshes waren durchweg glatt, artefaktfrei und wiesen eine höhere geometrische Präzision in komplexen Bereichen auf. Die globale Konsistenz blieb über alle Szenen hinweg stabil.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/neucon00.png}
+        \caption{Neural Recon}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/visfusion00.png}
+        \caption{VisFusion}
+    \end{subfigure}
+    \caption{Vergleich zwischen NeuralRecon (links) und VisFusion (rechts) in Szene V1. VisFusion rekonstruiert die schrägen Flächen erfolgreich und zeigt eine deutlich höhere Vollständigkeit.}
+    \label{fig:visfusion_comparison}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/visfusion00.png}
+        \caption{Szene V2}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/visfusion.png}
+        \caption{Szene V3}
+    \end{subfigure}
+    \caption{VisFusion Rekonstruktionen der Szenen V2 (links) und V3 (rechts). Die Performance bleibt auch bei zunehmender Komplexität stabil. Objekte wie die Stehlampe oder der TV-Schrank werden detaillierter erfasst.}
+    \label{fig:visfusion_scenes}
+\end{figure}
 
 \paragraph{SLAM3R}
-SLAM3R zeichnete sich durch sehr dichte Punktwolken aus, die direkt aus dem Image-to-Points-Netzwerk generiert wurden. Die feed-forward-Architektur ermöglichte die höchste Verarbeitungsgeschwindigkeit (20+ FPS). Allerdings war die Vollständigkeit geringer als bei volumetrischen Verfahren – insbesondere in schwer einsehbaren Bereichen wie unter Möbeln entstanden Lücken. Die Local-to-World-Registrierung zeigte in Szene V3 vereinzelt Inkonsistenzen bei der Ausrichtung aufeinanderfolgender Fragmente.
+
+SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich. Mit zunehmender Szenenkomplexität verschlechterte sich die Performance dramatisch: In der komplexen Szene V3 brach sie vollständig ein (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Zusätzlich traten vermehrt frei schwebende Punkte auf, die keiner zusammenhängenden Struktur zugeordnet werden konnten und die Fragmentierung des Modells weiter verstärkten. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren. Während MASt3R-SLAM in den komplexeren Szenen V2 und V3 stabilere Ergebnisse lieferte, verschlechterte sich SLAM3R zunehmend und erwies sich als wenig robust gegenüber steigender Szenenkomplexität.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \caption{SLAM3R Rekonstruktion}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/slam3r00.png}
+        \caption{SLAM3R Rekonstruktion}
+    \end{subfigure}
+    \caption{SLAM3R Rekonstruktion von Szene V1 mit erkennbaren Drift-Problemen. Trotz Versätzen bleiben lokale Details und Farbinformation gut erhalten.}
+    \label{fig:slam3r_v1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/slam3r00.png}
+        \caption{Szene V1}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/slam3r00.png}
+        \caption{Szene V2}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/slam3r.png}
+        \caption{Szene V3}
+    \end{subfigure}
+    \caption{SLAM3R Performance-Vergleich über Szenen: V1 (links), V2 (Mitte), V3 (rechts). Deutlich erkennbar ist die zunehmende Fragmentierung und der Verlust globaler Kohärenz mit steigender Komplexität.}
+    \label{fig:slam3r_scenes_progression}
+\end{figure}
+
 
 \paragraph{MASt3R-SLAM}
-MASt3R-SLAM erzeugte detaillierte, dichte Punktwolken mit hoher lokaler Genauigkeit. Die transformer-basierte Feature-Extraktion ermöglichte robustes Matching auch bei texturarmen Oberflächen. In den realen Szenen R1 und R2 zeigte sich jedoch gelegentlich Drift bei längeren Trajektorien, erkennbar an leichten Verschiebungen zwischen Rekonstruktionsfragmenten verschiedener Zeitpunkte. Die punktbasierte Darstellung erreichte nicht die Oberflächenkohärenz der volumetrischen Verfahren.
+
+MASt3R-SLAM erzeugte ebenfalls Punktwolken und zeigte über alle Szenen hinweg konstante F-Scores (V1: 0.50, V2: 0.50, V3: 0.45). In der einfachen Szene V1 war das Verfahren jedoch SLAM3R deutlich unterlegen: Der Drift war stärker ausgeprägt, und die globale Kohärenz litt bereits in dieser unkomplizierten Umgebung. Auch frei schwebende Punkte traten bereits in V1 häufiger auf als bei SLAM3R und beeinträchtigten die visuelle Qualität der Rekonstruktion. Mit zunehmender Szenenkomplexität zeigte sich jedoch ein anderes Bild: Während SLAM3R in V2 und besonders in V3 stark einbrach, blieb MASt3R-SLAM relativ stabil. In den komplexeren Szenen V2 und V3 übertraf es SLAM3R sowohl in der räumlichen Konsistenz als auch in der globalen Ausrichtung. Die Fragmentierung durch frei schwebende Punkte war zwar weiterhin vorhanden und trug zur Unübersichtlichkeit bei, jedoch deutlich moderater als bei SLAM3R in diesen Szenen. Rekonstruktionsabschnitte fügten sich besser zu einem Gesamtbild zusammen, auch wenn eine manuelle Registrierung weiterhin notwendig blieb, um die Rekonstruktionen mit dem Ground Truth abzugleichen. Die lokale Detailtreue mit Farbinformation war durchgängig gegeben, und die Performance blieb über die Szenen hinweg bemerkenswert konsistent, während SLAM3R zunehmend instabil wurde.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \caption{Ground Truth}
+    \end{subfigure}
+    \begin{subfigure}{0.49\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/mast3r0.png}
+        \caption{MASt3R-SLAM Rekonstruktion}
+    \end{subfigure}
+    \caption{MASt3R-SLAM Rekonstruktion von Szene V1 mit ausgeprägten Drift-Problemen. Die Versätze und frei schwebenden Punkte sind hier deutlich stärker als bei SLAM3R in derselben Szene.}
+    \label{fig:mast3r_v1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/mast3r0.png}
+        \caption{Szene V1}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/mast3r00.png}
+        \caption{Szene V2}
+    \end{subfigure}
+    \begin{subfigure}{0.32\linewidth}
+        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/mast3r.png}
+        \caption{Szene V3}
+    \end{subfigure}
+    \caption{MASt3R-SLAM Performance-Vergleich über Szenen: V1 (links), V2 (Mitte), V3 (rechts). Im Gegensatz zu SLAM3R bleibt die Konsistenz über die Szenen hinweg relativ stabil.}
+    \label{fig:mast3r_scenes_progression}
+\end{figure}
+
 
 \paragraph{Vergleichende Bewertung}
-Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zusammen und bewertet sie entweder negativ, neutral oder positiv gegnüber den anderen Modellen.
+Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zusammen und bewertet die Verfahren anhand einer fünfstufigen Skala (sehr gering, gering, mittel, hoch, sehr hoch) in Bezug auf die definierten Qualitätskriterien. Diese Bewertung erfolgte durch vergleichende visuelle Inspektion der Rekonstruktionen und ermöglicht eine differenzierte Einordnung der Stärken und Schwächen der einzelnen Verfahren.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \label{tab:qualitative_comparison}
-    \caption{Qualitative Bewertung der Rekonstruktionsmodelle}
     \begin{tabular}{lcccc}
         \toprule
-        \textbf{Kriterium} & \textbf{NeuralRecon} & \textbf{VisFusion} & \textbf{MASt3R} & \textbf{SLAM3R} \\
+        \textbf{Kriterium} & \textbf{NeuralRecon} & \textbf{VisFusion} & \textbf{SLAM3R} & \textbf{MASt3R-SLAM} \\
         \midrule
-        Vollständigkeit    & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} \\
-        Detailtreue        & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} \\
-        Artefaktfreiheit   & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} \\
-        Oberflächenqualität & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} & \textit{[+/o/-]} \\
+        Vollständigkeit & mittel & hoch & hoch & hoch \\
+        Detailtreue & gering & mittel & sehr hoch & sehr hoch \\
+        Artefaktfreiheit & sehr hoch & sehr hoch & sehr gering & gering \\
+        Oberflächenqualität & sehr hoch & sehr hoch & mittel & mittel \\
         \bottomrule
     \end{tabular}
     \medskip
+    \caption{Qualitative Bewertung der Rekonstruktionsverfahren im Vergleich}
 \end{table}
 
 \subsection{Modularität und Systemstabilität}
