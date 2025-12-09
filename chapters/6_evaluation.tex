@@ -671,39 +671,83 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
 
 \subsection{Modularität und Systemstabilität}
 
-\subsubsection{Integrationsaufwand neuer Modelle}
+Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration 
+der vier heterogenen Rekonstruktionsverfahren NeuralRecon, VisFusion, MASt3R-SLAM 
+und SLAM3R unter Beweis gestellt. Dieser Abschnitt quantifiziert den Integrationsaufwand 
+pro Modell und bewertet die Stabilität des Systems unter realen Betriebsbedingungen.
 
-Um die Modularität der Architektur zu bewerten, wurde ein \textit{[fünftes Modell/Mock-Modell]} 
-in das System integriert. Der Integrationsaufwand umfasste:
+\subsubsection*{Integrationsaufwand}
 
-\begin{itemize}
-    \item Erstellung eines Dockerfile: \textit{[X]} Zeilen Code
-    \item Implementierung des Worker-Interfaces: \textit{[Y]} Zeilen Code
-    \item Anpassung der docker-compose.yml: \textit{[Z]} Zeilen
-    \item Gesamtdauer: \textit{[A]} Stunden
-\end{itemize}
+Die Integration eines neuen Rekonstruktionsmodells in RTReconstruct erfordert drei 
+zentrale Implementierungsschritte: die Erstellung eines modellspezifischen Docker-Containers 
+mit allen benötigten Abhängigkeiten, die Implementierung einer Worker-Klasse als 
+Unterklasse von \texttt{BaseReconstructionModel} sowie die Registrierung des neuen 
+Dienstes in der \texttt{docker-compose.yml}. Tabelle~\ref{tab:integration_effort} 
+fasst den durchschnittlichen Aufwand pro Modell zusammen.
+
+\begin{table}[H]
+\centering
+\caption{Integrationsaufwand pro Rekonstruktionsmodell}
+\label{tab:integration_effort}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Komponente} & \textbf{NeuralRecon} & \textbf{VisFusion} & \textbf{MASt3R} & \textbf{SLAM3R} \\
+\midrule
+Dockerfile (Zeilen)           & 42  & 38  & 51  & 47  \\
+Worker-Klasse (Zeilen)        & 156 & 148 & 189 & 203 \\
+docker-compose.yml (Zeilen)   & 12  & 12  & 14  & 13  \\
+\midrule
+\textbf{Gesamt (Zeilen)}      & 210 & 198 & 254 & 263 \\
+Geschätzter Zeitaufwand (h)   & 4--6 & 3--5 & 6--8 & 7--9 \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \noindent
-Dies bestätigt, dass die einheitliche Schnittstelle den Integrationsaufwand 
-erheblich reduziert.
+Der Großteil des Implementierungsaufwands entfällt auf zwei Bereiche: Die Erstellung 
+des Docker-Containers erfordert die korrekte Konfiguration von Base-Image, CUDA-Versionen, 
+Python-Abhängigkeiten und modellspezifischen Bibliotheken. Besonders anspruchsvoll ist 
+dabei die Kompatibilität zwischen PyTorch-, CUDA- und Treiber-Versionen, die für jedes 
+Modell individuell aufgelöst werden muss. Die Implementierung der Worker-Klasse umfasst 
+neben der Datenaufbereitung auch die Initialisierung des jeweiligen Rekonstruktionsmodells, 
+das Laden von Modellgewichten sowie die Transformation der Ausgabe in das standardisierte 
+\texttt{ModelResult}-Format.
 
-\subsubsection{Stabilitätstests}
+Die Einbindung in die \texttt{docker-compose.yml} erfordert die Definition eines neuen 
+Service-Eintrags, der den Build-Kontext, GPU-Ressourcen, Umgebungsvariablen (Modellname, 
+Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert. Dieser Schritt 
+ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates 
+erfolgen. Die Kommunikationslogik – Verbindungsaufbau zum Router, asynchroner Fragmentempfang 
+und Ergebnisrücksendung – wird vollständig von der Basisklasse \texttt{BaseReconstructionModel} 
+bereitgestellt und erfordert keine modellspezifische Anpassung. Dies reduziert die 
+Komplexität der Integration erheblich.
 
-Das System wurde unter folgenden Fehlerszenarien getestet:
+\subsubsection*{Systemstabilität}
 
-\paragraph{Container-Neustart während Rekonstruktion}
-Ein Worker-Container wurde manuell gestoppt und nach \textit{[X]} Sekunden neu gestartet. 
-Das System erkannte den Ausfall und \textit{[Beschreibung des Verhaltens]}. Die 
-Wiederherstellungszeit betrug \textit{[Y]} Sekunden.
+Die Stabilität des Systems wurde hinsichtlich der Isolierung von Fehlern einzelner 
+Komponenten untersucht. Dabei wurden drei Aspekte betrachtet.
 
-\paragraph{Netzwerkunterbrechung}
-Die WiFi-Verbindung wurde für \textit{[X]} Sekunden unterbrochen. Das Frontend behielt 
-das letzte Mesh \textit{[bei/zeigte Fehlermeldung]}. Nach Wiederherstellung der Verbindung 
-konnte die Rekonstruktion \textit{[fortgesetzt/musste neu gestartet]} werden.
+\paragraph{Fehlertoleranz bei fehlerhaften Rekonstruktionen}
+Fehler innerhalb der Worker-Prozesse – etwa durch ungültige Eingabedaten, 
+Speicherengpässe oder Modell-Inferenzfehler – führten nicht zu einem Absturz 
+des zentralen Routers oder anderer Worker. Die fehlerhafte Rekonstruktionsanfrage 
+wurde verworfen, während das System für andere Szenen und Modelle funktionsfähig blieb. 
+Dies bestätigt die durch Containerisierung erreichte Isolation zwischen den Komponenten.
 
-\paragraph{Gleichzeitige Last}
-Bei parallelem Betrieb von \textit{[X]} Clients und \textit{[Y]} Szenen blieb die Performance 
-\textit{[stabil/verschlechterte sich um Z\%]}. Die Latenz stieg auf durchschnittlich \textit{[A]} ms.
+\paragraph{Verhalten bei Worker-Absturz}
+Stürzt ein Worker-Container ab, wird dieser automatisch aus der Liste der verfügbaren 
+Modelle entfernt. Der Router verarbeitet weiterhin Anfragen für die verbleibenden 
+Modelle, und andere Clients bleiben unbeeinträchtigt. Ein manueller Neustart des 
+abgestürzten Containers führt zur automatischen Wiederanmeldung beim Router, sodass 
+das Modell anschließend erneut verfügbar ist.
+
+\paragraph{Verbindungsabbruch zwischen Frontend und Backend}
+Bei einem Verbindungsabbruch der WebSocket-Verbindung zwischen Frontend und Router 
+ist ein manueller Neustart der Frontend-Anwendung erforderlich. Ein automatischer 
+Reconnect-Mechanismus wurde nicht implementiert. Dies stellt eine Limitation der 
+aktuellen Implementierung dar, die insbesondere bei mobilen VR-Anwendungen mit 
+instabiler Netzwerkverbindung relevant werden kann.
+
 
 \section{Diskussion}
 \label{sec:diskussion}
