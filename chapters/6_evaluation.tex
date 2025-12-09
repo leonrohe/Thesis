@@ -479,14 +479,14 @@ Visualisierungsphase gemessen. Tabelle~\ref{frame_rate} zeigt die Ergebnisse.
 \end{figure}
 
 \subsection{Rekonstruktionsqualität}
+Die Rekonstruktionsqualität wird zunächst anhand der synthetischen Szenen V1--V3 mit 
+Ground-Truth-Daten quantitativ und qualitativ bewertet. Anschließend erfolgt eine 
+Untersuchung der Praxistauglichkeit unter realen VR-Bedingungen anhand der mit der 
+Meta Quest 3 aufgenommenen Szenen R1 und R2.    
 
 \subsubsection{Quantitative Bewertung}
 
 Tabelle~\ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit verfügbarem Ground-Truth für einen Schwellenwert von \textit{10}cm.
-
-\medskip
-\noindent
-Die dafür benötigten Daten wurden mit der quelloffenen Software CloudCompare gesammelt, indem zunächst die Cloud-to-Cloud Distance-Funktion verwendet wurde, um für jeden Punkt der Rekonstruktion den Abstand zum nächsten Ground-Truth-Punkt zu berechnen. Anschließend wurden die Punkte über \textit{Filter Points by Value} anhand des 10\,cm Schwellenwerts klassifiziert: Abstände \(\leq 10\)\,cm ergeben True Positives, größere Abstände False Positives. False Negatives wurden durch die umgekehrte Distanzberechnung von Ground-Truth zu Rekonstruktion ermittelt, woraus Precision, Recall und F-Score berechnet wurden.
 
 \begin{table}[H]
     \centering
@@ -507,13 +507,17 @@ Die dafür benötigten Daten wurden mit der quelloffenen Software CloudCompare g
 \end{table}
 
 \noindent
-Für die Modelle SLAM3R und MASt3R-SLAM musste vor der Berechnung der Metriken eine Registrierung der rekonstruierten Punktwolken mit dem Ground-Truth-Mesh durchgeführt werden. Dies erfolgte mittels des Iterative Closest Point (ICP)-Algorithmus in CloudCompare, um eine optimale Ausrichtung zu gewährleisten, da diese Modelle in lokalen Koordinatensystemen arbeiten.
+Die Berechnung erfolgte in CloudCompare mittels Cloud-to-Cloud Distance: Punkte mit 
+Abstand \(\leq 10\)\,cm zum nächsten Ground-Truth-Punkt wurden als True Positives 
+klassifiziert, größere Abstände als False Positives. False Negatives wurden durch 
+umgekehrte Distanzberechnung ermittelt. Da SLAM3R und MASt3R-SLAM keine globale 
+Konsistenz gewährleisten, wurden deren Rekonstruktionen zuvor mittels ICP ausgerichtet.
 
 \subsubsection{Qualitative Bewertung}
 
 \paragraph{NeuralRecon}
 
-Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testszenarien hinweg. Besonders in Szene V1 wurden schräge Flächen vollständig ausgelassen, während horizontale und vertikale Strukturen zumindest teilweise erfasst wurden. In den komplexeren Szenen V2 (F-Score: 0.68) und V3 setzte sich diese Lückenhaftigkeit fort, wobei V2 noch die stabilste Performance lieferte. Neben den fehlenden Bereichen fielen auch vereinfachte Geometrien auf – feine Details gingen verloren, während gröbere Strukturen noch erkennbar blieben. Positiv hervorzuheben ist hingegen die Qualität der tatsächlich erfassten Bereiche: Die Meshes wiesen glatte, geschlossene Oberflächen auf und waren frei von Fehlgeometrien oder Flimmerartefakten. Die globale Koherenz blieb durchgängig erhalten.
+Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testszenarien hinweg. Besonders in Szene V1 wurden schräge Flächen vollständig ausgelassen, während horizontale und vertikale Strukturen zumindest teilweise erfasst wurden. In den komplexeren Szenen V2 und V3 setzte sich diese Lückenhaftigkeit fort. Neben den fehlenden Bereichen fielen auch vereinfachte Geometrien auf - feine Details gingen verloren, während gröbere Strukturen noch erkennbar blieben. Positiv hervorzuheben ist hingegen die Qualität der tatsächlich erfassten Bereiche: Die Meshes wiesen glatte, geschlossene Oberflächen auf und waren frei von Fehlgeometrien oder Flimmerartefakten. Die globale Koherenz blieb durchgängig erhalten.
 
 \begin{figure}[H]
     \centering
@@ -525,7 +529,7 @@ Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testsz
         \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/neucon00.png}
         \caption{NeuralRecon Rekonstruktion}
     \end{subfigure}
-    \caption{NeuralRecon Rekonstruktion von Szene V1. Deutlich erkennbar sind die fehlenden schrägen Flächen, während horizontale und vertikale Strukturen teilweise erfasst wurden.}
+    \caption{Lückenhafte Rekonstruktion von Szene V1 durch NeuralRecon. Schräge Flächen werden nicht erfasst, während horizontale und vertikale Strukturen teilweise rekonstruiert werden.}
     \label{fig:neuralrecon_v1}
 \end{figure}
 
@@ -669,6 +673,42 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
     \caption{Qualitative Bewertung der Rekonstruktionsverfahren im Vergleich}
 \end{table}
 
+\subsubsection{Rekonstruktion unter realen VR-Bedingungen}
+
+Während die virtuellen Szenen V1--V3 die Rekonstruktionsqualität unter kontrollierten 
+Bedingungen mit synthetischen, hochauflösenden Kameras evaluieren, testen die realen 
+Szenen R1 (Schlafzimmer) und R2 (Wohnzimmer) die Praxistauglichkeit des Systems unter 
+authentischen VR-Bedingungen mit der Meta Quest 3.
+
+\paragraph{Charakteristika der Quest 3-Passthrough-Kamera}
+Die für Tracking optimierten Passthrough-Kameras der Quest 3 weisen mehrere 
+Hardware-bedingte Eigenschaften auf, die sich von synthetischen Kameras unterscheiden:
+%
+\begin{itemize}
+    \item Geringer Dynamikumfang
+    \item Rolling-Shutter-Effekte bei schnellen Kopfbewegungen
+    \item Bildrauschen bei schwacher Beleuchtung
+    \item Reduzierter Kontrast
+\end{itemize}
+%
+Zudem wurden zur Reduktion der Datenmenge und zur Echtzeitfähigkeit die Auflösung auf \(640 \times 480\) Pixel begrenzt.
+
+\paragraph{Beobachtungen in Szene R1 (Schlafzimmer)}
+
+\paragraph{Beobachtungen in Szene R2 (Wohnzimmer)}
+
+\paragraph{Vergleich synthetische vs. reale Szenen}
+Im Vergleich zu den virtuellen Szenen V1--V3 zeigten die realen Szenen R1 und R2:
+%
+\begin{itemize}
+    \item Deutlich mehr Lücken und Artefakte in den Rekonstruktionen
+    \item Höhere Drift-Raten bei SLAM-basierten Verfahren (MASt3R-SLAM, SLAM3R)
+    \item Stärkere Varianz in der Rekonstruktionsqualität bei unterschiedlichen 
+          Beleuchtungsbedingungen
+    \item Zusätzliche Fehlerquellen durch Reflexionen und Überbelichtung, die in 
+          synthetischen Szenen nicht vorhanden waren
+\end{itemize}
+
 \subsection{Modularität und Systemstabilität}
 
 Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration 
@@ -717,8 +757,8 @@ Die Einbindung in die \texttt{docker-compose.yml} erfordert die Definition eines
 Service-Eintrags, der den Build-Kontext, GPU-Ressourcen, Umgebungsvariablen (Modellname, 
 Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert. Dieser Schritt 
 ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates 
-erfolgen. Die Kommunikationslogik – Verbindungsaufbau zum Router, asynchroner Fragmentempfang 
-und Ergebnisrücksendung – wird vollständig von der Basisklasse \texttt{BaseReconstructionModel} 
+erfolgen. Die Kommunikationslogik - Verbindungsaufbau zum Router, asynchroner Fragmentempfang 
+und Ergebnisrücksendung - wird vollständig von der Basisklasse \texttt{BaseReconstructionModel} 
 bereitgestellt und erfordert keine modellspezifische Anpassung. Dies reduziert die 
 Komplexität der Integration erheblich.
 
@@ -728,8 +768,8 @@ Die Stabilität des Systems wurde hinsichtlich der Isolierung von Fehlern einzel
 Komponenten untersucht. Dabei wurden drei Aspekte betrachtet.
 
 \paragraph{Fehlertoleranz bei fehlerhaften Rekonstruktionen}
-Fehler innerhalb der Worker-Prozesse – etwa durch ungültige Eingabedaten, 
-Speicherengpässe oder Modell-Inferenzfehler – führten nicht zu einem Absturz 
+Fehler innerhalb der Worker-Prozesse - etwa durch ungültige Eingabedaten, 
+Speicherengpässe oder Modell-Inferenzfehler - führten nicht zu einem Absturz 
 des zentralen Routers oder anderer Worker. Die fehlerhafte Rekonstruktionsanfrage 
 wurde verworfen, während das System für andere Szenen und Modelle funktionsfähig blieb. 
 Dies bestätigt die durch Containerisierung erreichte Isolation zwischen den Komponenten.
@@ -747,7 +787,6 @@ ist ein manueller Neustart der Frontend-Anwendung erforderlich. Ein automatische
 Reconnect-Mechanismus wurde nicht implementiert. Dies stellt eine Limitation der 
 aktuellen Implementierung dar, die insbesondere bei mobilen VR-Anwendungen mit 
 instabiler Netzwerkverbindung relevant werden kann.
-
 
 \section{Diskussion}
 \label{sec:diskussion}
