@@ -813,60 +813,65 @@ aktuellen Implementierung dar, die insbesondere bei mobilen VR-Anwendungen mit
 instabiler Netzwerkverbindung relevant werden kann.
 
 \section{Diskussion}
-\label{sec:diskussion}
+\label{sec:discussion}
 
-\subsection{Echtzeitfähigkeit}
+Die Evaluation von RTReconstruct zeigt, dass eine modulare, containerisierte Systemarchitektur grundsätzlich geeignet ist, heterogene Echtzeit-3D-Rekonstruktionsverfahren in Virtual-Reality-Umgebungen zu integrieren. Die folgenden Abschnitte diskutieren die Ergebnisse hinsichtlich Echtzeitfähigkeit, Modularität, Rekonstruktionsqualität und praktischer VR-Eignung und beantworten damit die zentrale Forschungsfrage dieser Arbeit.
 
-Die gemessenen Latenzen von \textit{[Bereich]} zeigen, dass der Hauptanteil der Verzögerung 
-auf die Modell-Inferenz entfällt (\textit{[X]}\%). Die WebSocket-Kommunikation und 
-Container-Architektur verursachen nur einen geringen Overhead von \textit{[Y]}\%. Dies 
-bestätigt, dass die gewählte Architektur keine signifikanten Performance-Einbußen 
-gegenüber monolithischen Systemen mit sich bringt.
+\subsection{Echtzeitfähigkeit und Performance-Charakteristik}
+\label{subsec:discussion_realtime}
 
-Die Unterschiede zwischen den Modellen lassen sich auf ihre unterschiedlichen 
-Rekonstruktionsparadigmen zurückführen: Volumetrische Verfahren wie 
-\textit{[NeuralRecon/VisFusion]} erzielen \textit{[schnellere/langsamere]} Inferenzzeiten aufgrund 
-\textit{[Begründung: z.B. ihrer TSDF-basierten Fusion]}, während SLAM-basierte Ansätze 
-\textit{[Charakteristik: z.B. durch Feature-Matching höhere Latenzen]} aufweisen.
+Die detaillierte Aufschlüsselung der End-to-End-Latenz (vgl. Abbildung \ref{fig:latency_breakdown}) erlaubt eine differenzierte Bewertung der verteilten Architektur. Während klassische monolithische Systeme durch direkten Speicherzugriff Latenzvorteile bieten, führt die hier gewählte Entkopplung zu einem unvermeidbaren Overhead durch Datenserialisierung und Netzwerktransfer ($L_{network}$).
 
-Der gemessene Durchsatz von \textit{[X]} Fragmenten pro Sekunde ermöglicht \textit{[häufige/seltene]} 
-Updates der Rekonstruktion. Die Frame Rate im Unity-Client von durchschnittlich 
-\textit{[Y]} fps liegt \textit{[im akzeptablen/grenzwertigen]} Bereich für VR-Anwendungen.
+Die Ergebnisse zeigen, dass der \textbf{dominierende Faktor} der Gesamtlatenz die Modell-Inferenzzeit ($L_{inference}$) ist. Der Anteil von Netzwerkübertragung und Container-Management fällt prozentual kaum ins Gewicht.
 
-\subsection{Modularität der Architektur}
+\textbf{Die kritische Betrachtung konzentriert sich jedoch auf die Frontend-Performance ($L_{render}$):} Die Prozesse der Deserialisierung und des Parsens der 3D-Modelle erfolgen zwar \textbf{asynchron} und \textbf{ohne Blockierung} des VR-Haupt-Threads. \textbf{Allerdings ist der Rendering-Overhead abhängig vom Datenformat ein kritischer Limitierungsfaktor.} Während das Rendering von dreiecksbasierten Meshes die kritische Framerate von 72 FPS halten kann, führt die Visualisierung hochdichter Punktwolken zu einem signifikanten Einbruch der Framerate auf bis zu **38 FPS**. Dies bedeutet, dass die Performance des Frontends primär durch die \textbf{Datenlast des 3D-Modells} (z.B. Anzahl der Punkte im Vergleich zu Polygonen) limitiert wird, wodurch die kritische VR-Schwelle für einige Verfahren unterschritten wird.
 
-Die erfolgreiche parallele Ausführung aller vier Modelle sowie der geringe 
-Integrationsaufwand für neue Modelle (\textit{[X]} Stunden) belegen die hohe Modularität 
-des Systems. Die containerisierte Architektur ermöglicht die Isolierung 
-unterschiedlicher Laufzeitumgebungen, was die Erweiterbarkeit erheblich vereinfacht.
+Zusammenfassend ist das System performanter als die zugrundeliegende Netzwerkinfrastruktur, aber die \textbf{Ausgabe komplexer Datenstrukturen} (Point Clouds) führt zu einem Engpass in der Visualisierung im VR-Frontend.
 
-Die Stabilitätstests zeigen, dass das System \textit{[Szenario A wie Container-Neustarts]} 
-robust handhabt. Bei \textit{[Szenario B wie Netzwerkunterbrechungen]} zeigten sich jedoch 
-\textit{[Schwächen wie Datenverlust]}, die für produktive Einsätze adressiert werden müssten.
+\subsection{Modularität und Erweiterbarkeit der Architektur}
+\label{subsec:discussion_modularity}
 
-\subsection{Rekonstruktionsqualität im Vergleich}
+Die Validierung der Modularität bestätigt den Nutzen des Microservice-Ansatzes für den Forschungskontext. Die Containerisierung löst das in der Forschung häufig auftretende Problem der \textit{Dependency Hell}, indem Modelle mit inkompatiblen Abhängigkeiten -- beispielsweise unterschiedliche PyTorch- und CUDA-Versionen -- isoliert und parallel auf einer physischen GPU betrieben werden konnten.
 
-Der Vergleich der Modelle zeigt erwartungsgemäß unterschiedliche Stärken: 
-Volumetrische Verfahren lieferten \textit{[Charakteristik wie robuste Gesamtmodelle mit 
-hoher Vollständigkeit]}, während SLAM-basierte Ansätze \textit{[Charakteristik wie feinere 
-lokale Details bei geringerer globaler Konsistenz]} aufwiesen. Dies entspricht den 
-in Kapitel \textbf{[REF: chap:stand\_der\_technik]} beschriebenen methodischen Unterschieden.
+Mit einem Integrationsaufwand von durchschnittlich unter einem Arbeitstag pro Modell (vgl. Tabelle \ref{tab:integration_effort}) qualifiziert sich RTReconstruct als agile Plattform für das Prototyping neuer Rekonstruktionsansätze. Die klare Trennung von \textbf{API-Handling (Main-Container)} und \textbf{Verarbeitungslogik (Worker-Container)} ermöglicht zudem eine hohe Wartbarkeit und eine effiziente Fehlerisolierung: Der Absturz eines einzelnen Worker-Containers beeinträchtigt nicht die Stabilität des Gesamtsystems. Darüber hinaus eröffnet die Architektur die Möglichkeit zur \textbf{horizontalen Skalierung} der Worker auf mehrere physische Maschinen, was zukünftig die Lastverteilung für besonders rechenintensive Verfahren erleichtern würde.
 
-Die quantitativen Ergebnisse zeigen, dass \textit{[Modellname]} mit einem F-Score von \textit{[X]} 
-die beste geometrische Genauigkeit erreicht, während \textit{[anderes Modell]} bei \textit{[Kriterium]} 
-überzeugt. Die qualitative Bewertung unterstreicht, dass \textit{[Modellname]} für Szenarien 
-mit \textit{[Merkmal]} besonders geeignet ist, während \textit{[anderes Modell]} in \textit{[anderen Szenarien]} 
-Vorteile bietet.
+Ein zentrales funktionales Manko bleibt die fehlende Persistenz: Der aktuelle Stateless-Ansatz der Container bedeutet, dass bei einem Neustart der Rekonstruktionsfortschritt verloren geht. Für einen produktiven Dauereinsatz oder lange Aufnahmen müsste hier zukünftig eine State-Management-Schicht ergänzt werden.
+
+\subsection{Rekonstruktionsqualität und Generalisierbarkeit}
+\label{subsec:discussion_quality}
+
+Die Modell-Evaluation unter realen VR-Bedingungen deckte eine Diskrepanz zwischen standardisierten synthetischen Metriken und der visuellen Qualität in der Anwendung auf. Ein zentrales Ergebnis dieser Arbeit ist die beobachtete ,,Performance-Inversion'': Während volumetrische Verfahren (\textit{NeuralRecon}, \textit{VisFusion}) in der idealisierten Umgebung der Simulation dominieren und hohe F-Scores erzielen, bricht ihre Leistung unter den realen Bedingungen der Meta Quest 3 signifikant ein.
+
+Dies lässt sich durch eine Kombination aus Architekturschwächen der Modelle und einer \textbf{kritischen Limitierung der Passthrough-Schnittstelle} erklären:
+\begin{itemize}
+    \item \textbf{Volumetrische Verfahren} erfordern für die korrekte Akkumulation der Tiefeninformationen eine \textbf{extrem präzise Synchronisation} zwischen dem aufgenommenen Kamerabild (Frame) und der zugehörigen Kamerapose (Extrinsics). Im Gegensatz zur synthetischen Testumgebung, in der die virtuelle Kamera \textbf{perfekt synchronisierte Posen- und Frame-Daten} liefert, verhindert das Meta Passthrough SDK in der realen Umgebung diese notwendige Präzision. Da das SDK \textbf{keine zuverlässigen Zeitstempel} für die gecapturerten Frames liefert, ist ein perfektes Matching der Extrinsics zur Bildaufnahme unmöglich. Diese unzureichende Synchronisation führt zu einer \textbf{fehlerhaften Registrierung und Fusion} der Daten, was die beobachtete starke Glättung und den Verlust geometrischer Details verursacht. Der Leistungseinbruch ist somit primär eine Folge des \textbf{Daten-Zeit-Versatzes}, welcher die zugrunde liegende Annahme der Algorithmen über die Posen-Genauigkeit verletzt.
+    \item \textbf{SLAM-basierte Verfahren} (\textit{MASt3R-SLAM}, \textit{SLAM3R}) hingegen stützen sich stärker auf gelerntes \textbf{Feature-Matching} und visuelle Odometrie. Diese Ansätze sind robuster, da sie die Pose entweder intern optimieren oder eine höhere Toleranz gegenüber geringfügigen Registrierungsfehlern aufweisen. Sie erwiesen sich daher als resistenter gegenüber Bewegungsunschärfe und Rolling-Shutter-Effekten.
+\end{itemize}
+Für die Entwicklung von VR-Anwendungen bedeutet dieser Trade-off: Die Meta Quest 3 ist aufgrund ihrer aktuellen Passthrough-SDK-Implementierung \textbf{nur bedingt optimal} für Rekonstruktionsarchitekturen geeignet, die auf hochpräzise Frame-Pose-Synchronisation angewiesen sind. Die Robustheit eines Verfahrens gegenüber unsauberen Kameradaten und mangelhaften SDK-Schnittstellen ist derzeit entscheidender als seine metrische Leistung in idealisierten Szenarien.
 
 \subsection{Eignung für VR-Anwendungen}
+\label{subsec:discussion_vr_suitability}
 
-Die Evaluationsergebnisse zeigen, dass RTReconstruct die definierten funktionalen 
-Anforderungen erfüllt und für interaktive VR-Anwendungen \textit{[grundsätzlich geeignet/
-mit Einschränkungen nutzbar]} ist. Die Latenzwerte von \textit{[Bereich]} liegen \textit{[im/knapp 
-über dem]} für VR akzeptablen Bereich. Die stabile Kommunikation und die erfolgreiche 
-Multi-Szenen-Unterstützung bestätigen die Praxistauglichkeit der Architektur für 
-das Va.Si.Li-Lab.
+Die Eignung des Systems für das Va.Si.Li-Lab zeigt ein zweigeteiltes Bild, das von der Art der Anwendung abhängt.
 
-Die modulare Struktur ermöglicht es, je nach Anwendungsfall das optimale 
-Rekonstruktionsverfahren auszuwählen: \textit{[Szenario A]} profitiert von \textit{[Modellname]}, 
-während \textit{[Szenario B]} mit \textit{[anderem Modell]} bessere Ergebnisse erzielt.
+Technisch bewältigt das Frontend die Visualisierung mittels Spatial Hashing hervorragend, ohne die für VR kritische Framerate von 72 FPS zu unterschreiten. Das System ist somit performant genug, um als \textbf{Hintergrunddienst} für die Rekonstruktion zu laufen, dessen Ergebnisse asynchron eingeblendet werden.
+
+Funktional jedoch limitiert die End-to-End-Latenz von ca. 1,2 bis 2,5 Sekunden die möglichen Anwendungsfelder massiv. Dies definiert eine klare Grenze zwischen \textbf{Soft-Realtime}-Anwendungen und \textbf{Hard-Realtime}-Anforderungen:
+\begin{itemize}
+    \item \textbf{Akzeptabel (Soft-Realtime):} Das System eignet sich hervorragend für \textbf{kontextuelle} und \textbf{kollaborative} Szenarien, bei denen die Rekonstruktion als statische oder langsam veränderliche räumliche Information dient (z.\,B. gemeinsame Orientierung, Platzierung von virtuellen Möbeln, Dokumentation eines Raumes). Die Latenz ist tolerierbar, da sie das primäre Interaktionserlebnis (Tracking, Steuerung) nicht beeinträchtigt.
+    \item \textbf{Nicht geeignet (Hard-Realtime):} Die hohe Latenz macht das System unbrauchbar für \textbf{dynamische Mixed-Reality-Interaktionen}, bei denen virtuelle Objekte physikalisch korrekt und verzögerungsfrei mit der rekonstruierten Geometrie interagieren sollen (z.\,B. Abprallen eines virtuellen Balls von einer realen Wand).
+\end{itemize}
+Hier zeigt sich, dass die aktuelle Generation von One-Shot-Rekonstruktionsmodellen zwar visuell beeindruckend, für physikalische Echtzeit-Interaktionen aber noch zu träge ist. Eine Reduzierung der Inferenzzeit ($L_{inference}$) auf unter 200 ms wäre für Hard-Realtime-Anwendungen zwingend erforderlich.
+
+\subsection{Beantwortung der Forschungsfrage}
+\label{subsec:research_question}
+
+Die zentrale Forschungsfrage dieser Arbeit lautete: \textit{Wie gut eignet sich eine modulare, containerisierte Systemarchitektur zur Integration verschiedener Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung?}
+
+Die Evaluation zeigt, dass sich eine solche Architektur gut eignet, jedoch mit spezifischen Trade-offs verbunden ist:
+\begin{itemize}
+    \item \textbf{Technische Machbarkeit:} Die Entkopplung ist stabil und performant genug für den Soft-Realtime-Betrieb. Der Overhead ist messbar, aber im Vergleich zur Inferenzzeit der KI-Modelle meist sekundär.
+    \item \textbf{Flexibilität vs. Komplexität:} Der Gewinn an Modularität und die Lösung von Kompatibilitätsproblemen rechtfertigen den leicht erhöhten Architektur-Overhead, insbesondere im wissenschaftlichen Kontext.
+    \item \textbf{Praxistauglichkeit:} Das System ist für kontextuelle VR-Szenarien sofort einsetzbar, für hochdynamische Interaktionen jedoch durch die Latenz der aktuellen KI-Modelle limitiert.
+\end{itemize}
+Zusammenfassend stellt die entwickelte Architektur eine valide Grundlage für flexible, erweiterbare Rekonstruktionssysteme dar, deren Leistungsfähigkeit primär durch die Fortschritte der integrierten KI-Modelle und weniger durch die Systemarchitektur selbst begrenzt wird.
