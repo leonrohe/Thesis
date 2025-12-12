@@ -1,82 +1,99 @@
 \chapter{Zusammenfassung und Ausblick}
 
-\section{Zusammenfassung}
+Diese Arbeit adressierte die Herausforderung, heterogene Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung zu integrieren. Die zentrale Forschungsfrage lautete: \textit{Wie gut eignet sich eine modulare, containerisierte Systemarchitektur zur Integration verschiedener Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung?} Zur Beantwortung wurde das System RTReconstruct konzipiert, implementiert und experimentell evaluiert.
 
-Diese Arbeit behandelte die Konzeption, Implementierung und Evaluation eines modularen Systems zur Echtzeit-3D-Rekonstruktion in einer bestehenden VR-Umgebung. Ziel war es, eine Architektur zu entwerfen, die verschiedene Rekonstruktionsmodelle kapselt und über eine standardisierte Kommunikationsschnittstelle mit einem Unity-basierten Frontend interagiert.
+\section{Zusammenfassung der Ergebnisse}
 
-Im theoretischen Teil wurden zunächst die technischen Grundlagen zu Virtual Reality, 3D-Rekonstruktionsverfahren und Container-Technologien erläutert. Darauf aufbauend erfolgte die Konzeption einer containerisierten Gesamtarchitektur, die Frontend, Backend und einzelne Modellcontainer klar voneinander trennt. 
+\subsection{Konzeption und Implementierung}
+Die entwickelte Architektur trennt konsequent zwischen einem Unity-basierten VR-Frontend im Va.Si.Li-Lab, einem zentralen Backend-Router und containerisierten Rekonstruktions-Workern. Das Frontend erfasst kontinuierlich Kamera- und Posendaten, bündelt diese zu zeitlichen Fragmenten und visualisiert die empfangenen 3D-Rekonstruktionen in Echtzeit. Der Backend-Router verteilt eingehende Fragmente über ein binäres WebSocket-Protokoll asynchron an die zuständigen Worker und verwaltet die aktuellsten Rekonstruktionsergebnisse pro Szene und Modell. Jeder Worker kapselt ein Rekonstruktionsverfahren (NeuralRecon, VisFusion, MASt3R-SLAM, SLAM3R) in einem eigenständigen Docker-Container und kommuniziert über eine einheitliche Schnittstelle.
 
-In der anschließenden Implementierung wurde diese Architektur in Form eines funktionsfähigen Prototyps realisiert. Das Backend verwaltet modellübergreifend eingehende Bild- und Posendaten, verteilt sie an GPU-basierte Worker-Container und überträgt die rekonstruierten Ergebnisse an die verbundenen VR-Clients. Das Frontend wurde um eine Capture-Pipeline, asynchrone Netzwerklogik und Echtzeit-Visualisierung der Rekonstruktionen erweitert. Die Integration in die Va.Si.Li-Lab-Umgebung zeigte, dass sich die Pipeline nahtlos in bestehende Mehrbenutzerszenarien einfügt.
+Die Implementierung zeigt, dass der Integrationsaufwand für neue Modelle mit durchschnittlich 42--51 Zeilen Dockerfile und 148--203 Zeilen Worker-Code gering ausfällt und modellunabhängig bleibt. Die asynchrone FastAPI-Architektur ermöglicht stabilen Parallelbetrieb bei minimaler Ressourcenauslastung des Routers (0,2\,\% CPU, 200\,MB RAM).
 
-Die durchgeführte Evaluation untersuchte die Systemleistung hinsichtlich Latenz, Durchsatz, Stabilität, Modularität und Rekonstruktionsqualität. 
-% Der F-Score-Vergleich verdeutlichte, dass strahlbasierte Verfahren (z.\,B.~SLAM3R) die höchste geometrische Präzision erreichten, 
-% während volumetrische Ansätze (NeuralRecon, VisFusion) eine besonders hohe Vollständigkeit zeigten. 
-% Die Implementierung bestätigte außerdem, dass neue Modelle mit minimalem Integrationsaufwand eingebunden werden können, 
-% was die Modularität und Erweiterbarkeit der Architektur unterstreicht.
+\subsection{Evaluationsergebnisse}
 
-Insgesamt konnte gezeigt werden, dass das entwickelte System die gesteckten Anforderungen erfüllt: Es ermöglicht eine modulare, containerisierte Integration heterogener Rekonstruktionsmodelle in Echtzeit und erlaubt deren direkte Visualisierung in einer immersiven VR-Umgebung. 
+\subsubsection{Echtzeitfähigkeit und Performance}
+Die Performance-Evaluierung über fünf Testszenen (drei virtuelle, zwei reale) demonstriert deutliche modellspezifische Unterschiede. Volumetrische Verfahren erreichen Durchsatzraten von 0,30--0,62 Fragmenten pro Sekunde bei Gesamtlatenzen zwischen 2,1 und 3,7 Sekunden. SLAM-basierte Verfahren weisen mit 0,03--0,13 Fragmenten pro Sekunde geringeren Durchsatz auf, zeigen jedoch höhere Robustheit gegenüber SDK-Limitationen der Meta Quest 3 (fehlende Frame-Timestamps). Die Kommunikationslatenz (Netzwerk + Rendering) bleibt mit typisch unter 500\,ms gering, wodurch die Gesamtlatenz nahezu linear mit der Modell-Inferenzzeit skaliert -- ein zentrales Erfolgskriterium modularer Architekturen.
+
+Das System arbeitete über 6 Stunden Testdauer mit 0 Verbindungsabbrüchen stabil. Die GPU-Auslastung der Worker variierte modellabhängig zwischen 14--32\,\% CPU bei 2,8--4,1\,GB RAM-Verbrauch.
+
+\subsubsection{Rekonstruktionsqualität}
+Die vergleichende Qualitätsevaluation offenbarte eine ausgeprägte Performance-Inversion zwischen virtuellen und realen Testumgebungen. Während volumetrische Verfahren in kontrollierten Unity-Szenen höhere F-Scores erzielten (VisFusion: bis 0,72), zeigten SLAM-Verfahren in realen Umgebungen überlegene Vollständigkeit und Detailtreue. Diese Diskrepanz ist primär auf SDK-bedingte Ungenauigkeiten in den Extrinsiken der Meta Quest 3 zurückzuführen, die volumetrische Fusionsverfahren stärker beeinträchtigen als selbst-kalibrierende SLAM-Ansätze.
+
+Volumetrische Modelle lieferten konsistente, geschlossene Oberflächenmodelle (Meshes mit 2,19--4,24\,MB) bei moderater Detailtreue. SLAM-Verfahren erzeugten kompaktere Punktwolken (1,60\,MB) mit höherer Feinauflösung, litten jedoch unter Drift-Problemen bei komplexen Szenen und inkonsistenter Skalierung.
+
+\subsection{Beantwortung der Forschungsfrage}
+Die entwickelte Architektur eignet sich \textbf{gut bis sehr gut} für Forschungs- und Evaluationskontexte in VR-Umgebungen. Drei zentrale Stärken wurden validiert:
+
+\begin{enumerate}
+    \item \textbf{Modularität:} Die erfolgreiche Integration von vier methodisch divergenten Rekonstruktionsverfahren mit heterogenen Framework-Abhängigkeiten (PyTorch 1.7--2.1) und Reprsentationsformen (volumetrisch, hybrid, implizit) bestätigt die Containerisierung als praktikabel und skalierbar.
+    
+    \item \textbf{Vergleichbarkeit:} Die Architektur ermöglicht systematische Vergleichsstudien unter identischen Bedingungen. Die identifizierte Hardware-Sensitivität volumetrischer Verfahren wäre ohne diese kontrollierte Umgebung kaum systematisch erfassbar gewesen.
+    
+    \item \textbf{Integrationsfähigkeit:} Die additive Integration in das Va.Si.Li-Lab erfolgte ohne disruptive Eingriffe in die Mehrbenutzerlogik. RTReconstruct fungiert als optionaler, zuschaltbarer Dienst und erweitert die Plattform um räumlichen Kontext.
+\end{enumerate}
+
+Deployment-spezifische Trade-offs konnten klar identifiziert werden: Volumetrische Verfahren eignen sich für kontrollierte Setups mit präzisen Kamera-Extrinsiken, während SLAM-Verfahren bei Consumer-Hardware (Meta Quest 3) trotz höherer Latenz robustere Ergebnisse liefern.
 
 \section{Limitationen}
 
-Obwohl das System in allen Tests stabil arbeitete, zeigten sich mehrere Einschränkungen, 
-die bei zukünftigen Entwicklungen berücksichtigt werden sollten:
+Trotz erfolgreicher Validierung der Kernfunktionalitäten bestehen folgende Einschränkungen:
 
-\begin{itemize}
-    \item Die GPU-Leistung der verwendeten Hardware (GTX~1070~Ti) begrenzt die Anzahl parallel aktiver Modellcontainer und den maximal erreichbaren Durchsatz. 
-    Dadurch ist die Skalierbarkeit derzeit auf Einzel-GPU-Betrieb beschränkt.
-
-    \item Größere GLB-Modelle führten zeitweise zu kurzen Nachladeverzögerungen im Frontend von bis zu~[WERT]~ms. 
-    Diese Latenzen entstehen vor allem durch das serielle Laden und Parsen vollständiger GLB-Dateien.
-
-    \item Die Punktwolken-Visualisierung im Unity-Frontend ist aktuell auf \textbf{100\,000 Punkte} begrenzt. 
-    Unabhängig von der tatsächlichen Szenengröße oder Dichte kann die Darstellung daher keine detaillierteren Punktwolken wiedergeben. 
-    Diese Begrenzung resultiert aus dem Performance-Bottleneck der Meta Quest 3.
-
-    \item Die F-Score-Berechnung basiert auf statischen Testszenen und reflektiert dynamische Umgebungen (z.\,B. mit bewegten Objekten) nur eingeschränkt. 
-    Auch die Transformation der von SLAM-Modellen erzeugten Karten erfolgte bisher manuell.
-
-    \item Persistente Speicherung von Modellzuständen ist bisher nicht vorgesehen. 
-    Ein Neustart der Container führt zum Verlust der aktuellen Rekonstruktionsdaten.
-\end{itemize}
+\begin{description}
+    \item[Hardware-Limitationen] Die verwendete GPU (GTX 1070 Ti, 8\,GB VRAM) begrenzt die Anzahl parallel betreibbarer Worker und verhindert die Evaluation neuerer, speicherintensiver Modelle. Moderne Hardware (z.\,B. RTX 4090) könnte die Inferenzzeiten signifikant reduzieren.
+    
+    \item[Skalierungsprobleme] Größere GLB-Modelle verursachen Nachladeverzögerungen im Frontend durch serielles Parsen. Die Punktwolken-Visualisierung ist auf 100\,000 Punkte begrenzt (Performance-Bottleneck der Meta Quest 3), was die Darstellung hochauflösender Rekonstruktionen verhindert.
+    
+    \item[Mastabsinkonsistenz] SLAM-basierte Verfahren erzeugen Rekonstruktionen in modellinternen Koordinatensystemen mit willkürlicher Skalierung. Die Integration in Unity erfordert derzeit manuelle Ausrichtung, da keine automatische Registration mit dem VR-Tracking-System implementiert wurde.
+    
+    \item[Fehlende Persistenz] Container-Neustarts führen zum Verlust aller Rekonstruktionszustände, da keine persistente Speicherung interner Modellzustände vorgesehen ist. Dies limitiert die Eignung für Langzeit-Rekonstruktionsszenarien.
+    
+    \item[SDK-Limitationen] Die fehlenden Frame-Timestamps und ungenauen Extrinsiken der Meta Quest 3 SDK beeinträchtigen volumetrische Verfahren systematisch. Diese Limitation ist hardware-spezifisch und würde bei Einsatz präziserer Kamera-Systeme entfallen.
+\end{description}
 
 \section{Zukünftige Arbeiten}
 
-Auf Basis der erzielten Ergebnisse und der identifizierten Limitationen ergeben sich mehrere Ansätze für weiterführende Arbeiten:
+Aufbauend auf den Ergebnissen und identifizierten Limitationen bieten sich folgende Erweiterungen an:
 
-\begin{itemize}
-    \item \textbf{Optimierung der Datenübertragung:} 
-    Um die Nachladeverzögerungen großer GLB-Modelle zu vermeiden, könnten zukünftig inkrementelle Updates implementiert werden. 
-    Statt vollständiger Modellübertragungen würden nur Änderungen einzelner Mesh-Segmente übertragen, was sowohl Latenz als auch Bandbreitenbedarf reduziert.
+\subsection{Architekturoptimierungen}
 
-    \item \textbf{Persistente Speicherung und Wiederherstellung:} 
-    Ein standardisiertes Speicherformat für interne Modellzustände könnte die Persistenz über Container-Neustarts hinweg gewährleisten. 
-    Dadurch ließen sich laufende Rekonstruktionsprozesse nach Unterbrechungen fortsetzen.
+\subsubsection{Inkrementelle Datenbertragung}
+Statt vollständiger GLB-Modelle könnten differenzielle Updates nur geänderter Mesh-Segmente übertragen werden. Dies würde Latenz und Bandbreitenbedarf reduzieren und flüssigere Szenenaktualisierungen ermöglichen. Ansätze wie progressive Meshes oder Octree-basierte Spatial Hashing bieten sich hierfür an.
 
-    \item \textbf{Multi-GPU- und Cloud-Deployment:} 
-    Zur Überwindung der aktuellen Hardwaregrenzen bietet sich eine verteilte Orchestrierung über mehrere GPUs oder Cloud-Instanzen an. 
-    Dies würde die Skalierbarkeit und Performance insbesondere bei parallelen Rekonstruktionen deutlich verbessern.
+\subsubsection{Persistente Zustandsverwaltung}
+Die Integration einer Checkpoint-Mechanik mit standardisiertem Serialisierungsformat (z.\,B. HDF5 oder zarr) würde Fortsetzung unterbrochener Rekonstruktionen ermöglichen. In Kombination mit S3-kompatiblen Object Stores könnten Rekonstruktionen versioniert und zwischen Sessions wiederhergestellt werden.
 
-    \item \textbf{Dynamische Punktwolken-Größen:} 
-    Die aktuelle Grenze von 100\,000 Punkten könnte durch eine dynamische Speicherverwaltung und instanzbasiertes Nachladen von Chunks aufgehoben werden. 
-    Durch Analyse der Bounding-Box und der Kameradistanz zur Szene könnte automatisch bestimmt werden, 
-    wie viele Punkte jeweils aktiv im Sichtfeld gerendert werden. 
-    Dies würde eine adaptive Balance zwischen Detailtiefe, Speicherverbrauch und Framerate ermöglichen.
+\subsubsection{Multi-GPU und Cloud-Deployment}
+Verteilte Orchestrierung über Kubernetes mit GPU-Node-Pooling würde echte Skalierbarkeit ermöglichen. Mehrere Szenen könnten parallel auf dedizierter Hardware rekonstruiert werden, ohne dass Clients sich GPU-Ressourcen teilen müssen.
 
-    \item \textbf{Automatisches Matching der SLAM-Modelle:} 
-    Basierend auf den volumetrischen Referenzen (z.\,B. NeuralRecon, VisFusion) kann der Output von SLAM-basierten Modellen 
-    automatisch skaliert und transformiert werden, um maßstabsgetreue und konsistente Visualisierungen sicherzustellen.
+\subsection{Funktionale Erweiterungen}
 
-    \item \textbf{Echtzeit-Interaktion:} 
-    Künftige Versionen könnten Nutzerinteraktionen in die Rekonstruktionspipeline integrieren, 
-    etwa zur Annotation von Szenen oder zum gezielten Nachladen bestimmter Bereiche während der Laufzeit.
+\subsubsection{Automatische Koordinaten-Registration}
+Für SLAM-Verfahren könnte eine automatische Ausrichtungsphase implementiert werden, die bei Session-Start mehrere volumetrische und SLAM-basierte Rekonstruktionen parallel ausführt und anschließend via ICP (Iterative Closest Point) registriert. Dies würde manuelle Skalierung obsolet machen.
 
-    \item \textbf{Erweiterung der Modellbibliothek:} 
-    Die derzeitige Architektur unterstützt Punktwolken- und Mesh-basierte Verfahren. 
-    Eine Erweiterung um moderne Repräsentationen wie \textit{Gaussian Splatting} oder \textit{3D Gaussians} 
-    wäre insbesondere mit Blick auf aktuelle Forschung und Echtzeitanwendungen vielversprechend.
-\end{itemize}
+\subsubsection{Adaptive Punktwolken-Visualisierung}
+Durch Analyse der Bounding-Box und Kameradistanz könnte die Punktzahl dynamisch angepasst werden. Level-of-Detail (LoD) Mechanismen mit instanzbasiertem Nachladen von Chunks würden hochauflösende Rekonstruktionen auch auf mobiler Hardware ermöglichen.
 
-Zusammenfassend zeigt die Arbeit, dass ein containerisiertes, modular aufgebautes System 
-für Echtzeit-3D-Rekonstruktionen technisch realisierbar und praktikabel ist. 
-Die Ergebnisse legen den Grundstein für weiterführende Forschung zu interaktiven, verteilten 
-Rekonstruktionssystemen in immersiven Lern- und Forschungsumgebungen.
+\subsubsection{Echtzeit-Nutzerinteraktion}
+Integration von Annotationswerkzeugen, selektivem Nachladen bestimmter Szenenregionen oder manueller Geometriekorrektur würde kollaborative Rekonstruktions-Workflows ermöglichen -- ein vielversprechender Anwendungsfall für das Va.Si.Li-Lab.
+
+\subsection{Modellintegration}
+
+\subsubsection{Gaussian Splatting}
+Die Integration moderner Gaussian-Splatting-Verfahren (3DGS, 4DGS) würde fotorealistische Rekonstruktionen mit höherer Rendering-Effizienz ermöglichen. Die Repräsentation als 3D-Gaussians bietet zudem native Unterstützung für View-Dependent Effects.
+
+\subsubsection{NeRF-basierte Verfahren}
+Instant-NGP oder TensoRF könnten als alternative strahlbasierte Verfahren evaluiert werden. Deren Fähigkeit zur Few-Shot-Rekonstruktion wäre für spontane VR-Szenarien mit wenigen Aufnahmen besonders wertvoll.
+
+\subsection{Wissenschaftliche Perspektiven}
+
+\subsubsection{Systematische Benchmark-Suite}
+Aufbauend auf der entwickelten Infrastruktur könnte eine standardisierte Benchmark-Suite für VR-Rekonstruktion entstehen, die verschiedene Hardware-Konfigurationen, Szenentypen und Modelle systematisch vergleichbar macht.
+
+\subsubsection{User Studies}
+Explorative Nutzerstudien zur Wahrnehmung von Rekonstruktionsartefakten in VR und zur Akzeptanz verschiedener Update-Frequenzen würden UX-Design-Richtlinien für Echtzeit-Rekonstruktionssysteme etablieren.
+
+\section{Abschließende Bewertung}
+
+Die Arbeit demonstriert, dass containerisierte, modular aufgebaute Architekturen für Echtzeit-3D-Rekonstruktion in VR technisch realisierbar, praktikabel und wissenschaftlich wertvoll sind. Das entwickelte System RTReconstruct stellt eine erweiterbare Forschungsplattform dar, die systematische Vergleiche heterogener Rekonstruktionsverfahren unter identischen Bedingungen ermöglicht -- eine Lücke, die bisherige monolithische End-to-End-Systeme nicht adressieren.
+
+Die Ergebnisse legen den Grundstein für weiterführende Forschung zu interaktiven, verteilten Rekonstruktionssystemen in immersiven Lern- und Forschungsumgebungen. Besonders vielversprechend erscheint die Übertragung des Architekturkonzepts auf verwandte Problemstellungen wie Echtzeit-Semantik-Segmentierung, 6-DoF-Object-Tracking oder dynamische Szenenrekonstruktion mit bewegten Objekten.
