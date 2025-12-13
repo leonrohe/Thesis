@@ -50,7 +50,7 @@ Im Folgenden werden ihre zentralen Konzepte und Beiträge zusammengefasst.
 
 \subsection{Volumetrische Verfahren}
 
-\textbf{NeuralRecon} \cite{sun2021neuralrecon}
+\textbf{NeuralRecon}
 stellt das erste echtzeitfähige, lernbasierte System zur kohärenten 3D-Rekonstruktion aus monokularen Videos dar.
 Anstatt einzelne Tiefenkarten pro Keyframe zu schätzen, 
 rekonstruiert es direkt lokale Oberflächen als \textit{Truncated Signed Distance Fields} (TSDF).
@@ -60,7 +60,7 @@ zu einem global konsistenten Volumen integriert.
 Das Verfahren kombiniert lokale Glättung und globale Formkohärenz
 und erreicht so dichte, konsistente Rekonstruktionen in Echtzeit.
 
-\textbf{VisFusion} \cite{gao2023visfusion}
+\textbf{VisFusion}
 erweitert NeuralRecon um eine explizite Modellierung der Sichtbarkeit bei der Merkmalfusion.
 Für jedes Voxel werden Sichtbarkeitsgewichte aus den Paarähnlichkeiten der Projektionsmerkmale verschiedener Ansichten berechnet,
 um Okklusionen gezielt zu vermeiden.
@@ -83,7 +83,7 @@ die geometrische Präzision mit der Generalisierungsfähigkeit neuronaler Merkma
 
 \subsection{Dichte implizite Verfahren}
 
-\textbf{SLAM3R} \cite{liu2025slam3r}
+\textbf{SLAM3R}
 führt ein vollständig differentiierbares, feed-forward-basiertes System zur dichten Echtzeitrekonstruktion ein.
 Statt Kameraparameter explizit zu schätzen,
 rekonstruiert es für überlappende Videofenster direkt dichte Punktkarten 
