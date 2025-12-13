@@ -1,116 +1,96 @@
 \chapter{Grundlagen}
+\label{ch:grundlagen}
 
-Dieses Kapitel bildet die technische und theoretische Grundlage der Arbeit. Es erläutert die zentralen Konzepte und Technologien, auf denen das entwickelte System aufbaut, und vermittelt das notwendige Verständnis für die folgenden Kapitel. 
-Der Schwerpunkt liegt auf der Darstellung der Prinzipien von Virtual Reality (VR) und Extended Reality (XR), der 3D-Rekonstruktion aus monokularen Bildsequenzen, grundlegenden Systemtechnologien wie Containerisierung und WebSocket-Kommunikation sowie der Beschreibung der Zielumgebung, in die das System integriert wird.
+Die Integration von 3D-Rekonstruktionsverfahren in Virtual-Reality-Anwendungen erfordert das Zusammenspiel verschiedener technologischer Bereiche. Um die in dieser Arbeit entwickelte Systemarchitektur nachvollziehen zu können, sind Kenntnisse über VR-Technologien, Rekonstruktionsverfahren und verteilte Systeme erforderlich. Dieses Kapitel führt in diese theoretischen und technischen Grundlagen ein. Es werden zunächst die Konzepte der Virtual Reality erläutert, anschließend die relevanten Verfahren der 3D-Rekonstruktion vorgestellt und abschließend die verwendeten Systemtechnologien sowie die Zielumgebung beschrieben.
 
-\section{Virtuelle Realität und Extended Reality}
+\section{Virtual Reality}
+\label{sec:virtual-reality}
 
-Virtuelle Realität (VR) bezeichnet die durch Computer generierte, interaktive Darstellung einer dreidimensionalen Umgebung, in der sich Nutzer immersiv bewegen und mit virtuellen Objekten interagieren können.\needcitation{}
-Durch Head-Mounted Displays (HMDs) entsteht ein stereoskopisches Wahrnehmungserlebnis, das Tiefenwahrnehmung und Bewegungskohärenz vermittelt.
+Virtual Reality (VR) bezeichnet eine computergenerierte, dreidimensionale Umgebung, in die Nutzende vollständig eintauchen können und mit der sie in Echtzeit interagieren. Moderne VR-Systeme nutzen Head-Mounted Displays (HMDs), die stereoskopische Bilder mit hoher Bildwiederholrate darstellen und durch präzises Tracking von Kopf-, Hand- und Körperbewegungen eine natürliche Interaktion ermöglichen. Diese Displays bestehen typischerweise aus hochauflösenden Panels für jedes Auge, optischen Linsen zur Fokussierung und integrierten Sensoren zur Bewegungserfassung.
 
-Unter dem Sammelbegriff \textit{Extended Reality (XR)} werden verschiedene Formen immersiver Technologien zusammengefasst, darunter Virtual Reality (VR), Augmented Reality (AR) und Mixed Reality (MR). Sie kombinieren reale und virtuelle Elemente zu einem gemeinsamen Wahrnehmungskontext.
-Moderne HMDs ermöglichen dies durch eine Passthrough-Funktion, bei der die Bilddaten einer externen oder integrierten Kamera in Echtzeit mit virtuellen Objekten überlagert werden.
-Besonders in Mixed-Reality-Szenarien ist eine präzise Erfassung der physischen Umgebung erforderlich, da virtuelle Objekte nur dann glaubwürdig interagieren, wenn die Geometrie der realen Szene exakt rekonstruiert wurde.
+Aktuelle Systeme wie die Meta Quest-Serie bieten zusätzlich \textit{Passthrough}-Funktionalität, bei der die in den HMDs verbauten Frontkameras die reale Umgebung erfassen und in Echtzeit darstellen können. Dies ermöglicht Mixed-Reality-Anwendungen, bei denen virtuelle Inhalte in die reale Umgebung eingebettet werden.
+
+Für eine konsistente VR-Erfahrung ist die präzise Erfassung der Position und Orientierung des HMDs sowie der Controller erforderlich. Moderne Systeme nutzen dafür \textit{Inside-Out-Tracking}, bei dem die im Headset verbauten Kameras die Umgebung erfassen und daraus die eigene Position relativ zu einem definierten Referenzpunkt ableiten. Die Zusammensetzung dieser Pose wird in Kapitel~\ref{sec:extrinsics} mithilfe der extrinsischen Parameter definiert.
 
 \section{3D-Rekonstruktion}
+\label{sec:3d-rekonstruktion}
 
-Unter 3D-Rekonstruktion versteht man die algorithmische Erzeugung einer dreidimensionalen Repräsentation einer realen Szene aus zweidimensionalen Bilddaten.
-Ziel ist es, Geometrie, Struktur und Textur so wiederzugeben, dass sie der realen Umgebung möglichst genau entsprechen.\needcitation{}
-Ergänzende Informationen wie \textit{Kameraintrinsiken} (Brennweite, Hauptpunkt) und \textit{Kameraextrinsiken} (Position, Orientierung) erhöhen die Rekonstruktionsgenauigkeit erheblich.
-Je nach genutzter Datenbasis und Algorithmus unterscheiden sich Verfahren hinsichtlich Genauigkeit, Laufzeit und Echtzeitfähigkeit.
+Die 3D-Rekonstruktion bezeichnet den Prozess, aus zweidimensionalen Bildern oder Bildsequenzen eine dreidimensionale Darstellung einer Szene zu erzeugen. Im Kontext dieser Arbeit ist insbesondere die monokulare Rekonstruktion relevant, bei der die 3D-Struktur einer Szene aus einer einzelnen Kamera bzw. einem fortlaufenden Bildstrom rekonstruiert wird. Im Gegensatz zu stereoskopischen oder RGB-D-Verfahren stehen keine direkten Tiefeninformationen zur Verfügung. Stattdessen muss die Tiefe aus der Bewegung der Kamera (Structure from Motion) oder durch lernbasierte Tiefenschätzung abgeleitet werden. Monokulare Verfahren sind besonders relevant für VR-Headsets, da diese typischerweise RGB-Kameras ohne dedizierte Tiefensensoren verwenden.
 
-\subsection{Photogrammetrie}
+\subsection{Kameramodell}
+\label{sec:extrinsics}
 
-Die Photogrammetrie kombiniert Methoden der \textit{Structure from Motion (SfM)} und \textit{Multi-View Stereo (MVS)}, um aus mehreren überlappenden Bildern die räumliche Struktur einer Szene zu rekonstruieren.
-Charakteristische Punkte werden detektiert, zwischen Bildern korreliert und durch \textit{Triangulation} in 3D-Koordinaten überführt.
-Anschließend erfolgt eine dichte Rekonstruktion über Korrespondenzsuche und Oberflächeninterpolation.
-Photogrammetrische Verfahren liefern sehr detailreiche Modelle, sind jedoch aufgrund der rechenintensiven Optimierung (z.\,B.\ Bundle Adjustment) meist für \textit{Offline-Verarbeitung} konzipiert.
-Ihre Nutzung in Echtzeitsystemen ist daher nur eingeschränkt möglich.
+Das Kameramodell beschreibt die mathematische Beziehung zwischen 3D-Punkten in der Welt und deren Projektion auf die 2D-Bildebene. Es wird durch intrinsische und extrinsische Parameter charakterisiert, die zusammen die vollständige geometrische Beschreibung der Kameraaufnahme ermöglichen.
+
+Die intrinsischen Parameter beschreiben die optischen Eigenschaften der Kamera und umfassen die Brennweite $f_x, f_y$ in Pixel-Einheiten, den Hauptpunkt $(c_x, c_y)$, der die Position des optischen Zentrums im Bild angibt, sowie optionale Verzeichnungsparameter zur Korrektur optischer Verzerrungen. Diese Parameter sind kameraspezifisch und bleiben über verschiedene Aufnahmen hinweg konstant, sofern die Kameraeinstellungen nicht verändert werden.
+
+Die extrinsischen Parameter hingegen beschreiben die Position und Orientierung der Kamera im 3D-Raum. Sie werden durch eine Translation $\mathbf{t} \in \mathbb{R}^3$ und eine Rotation $\mathbf{R} \in SO(3)$ dargestellt, wobei letztere alternativ auch als Quaternion $\mathbf{q}$ repräsentiert werden kann. Diese Parameter ändern sich mit jeder Kamerabewegung und müssen für jedes aufgenommene Bild bekannt oder geschätzt sein, um eine konsistente 3D-Rekonstruktion zu ermöglichen. In VR-Systemen werden die extrinsischen Parameter typischerweise durch das Tracking-System des Headsets bereitgestellt.
+
+\subsection{Volumetrische Verfahren}
+
+Volumetrische Verfahren repräsentieren die 3D-Szene als diskretes Gitter von Voxeln, wobei jeder Voxel Informationen über die lokale Geometrie speichert. Eine weit verbreitete Darstellung ist das \textit{Truncated Signed Distance Field} (TSDF), bei dem für jeden Voxel die vorzeichenbehaftete Distanz zur nächsten Oberfläche gespeichert wird. Positive Werte kennzeichnen dabei den Bereich vor der Oberfläche, negative Werte den Bereich dahinter. 
+
+Der zentrale Vorteil volumetrischer Verfahren liegt in der sukzessiven Integration mehrerer Ansichten. Durch die fortlaufende Fusion von Beobachtungen aus verschiedenen Kameraperspektiven entsteht eine dichte, global konsistente 3D-Repräsentation. Aus dieser Volumenrepräsentation kann durch Isosurface-Extraktion, beispielsweise mittels des Marching-Cubes-Algorithmus, ein vollständiges Mesh der rekonstruierten Szene erzeugt werden. Diese Verfahren sind besonders geeignet für Echtzeitanwendungen, da sie inkrementelle Updates ermöglichen und eine effiziente GPU-Beschleunigung unterstützen.
 
 \subsection{SLAM-Verfahren}
 
-\textit{Simultaneous Localization and Mapping (SLAM)} beschreibt den Prozess, bei dem ein System seine eigene Pose schätzt und gleichzeitig eine Karte der Umgebung aufbaut.
-Während die Lokalisierung durch kontinuierliche Pose-Schätzung erfolgt, werden gleichzeitig neue Bildinformationen in eine globale Karte integriert.
-SLAM-Ansätze können visuell (nur RGB), visuell-inertial (RGB + IMU-Sensoren) oder tiefenbasiert (RGB-D) arbeiten.
-Sie sind für den Echtzeitbetrieb optimiert und werden daher häufig in Robotik-, AR- und VR-Anwendungen eingesetzt.
-Ihre Modelle sind in der Regel weniger detailliert als photogrammetrische, bieten jedoch eine hohe Latenzstabilität und eignen sich für dynamische Szenen.
+Simultaneous Localization and Mapping (SLAM) bezeichnet Verfahren, die gleichzeitig die Position der Kamera schätzen und eine Karte der Umgebung erstellen. Dieser duale Ansatz ist besonders relevant für monokulare Rekonstruktion, da ohne externe Positionsinformationen die Kamerabewegung aus den Bildern selbst abgeleitet werden muss.
 
-\subsection{Neuronale Rekonstruktion}
+Klassische SLAM-Systeme wie ORB-SLAM basieren auf der Extraktion und Verfolgung visueller Features über mehrere Frames hinweg. Durch die simultane Optimierung von Kameraposen und 3D-Punktpositionen entsteht eine konsistente räumliche Repräsentation der Szene. Moderne, lernbasierte Ansätze erweitern diese Prinzipien durch den Einsatz neuronaler Netze zur robusten Feature-Extraktion und Tiefenschätzung. Diese hybriden Verfahren kombinieren die geometrische Präzision klassischer SLAM-Systeme mit der Generalisierungsfähigkeit datengetriebener Modelle und erzielen dadurch eine höhere Robustheit gegenüber schwierigen Beleuchtungsbedingungen oder texturarmen Szenen.
 
-Neuronale Verfahren erweitern klassische Rekonstruktionsansätze um tief lernende Komponenten, die geometrische und semantische Informationen direkt aus Bildfolgen extrahieren.
+\subsection{3D-Repräsentationsformate}
 
-\textbf{Volumetrische Verfahren} wie \textit{NeuralRecon} oder \textit{VisFusion} verwenden rekurrente 3D-Convolutional-Netze, die lokale Tiefenschätzungen über mehrere Frames hinweg in einem sogenannten \textit{Truncated Signed Distance Field (TSDF)} fusionieren.
-Ein TSDF repräsentiert die Szene als voxelbasiertes 3D-Gitter, in dem jeder Voxel den signierten Abstand zur nächstgelegenen Oberfläche speichert.
-Positive Werte liegen vor der Oberfläche, negative dahinter.
-Durch die Trunkierung auf einen festen Abstand wird die Repräsentation speicher- und berechnungseffizient, während gleichzeitig eine glatte Oberflächenapproximation ermöglicht wird.
+Die von den unterschiedlichen Verfahren erstellte Rekonstruktion muss für die Nutzenden visualisiert werden. Hierfür werden standardisierte Formate verwendet, die sich hinsichtlich Speichereffizienz, Detailgrad und Rendering-Performance unterscheiden.
 
-\textbf{Strahlbasierte Verfahren}, inspiriert von \textit{Neural Radiance Fields (NeRFs)}, modellieren die Szene als kontinuierliche Funktion entlang von Lichtstrahlen.
-Für jeden Strahl werden Dichte und Farbe geschätzt, um volumetrische Rendering-Effekte zu erzeugen.
-Moderne Ansätze wie \textit{SLAM3R} koppeln diese Darstellung mit SLAM-Mechanismen, um während der Kamerabewegung eine stabile Pose-Schätzung zu gewährleisten.
+\textbf{Punktwolken} sind ungeordnete Mengen von 3D-Punkten, optional mit Farbinformationen. Jeder Punkt repräsentiert eine diskrete Oberflächenabtastung ohne explizite Konnektivität zwischen den Punkten. Sie sind speichersparend und eignen sich für schnelle Visualisierung großer Szenen, bieten jedoch keine explizite Oberflächenrepräsentation. Für die Darstellung in Unity werden Punktwolken über den Visual Effect Graph GPU-beschleunigt gerendert.
 
-\subsection{Qualitätskriterien der 3D-Rekonstruktion}
+\textbf{Meshes} bestehen aus Vertices (Punkten), Edges (Kanten) und Faces (Flächen) und beschreiben explizit die Oberflächengeometrie als zusammenhängendes Netz. Das \textit{GLB}-Format ist eine binäre Variante von glTF (GL Transmission Format) und bündelt Geometrie, Texturen und Materialinformationen effizient in einer Datei. GLB ist besonders geeignet für die Echtzeitübertragung, da es kompakt ist und von gängigen 3D-Engines direkt geladen werden kann.
 
-Die Bewertung von 3D-Rekonstruktionen erfolgt anhand quantitativer und qualitativer Kriterien.
-Für Systeme mit Echtzeitanforderungen stehen insbesondere \textit{Genauigkeit}, \textit{Vollständigkeit}, \textit{Latenz} und \textit{Robustheit} im Mittelpunkt.
-Tabelle~\ref{tab:qualitaetskriterien} fasst diese Kriterien und ihre Bedeutung im Kontext von Echtzeit-VR-Anwendungen zusammen.
+\section{Systemtechnologien}
+\label{sec:systemtechnologien}
 
-\begin{table}[H]
-    \centering
-    \caption{Qualitätskriterien der 3D-Rekonstruktion im Kontext von Echtzeit-VR}
-    \label{tab:qualitaetskriterien}
-    \begin{tabular}{p{3cm}p{5.5cm}p{5.5cm}}
-        \toprule
-        \textbf{Kriterium} & \textbf{Beschreibung} & \textbf{Bedeutung für Echtzeit-VR} \\
-        \midrule
-        Genauigkeit & Grad der Übereinstimmung zwischen rekonstruierter und realer Geometrie & Realistische Maßstäblichkeit und stabile Interaktion mit der virtuellen Umgebung. \\
-        Vollständigkeit & Anteil der Szene, der erfolgreich rekonstruiert wurde & Beeinflusst die visuelle Plausibilität und Immersion; Lücken oder Artefakte stören das Raumgefühl. \\
-        Latenz & Zeitspanne zwischen Datenerfassung und Anzeige des aktualisierten Modells & Wesentlich für flüssige Nutzerinteraktion und Synchronität zwischen realer Bewegung und virtueller Rückmeldung. \\
-        Robustheit & Widerstandsfähigkeit gegenüber Störeinflüssen wie Beleuchtungsänderungen oder Bewegungsunschärfe & Bestimmt die Stabilität und Nutzbarkeit des Systems unter realen Bedingungen. \\
-        \bottomrule
-    \end{tabular}
-\end{table}
+Die Umsetzung eines verteilten Echtzeitsystems für 3D-Rekonstruktion erfordert geeignete Technologien für Kommunikation, Orchestrierung und Datenverarbeitung. Die folgenden Abschnitte beschreiben die wesentlichen technologischen Grundlagen der Backend-Architektur.
 
-\section{Systemische Grundlagen}
+\subsection{Client-Server-Architektur}
 
-\subsection{Container-Technologie und Docker}
+In einer Client-Server-Architektur werden Aufgaben zwischen verschiedenen Komponenten aufgeteilt. Clients übernehmen die Rolle der Datenerzeugung und Visualisierung, während Server rechenintensive Verarbeitungsaufgaben ausführen. Diese Trennung ist besonders vorteilhaft für VR-Anwendungen, da die mobilen Endgeräte oft nur begrenzte Rechenkapazität besitzen, während die rechenintensiven Rekonstruktionsalgorithmen auf leistungsfähigen GPU-Servern ausgeführt werden können. Für Echtzeitanwendungen ist eine bidirektionale, persistente Verbindung erforderlich, die es beiden Seiten ermöglicht, asynchron Daten zu senden und zu empfangen.
 
-Container-Technologien ermöglichen die Ausführung von Anwendungen in isolierten Laufzeitumgebungen, die alle benötigten Abhängigkeiten beinhalten.
-Dadurch wird sichergestellt, dass Software unabhängig von der Host-Umgebung konsistent funktioniert.\needcitation{}
-Im Gegensatz zu virtuellen Maschinen teilen sich Container den Kernel des Host-Systems und sind daher deutlich ressourcenschonender.
+\subsection{WebSocket-Protokoll}
 
-\textit{Docker} ist die verbreitetste Implementierung dieses Ansatzes.
-Es abstrahiert die Erstellung und Verwaltung von Containern über eine einheitliche Befehls- und Laufzeitumgebung.
-Anwendungen werden über sogenannte \texttt{Dockerfiles} beschrieben, die Basis-Images, Abhängigkeiten und Startbefehle definieren.
-Für mehrteilige Systeme bietet Docker mit \texttt{Docker Compose} ein Werkzeug zur Orchestrierung mehrerer Container über eine zentrale \texttt{docker-compose.yml}-Datei.
-Dort lassen sich Dienste, Netzwerkkonfiguration, gemeinsam genutzte Volumes und Umgebungsvariablen festlegen, wodurch sich komplexe Softwarestapel konsistent starten und skalieren lassen.
+Das WebSocket-Protokoll ermöglicht eine vollständig bidirektionale Kommunikation über eine persistente TCP-Verbindung. Im Gegensatz zu klassischem HTTP-Polling, bei dem der Client wiederholt Anfragen stellen muss, kann der Server bei WebSocket jederzeit Daten an verbundene Clients senden. Dies reduziert Latenz und Netzwerk-Overhead erheblich und ist daher für Streaming-Anwendungen mit kontinuierlichem Datenfluss besonders geeignet. Nach dem initialen Handshake bleibt die Verbindung dauerhaft bestehen, wodurch die Overhead-Kosten wiederholter Verbindungsaufbauten entfallen.
 
-Containerisierung bietet sich besonders für modulare Forschungs- und Prototyping-Systeme an, bei denen unterschiedliche Frameworks (z.\,B.\ PyTorch-Versionen) oder GPU-Abhängigkeiten parallel betrieben werden müssen.
+\subsection{Containerisierung}
 
-\subsection{WebSockets}
+Container-Technologien ermöglichen die Ausführung von Anwendungen in isolierten Laufzeitumgebungen, die alle benötigten Abhängigkeiten beinhalten. Dadurch wird sichergestellt, dass Software unabhängig von der Host-Umgebung konsistent funktioniert. Im Gegensatz zu virtuellen Maschinen teilen sich Container den Kernel des Host-Systems und sind daher deutlich ressourcenschonender bei gleichzeitiger Bereitstellung ähnlicher Isolationseigenschaften.
 
-WebSockets sind ein Netzwerkprotokoll, das eine bidirektionale, persistente Verbindung zwischen Client und Server ermöglicht.
-Nach einem initialen HTTP-Handshake wird die Verbindung auf das WebSocket-Protokoll umgestellt, sodass beide Seiten asynchron Daten austauschen können.\needcitation{}
-Im Gegensatz zu REST- oder gRPC-Schnittstellen, die auf Anfrage-Antwort-Zyklen basieren, erlaubt WebSocket-Kommunikation den kontinuierlichen Austausch von Nachrichten bei minimaler Latenz. \needcitation
-Damit eignet sich das Protokoll besonders für Streaming- und Echtzeitanwendungen, bei denen Datenströme fortlaufend verarbeitet werden müssen – beispielsweise bei der Übertragung von Sensordaten in VR- oder Robotik-Systemen.
+\textit{Docker} ist die verbreitetste Implementierung dieses Ansatzes. Es abstrahiert die Erstellung und Verwaltung von Containern über eine einheitliche Befehls- und Laufzeitumgebung. Anwendungen werden über sogenannte \texttt{Dockerfiles} beschrieben, die Basis-Images, Abhängigkeiten und Startbefehle definieren. Für mehrteilige Systeme bietet Docker mit \texttt{Docker Compose} ein Werkzeug zur Orchestrierung mehrerer Container über eine zentrale \texttt{docker-compose.yml}-Datei. Dort lassen sich Dienste, Netzwerkkonfiguration, gemeinsam genutzte Volumes und Umgebungsvariablen festlegen, wodurch sich komplexe Softwarestapel konsistent starten und skalieren lassen.
+
+Für Deep-Learning-Anwendungen ist der Zugriff auf GPU-Ressourcen erforderlich, der durch das NVIDIA Container Toolkit ermöglicht wird. Dieses Toolkit stellt die notwendigen Treiber und Bibliotheken innerhalb des Containers bereit, sodass CUDA-basierte Anwendungen ohne zusätzliche Konfiguration auf der Host-GPU ausgeführt werden können. Containerisierung bietet sich besonders für modulare Forschungs- und Prototyping-Systeme an, bei denen unterschiedliche Frameworks (z.\,B.\ PyTorch-Versionen) oder GPU-Abhängigkeiten parallel betrieben werden müssen.
+
+\subsection{Asynchrone Programmierung}
+
+Asynchrone Programmierung ermöglicht die nicht-blockierende Verarbeitung von I/O-Operationen. Während bei synchroner Programmierung ein Thread während einer Netzwerk- oder Dateioperation blockiert und untätig wartet, kann bei asynchroner Programmierung in dieser Zeit andere Arbeit verrichtet werden. In Python wird dies durch die \texttt{asyncio}-Bibliothek realisiert, die einen Event-Loop zur Verwaltung nebenläufiger Tasks bereitstellt. Dies ist besonders relevant für Server, die gleichzeitig mehrere Clients bedienen und auf Antworten externer Dienste warten müssen, ohne dabei andere Anfragen zu blockieren.
 
 \section{Zielumgebung}
+\label{sec:zielumgebung}
 
-\subsection{Unity als VR-Plattform}
+Das entwickelte System wird in eine bestehende VR-Infrastruktur integriert. Dieser Abschnitt beschreibt die technologischen Grundlagen der Frontend-Entwicklung sowie die spezifische Zielplattform.
+
+\subsection{Unity und XR-Frameworks}
 
 Unity ist eine weit verbreitete Entwicklungsumgebung für interaktive 3D- und Virtual-Reality-Anwendungen.
-Die Engine basiert auf einer komponentenorientierten Architektur: Jedes Objekt wird durch ein \textit{GameObject} beschrieben, das durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden kann.
+Die Engine basiert auf einer komponentenorientierten Architektur, bei der jedes Objekt durch ein \textit{GameObject} beschrieben wird, das durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden kann.
 
 Für VR-Anwendungen stellt Unity spezialisierte XR-Subsysteme und Plug-ins bereit, die Head-Tracking, stereoskopisches Rendering und die Integration gängiger HMDs (z.\,B.\ Meta Quest, HTC Vive, Valve Index) ermöglichen.
 Über die C\#-Scripting-API lassen sich Interaktionslogik, Benutzeroberflächen und Netzwerkkommunikation flexibel implementieren.
 Dank Unterstützung moderner Grafik-APIs (OpenGL, Vulkan, DirectX) und plattformübergreifender Exportmöglichkeiten ist Unity sowohl für mobile als auch für hochauflösende VR-Anwendungen geeignet.
 
-\subsection{Das Va.Si.Li-Lab}
+\subsection{Va.Si.Li-Lab}
 
-Das \textit{Va.Si.Li-Lab} (Virtual and Simulation-Based Learning Laboratory) ist eine virtuelle Forschungs- und Lernumgebung des Text Technology Lab der Goethe-Universität Frankfurt.\needcitation
-Es dient als Plattform zur Untersuchung simulationsbasierter Lernszenarien in immersiven, mehrbenutzerfähigen Virtual-Reality-Umgebungen.
+Das Va.Si.Li-Lab (Virtual Simulation Lab) des Text Technology Lab der Goethe-Universität Frankfurt ist eine mehrbenutzerfähige VR-Plattform für simulationsbasierte Lern- und Forschungsszenarien. Die Plattform wurde im Rahmen des Projekts "Digital Teaching and Learning Lab" (DigiTeLL) entwickelt und dient primär der Analyse multimodaler Interaktionsdaten, die im Rahmen von simulationsbasierten Lernprozessen erhoben werden.
 
-Technisch basiert das Lab auf Unity und dem Mehrbenutzer-Framework \textit{Ubiq}, das synchrone Interaktionen mehrerer Teilnehmender in gemeinsamen VR-Szenen ermöglicht. \needcitation
-Ergänzend werden multimodale Schnittstellen zur Erfassung von Sprach-, Gesten- und Blickdaten eingesetzt, die in einer zentralen Datenbank gespeichert und für Analysen bereitgestellt werden.
+Die Plattform richtet sich insbesondere an Studierende der Erziehungswissenschaften und des Lehramts, die in virtuellen Umgebungen pädagogisch-professionelle Handlungssituationen in einem handlungsentlastenden Kontext erproben können. Dabei werden komplexe, nicht planbare Interaktionen simuliert, in denen professionelles Wissen spielerisch evaluiert werden kann. Ein besonderer Fokus liegt auf der Simulation kontingenter pädagogischer Interaktionszusammenhänge, die in traditionellen Lernumgebungen schwer darstellbar wären.
 
-Für diese Arbeit ist das Va.Si.Li-Lab besonders relevant, da es eine modulare, erweiterbare Infrastruktur bietet, jedoch bislang keine Möglichkeit zur dynamischen 3D-Rekonstruktion realer Umgebungen.
-Die aktuell genutzten Szenen müssen manuell modelliert oder aus externen 3D-Ressourcen geladen werden, was die Übertragbarkeit realer Lern- oder Forschungssituationen einschränkt.
+Technisch basiert das Va.Si.Li-Lab auf Unity und nutzt das Ubiq-Framework für Netzwerkkommunikation und Synchronisation zwischen mehreren VR-Clients. Die Architektur ist modular gestaltet und erlaubt die Integration zusätzlicher Funktionalitäten als eigenständige Module. Die Plattform unterstützt verschiedene Endgeräte und ermöglicht sowohl lokale als auch Remote-Teilnahme über internetfähige Geräte. Zur Förderung der Barrierefreiheit werden Informationen multimodal bereitgestellt, einschließlich Untertiteln, Audiospuren und vereinfachter Sprache.
+
+Für die vorliegende Arbeit bietet das Va.Si.Li-Lab eine ideale Zielumgebung, da es eine stabile VR-Infrastruktur mit Mehrbenutzerfähigkeit bereitstellt und gleichzeitig durch seine modulare Architektur die Integration neuer Funktionalitäten wie Echtzeit-3D-Rekonstruktion ermöglicht. Die Integration von RTReconstruct erfolgt als eigenständiges Modul, das die vorhandenen Tracking- und Visualisierungskomponenten nutzt, ohne die bestehende Szenenlogik grundlegend zu verändern.
