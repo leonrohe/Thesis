@@ -1,138 +1,111 @@
 \chapter{Stand der Technik}
 
-Während Kapitel~2 die theoretischen und technischen Grundlagen der 3D-Rekonstruktion erläutert, 
-konzentriert sich dieses Kapitel auf den aktuellen Stand der Forschung im Bereich echtzeitfähiger Rekonstruktionssysteme. 
-Ziel ist es, bestehende End-to-End-Pipelines sowie ausgewählte Einzelverfahren systematisch zu analysieren 
-und deren Relevanz für die in dieser Arbeit entwickelte Architektur zu bewerten. 
-Im Fokus stehen Verfahren, die monokulare oder RGB-D-Datenströme in Echtzeit verarbeiten und sich für den Einsatz in modularen Systemarchitekturen eignen.
+Während Kapitel~2 die theoretischen und technischen Grundlagen der 3D-Rekonstruktion erläuterte, 
+konzentriert sich dieses Kapitel auf den aktuellen Forschungsstand echtzeitfähiger Rekonstruktionssysteme. 
+Ziel ist es, etablierte End-to-End-Pipelines sowie spezifische Einzelverfahren systematisch zu analysieren 
+und deren Eignung für die in dieser Arbeit entwickelte modulare Architektur zu bewerten. 
+Der Fokus liegt dabei auf Verfahren, die monokulare oder RGB-D-Datenströme \textit{online} verarbeiten können – 
+das heißt, Datenaufnahme und Rekonstruktion erfolgen simultan, sodass während der Kamerabewegung fortlaufend aktualisierte 3D-Darstellungen für interaktive Anwendungen (z.\,B. VR) bereitgestellt werden können.
 
 \section{End-to-End-Rekonstruktionspipelines}
 
-Frühe Echtzeit-Rekonstruktionssysteme wie \textbf{KinectFusion} und \textbf{ElasticFusion}
-zeigten erstmals, dass sich Tiefendaten fortlaufend in einem volumetrischen Speicher
-akkumulieren lassen, wodurch eine dichte, kamerageführte 3D-Rekonstruktion möglich wird.
-Diese Systeme basieren auf klassischen SLAM-Prinzipien, bei denen die Kamerapose in
-Echtzeit geschätzt und neue Tiefeninformationen in ein globales TSDF-Volumen integriert werden.
-Trotz ihrer Robustheit bleiben sie auf spezielle Sensoren (z.~B.~RGB-D-Kameras) beschränkt
-und sind nur eingeschränkt auf monokulare Eingangsdaten übertragbar.
+Frühe Echtzeitsysteme wie \textbf{KinectFusion} und \textbf{ElasticFusion} demonstrierten, 
+dass sich Tiefendaten fortlaufend in einem volumetrischen Speicher akkumulieren lassen. 
+Kernidee ist die kontinuierliche Fusion neuer Tiefenkarten in ein globales \textit{Truncated Signed Distance Field} (TSDF), 
+kombiniert mit einer laufenden Schätzung der Kamerapose. 
+Diese Pipeline erzielt in kontrollierten Settings robuste, dichte Rekonstruktionen, ist jedoch in mehreren Punkten eingeschränkt: 
+Erstens ist sie typischerweise auf RGB-D-Sensoren angewiesen, zweitens steigt der Speicher- und Rechenaufwand mit Szenengröße, 
+und drittens führen Tracking-Fehler zu Drift und damit zu inkonsistenter Fusion.
 
-Mit dem Aufkommen neuronaler Verfahren entstanden in den letzten Jahren mehrere
-\textbf{End-to-End-Systeme}, die Bildaufnahme, Kameratracking und volumetrische oder
-strahlbasierte Rekonstruktion in einem gemeinsamen Netzwerk integrieren.
-Beispiele hierfür sind \textbf{NeuralFusion}, \textbf{NICE-SLAM} und \textbf{Co-SLAM}.
-Diese Systeme kombinieren dichte Feature-Extraktion, Lern-basierte Tiefenschätzung
-und SLAM-Optimierung innerhalb einer einheitlichen Pipeline und erreichen
-eine bislang nicht gekannte Konsistenz zwischen lokalen und globalen Karten.
-Sie verarbeiten kontinuierliche Kamerastreams und erzeugen fortlaufend aktualisierte 3D-Darstellungen, die bereits während der Kamerabewegung in Echtzeit visualisiert werden können.
+Mit dem Aufkommen neuronaler Verfahren entstanden End-to-End-Systeme wie \textbf{NeuralFusion}, \textbf{NICE-SLAM} oder \textbf{Co-SLAM}, 
+die Feature-Extraktion, Tiefen- bzw.\ Dichte-Schätzung sowie Tracking/Mapping in lernbasierten Komponenten bündeln. 
+Im Vergleich zu klassischen Pipelines ersetzen diese Verfahren handgefertigte Merkmale durch lernbasierte Repräsentationen und erzielen häufig eine höhere Konsistenz, 
+weil lokale Beobachtungen und globale Karten im selben Optimierungsrahmen gekoppelt werden. 
+Gleichzeitig sind viele dieser Systeme \emph{monolithisch}: Datenerfassung, Inferenz, Zustandsverwaltung und Visualisierung sind eng in einem Laufzeitsystem integriert, 
+sodass einzelne Komponenten (z.\,B. das Tracking oder die Ausgabeform) nur mit hohem Aufwand austauschbar sind. 
+Für modulare VR-Anwendungen ist diese Kopplung problematisch, da dort häufig eine Trennung zwischen leichtgewichtigem Client (Rendering/Interaktion) und rechenintensivem Backend (Inferenz) erforderlich ist.
 
-Ein früher praxisorientierter Ansatz zur direkten Integration von Rekonstruktionssoftware
-in Game-Engines wurde 2017 von \textit{NVIDIA} und \textit{Capturing Reality} vorgestellt~\cite{gdc-photogrammetry-2017}.
-Dabei wurde gezeigt, wie sich das Photogrammetrie-Tool \textit{RealityCapture} über ein C++/C\#-SDK
-direkt in den Unity-Editor einbinden lässt, um aus gewöhnlichen Kamerabildern in wenigen Minuten
-texturierte 3D-Modelle zu erzeugen.
-Dieses Konzept einer \emph{Image-to-Unity}-Pipeline markierte einen wichtigen Zwischenschritt
-zwischen offline-orientierter Photogrammetrie und modernen, echtzeitfähigen Rekonstruktionssystemen,
-die Bildaufnahme, GPU Verarbeitung und Visualisierung zunehmend nahtlos miteinander verbinden.
-
-Gleichzeitig weisen solche Systeme strukturelle Einschränkungen auf:
-Sie sind \emph{monolithisch} konzipiert, das heißt Erfassung, Verarbeitung und Ausgabe
-sind eng miteinander gekoppelt und kaum austauschbar.
-Dies erschwert die Integration in bestehende VR- oder Multi-Modell-Umgebungen,
-da Kommunikation und Laufzeitumgebung fest in die jeweilige Architektur eingebettet sind.
+Ein früher praxisorientierter Zwischenschritt wurde 2017 mit einer \emph{Image-to-Unity}-Pipeline vorgestellt~\cite{gdc-photogrammetry-2017}. 
+Hier wurde gezeigt, wie sich Photogrammetrie-Software über ein SDK in den Unity-Editor integrieren lässt, um aus gewöhnlichen Bildern in kurzer Zeit texturierte 3D-Modelle zu erzeugen. 
+Der Ansatz markiert eine wichtige Brücke zwischen offline-orientierter Rekonstruktion und interaktiver Integration in Engine-Workflows, 
+bleibt jedoch im Kern ein \emph{Batch}-Prozess und stellt kein kontinuierliches Online-Streaming-Verfahren dar, wie es für laufende VR-Szenenaktualisierung benötigt wird.
 
 \section{Ausgewählte Rekonstruktionsverfahren}
 
-Die in dieser Arbeit integrierten Modelle \textit{NeuralRecon}, \textit{VisFusion}, 
-\textit{MASt3R-SLAM} und \textit{SLAM3R} repräsentieren vier moderne \emph{Vertreter} unterschiedlicher Paradigmen der monokularen Echtzeit-3D-Rekonstruktion.
-Sie unterscheiden sich hinsichtlich der verwendeten Repräsentation (volumetrisch, hybrid oder implizit),
-der Art der Merkmalfusion und der Balance zwischen Genauigkeit und Laufzeit.
-Im Folgenden werden ihre zentralen Konzepte und Beiträge zusammengefasst.
+Um die Bandbreite aktueller Verfahren innerhalb der in dieser Arbeit entwickelten Architektur abzubilden, 
+wurden vier Modelle integriert: \textit{NeuralRecon}, \textit{VisFusion}, \textit{MASt3R-SLAM} und \textit{SLAM3R}. 
+Sie repräsentieren unterschiedliche Paradigmen hinsichtlich Szenenrepräsentation (TSDF/Mesh vs.\ Punktwolken) 
+und hinsichtlich der Tracking-Annahmen (externe Pose vs.\ interne Pose-Schätzung).
 
 \subsection{Volumetrische Verfahren}
 
-\textbf{NeuralRecon}
-stellt das erste echtzeitfähige, lernbasierte System zur kohärenten 3D-Rekonstruktion aus monokularen Videos dar.
-Anstatt einzelne Tiefenkarten pro Keyframe zu schätzen, 
-rekonstruiert es direkt lokale Oberflächen als \textit{Truncated Signed Distance Fields} (TSDF).
-Hierzu wird ein rekurrentes 3D-CNN eingesetzt, 
-das Bildmerkmale in Sparse-Voxel-Volumes unprojiziert und über eine GRU-basierte Fusionsstufe
-zu einem global konsistenten Volumen integriert.
-Das Verfahren kombiniert lokale Glättung und globale Formkohärenz
-und erreicht so dichte, konsistente Rekonstruktionen in Echtzeit.
+\textbf{NeuralRecon} zählt zu den frühen echtzeitfähigen Verfahren für kohärente Rekonstruktion aus monokularen Videosequenzen. 
+Statt pro Keyframe isolierte Tiefenkarten zu schätzen, rekonstruiert das Verfahren lokale TSDF-Fragmente, 
+indem Bildmerkmale in ein (sparsifiziertes) Voxelvolumen unprojiziert und über rekurrente Fusionsmechanismen (u.\,a.\ GRU) integriert werden. 
+Dadurch entstehen glatte und typischerweise gut triangulierbare Oberflächen, was die Ausgabe als Mesh begünstigt.
 
-\textbf{VisFusion}
-erweitert NeuralRecon um eine explizite Modellierung der Sichtbarkeit bei der Merkmalfusion.
-Für jedes Voxel werden Sichtbarkeitsgewichte aus den Paarähnlichkeiten der Projektionsmerkmale verschiedener Ansichten berechnet,
-um Okklusionen gezielt zu vermeiden.
-Darüber hinaus führt VisFusion eine \textit{ray-based sparsification} ein,
-bei der entlang jeder Sehstrahlung mindestens ein Voxel beibehalten wird,
-sodass feine Strukturen besser erhalten bleiben.
-Ein residual-basiertes TSDF-Refinement verbessert die Oberflächengenauigkeit zusätzlich.
-Das Resultat ist ein online-fähiges, visibility-aware Rekonstruktionssystem
-mit höherer Detailtreue als klassische TSDF-Fusionen.
+\textit{Kritische Einordnung:} NeuralRecon profitiert stark von präzisen Kameraposen; Posefehler propagieren sich direkt in der Fusion und führen zu Doppelkonturen oder lokalen Inkonsistenzen. 
+Für VR-Streaming bedeutet dies, dass entweder zuverlässige externe Posen verfügbar sein müssen oder Posefehler durch zusätzliche Mechanismen kompensiert werden müssen.
+
+\textbf{VisFusion} baut konzeptionell auf NeuralRecon auf, adressiert jedoch insbesondere Probleme bei Okklusionen und inkonsistenter Sichtbarkeit. 
+Dazu werden Sichtbarkeitsgewichte bei der Merkmalfusion explizit modelliert, sodass Informationen aus konkurrierenden Ansichten nicht blind akkumuliert werden. 
+Zusätzlich wird durch \textit{ray-based sparsification} die Voxelbelegung entlang Sehstrahlen kontrolliert, wodurch feine Strukturen eher erhalten bleiben. 
+
+\textit{Kritische Einordnung:} Die zusätzliche Sichtbarkeitsmodellierung verbessert häufig Detailtreue und Vollständigkeit, 
+kann jedoch die Pro-Fragment-Komplexität erhöhen und damit zu Latenzspitzen in Streaming-Pipelines führen, sofern keine geeignete Pufferung/Asynchronität vorgesehen ist.
 
 \subsection{Hybride SLAM-basierte Verfahren}
 
-\textbf{MASt3R-SLAM} verbindet klassische SLAM-Optimierung mit lernbasiertem Feature-Matching.
-Es nutzt die Transformer-basierten Korrespondenz- und Tiefenrepräsentationen des \textit{MASt3R}-Backbones
-zur robusten Schätzung von Kameraposen und zur dichten Szenenrekonstruktion.
-Durch die Kombination lokaler Pose-Optimierung mit globaler Graph-Konsistenz
-werden Rekonstruktionen auch bei schnellen Bewegungen stabil gehalten.
-Damit steht MASt3R-SLAM exemplarisch für die jüngste Generation hybrider Verfahren,
-die geometrische Präzision mit der Generalisierungsfähigkeit neuronaler Merkmalsmodelle verbinden.
+\textbf{MASt3R-SLAM} kombiniert klassische SLAM-Optimierung mit lernbasiertem, transformerbasiertem Feature-Matching. 
+Ein zentraler Bestandteil ist die Nutzung dichter, robuster Korrespondenzrepräsentationen (Transformer-Backbone), die das Tracking in schwierigen Szenen (z.\,B.\ texturarm oder mit starken Beleuchtungswechseln) stabilisieren können. 
+Als Ausgabe erzeugt das Verfahren eine dichte, farbige \textit{Punktwolke}, die im Gegensatz zu Meshes keine explizite Flächenvernetzung voraussetzt und daher gut inkrementell aktualisiert werden kann.
+
+\textit{Kritische Einordnung:} Die Kombination aus Pose-Optimierung und dichtem Matching ist typischerweise rechenintensiv (Compute- und VRAM-Last). 
+Für eine modulare Architektur ist dies dennoch attraktiv, da das Verfahren weniger stark von externen Pose-Inputs abhängig ist und damit in VR-Setups mit unsicheren oder zeitlich leicht versetzten Extrinsiken robuster sein kann.
 
 \subsection{Dichte implizite Verfahren}
 
-\textbf{SLAM3R}
-führt ein vollständig differentiierbares, feed-forward-basiertes System zur dichten Echtzeitrekonstruktion ein.
-Statt Kameraparameter explizit zu schätzen,
-rekonstruiert es für überlappende Videofenster direkt dichte Punktkarten 
-über ein \textit{Image-to-Points}-Netzwerk.
-Ein zweites Modul (\textit{Local-to-World}) registriert diese lokalen Punktwolken schrittweise
-zu einer global konsistenten Szene,
-ohne iterative Optimierung oder Pose-Schätzung.
-SLAM3R erreicht dadurch hohe Genauigkeit und Vollständigkeit bei über 20 FPS
-und repräsentiert die aktuelle Entwicklung hin zu rein lernbasierten, implizit-geometrischen Rekonstruktionssystemen.
+\textbf{SLAM3R} verfolgt einen vollständig lernbasierten Ansatz, der ohne klassische Optimierungsschleifen auskommt. 
+Statt Kameraparameter iterativ zu schätzen, rekonstruiert das Modell für überlappende Videofenster direkt dichte 3D-Punktkarten (\textit{Image-to-Points}) und registriert diese anschließend schrittweise in ein globales Koordinatensystem (\textit{Local-to-World}). 
+Damit entsteht ebenfalls eine dichte, farbige \textit{Punktwolke}, die sich für kontinuierliche Updates eignet.
+
+\textit{Kritische Einordnung:} Punktwolken sind für Unity in der Regel performant GPU-beschleunigt darstellbar, liefern jedoch keine geschlossenen Oberflächen. 
+Für VR-Anwendungsfälle, in denen physikalische Interaktion (z.\,B.\ Collider/Navigation) relevant ist, kann dies eine Einschränkung darstellen, 
+während für reine visuelle Kontextualisierung die hohe Detaildichte ein Vorteil ist.
 
 \section{Begründung der Modellwahl}
 
-Die Modellwahl basiert auf dem Ziel,
-unterschiedliche methodische Ansätze der Echtzeit-3D-Rekonstruktion 
-innerhalb einer einheitlichen Architektur vergleichend zu evaluieren.
-Die vier ausgewählten Verfahren decken komplementäre Paradigmen ab
-und sind allesamt quelloffen, GPU-beschleunigt und streamingfähig,
-was ihre Integration in eine containerisierte Umgebung ermöglicht.
+Die Modellwahl zielt darauf ab, die entwickelte Architektur \textit{RTReconstruct} mit komplementären Anforderungen zu evaluieren. 
+Die ausgewählten Verfahren decken sowohl mesh-basierte volumetrische Rekonstruktion als auch punktbasierte SLAM/Feed-forward-Rekonstruktion ab. 
+Dies erlaubt eine Untersuchung, wie stark Repräsentationsform und Tracking-Annahmen die Integrations- und Laufzeitcharakteristik eines streamingfähigen, containerisierten Systems beeinflussen.
 
-\textbf{NeuralRecon} und \textbf{VisFusion} bilden die Referenzgruppe der volumetrischen Verfahren.
-Sie erlauben eine konsistente, speicherbewusste TSDF-Fusion
-und dienen als stabile Baseline für Echtzeitfähigkeit und Oberflächenkohärenz.
-VisFusion ergänzt dabei NeuralRecon um eine explizite Behandlung von Sichtbarkeit und Okklusion.
+\begin{table}[h!]
+\centering
+\caption{Vergleich der integrierten Rekonstruktionsverfahren hinsichtlich Systemanforderungen und Ausgabedaten.}
+\label{tab:model_comparison}
+\begin{tabularx}{\linewidth}{@{}l l l l X@{}}
+\toprule
+\textbf{Verfahren} & \textbf{Typ} & \textbf{Pose-Input} & \textbf{Repräsentation} & \textbf{Visualisierung} \\ \midrule
+NeuralRecon        & Volumetrisch & Erforderlich        & TSDF / Mesh             & Surface                 \\
+VisFusion          & Volumetrisch & Erforderlich        & TSDF / Mesh             & Surface (High Detail)   \\
+MASt3R-SLAM        & Hybrid       & Geschätzt (SLAM)    & Punktwolke              & Pointcloud              \\
+SLAM3R             & Implizit     & Nicht erforderlich  & Punktwolke              & Pointcloud              \\ \bottomrule
+\end{tabularx}
+\end{table}
 
-\textbf{MASt3R-SLAM} repräsentiert den hybriden Übergang zwischen klassischen SLAM-Systemen
-und lernbasierten Korrespondenzmodellen.
-Seine Integration ermöglicht die Untersuchung,
-wie transformerbasierte Feature-Extraktion die Robustheit in Echtzeitszenarien beeinflusst.
 
-\textbf{SLAM3R} schließlich steht für das aktuelle Paradigma implizit-geometrischer Punktrekonstruktion.
-Es verzichtet vollständig auf Pose-Optimierung und vereinfacht den Pipeline-Aufbau erheblich,
-wodurch es besonders relevant für modulare, containerisierte Systeme wird.
-
-Durch die Einbettung dieser vier Modelle in eine einheitliche Backend-Struktur
-kann deren Leistungsfähigkeit unter identischen Bedingungen verglichen werden.
-Damit wird eine systematische Analyse von Genauigkeit, Stabilität und Integrationsaufwand ermöglicht,
-die über isolierte Modellbenchmarks hinausgeht
-und unmittelbare Rückschlüsse für den praktischen Einsatz in Echtzeit-VR-Umgebungen zulässt.
+\textbf{NeuralRecon} und \textbf{VisFusion} bilden die Referenzgruppe volumetrischer Verfahren. 
+Sie liefern direkt geschlossene Oberflächen (Meshes) und eignen sich damit als Baseline für Anwendungen, 
+in denen eine physikalisch nutzbare Geometrie benötigt wird, erfordern jedoch konsistente Posen und sind potenziell bandbreitenintensiver durch größere Ergebnisdaten. 
+\textbf{MASt3R-SLAM} und \textbf{SLAM3R} stehen für punktbasierte Pipelines, die inkrementell und detailreich rekonstruieren, 
+sich jedoch in der Art der Registrierung unterscheiden (klassisch-optimierungsbasiert vs.\ feed-forward) und dadurch unterschiedliche Laufzeit- und Robustheitsprofile besitzen. 
+Insgesamt dient diese Heterogenität als Stresstest für die Modellunabhängigkeit der Architektur: 
+Neue Modelle sollen als isolierte Dienste integrierbar sein, ohne dass Kommunikations- und Visualisierungspipeline fundamental angepasst werden müssen.
 
 \section{Zwischenfazit}
 
-Zusammenfassend zeigt der aktuelle Stand der Technik, dass moderne Rekonstruktionssysteme
-bereits beeindruckende Echtzeitleistungen erzielen. Dennoch bleiben bestehende Pipelines
-meist monolithisch aufgebaut und schwer in externe Anwendungen integrierbar.
-Das in dieser Arbeit entwickelte System \textit{RTReconstruct} adressiert diese Lücke, indem es
-eine containerisierte, modellunabhängige Plattform bereitstellt, die verschiedene Verfahren
-über standardisierte Schnittstellen miteinander verbindet.
-
-Das folgende Kapitel beschreibt die daraus abgeleitete \textit{Systemkonzeption}.
-Es definiert die funktionalen und nicht-funktionalen Anforderungen, erläutert den architektonischen
-Aufbau und zeigt, wie Backend, Frontend und Kommunikationsschichten zu einem konsistenten
-Gesamtsystem integriert werden.
+Der Stand der Technik zeigt, dass leistungsfähige Algorithmen für onlinefähige 3D-Rekonstruktion existieren, 
+diese jedoch häufig als geschlossene End-to-End-Systeme mit starker Kopplung an Sensorik, Laufzeitumgebung und Ausgabeform entworfen sind. 
+Für den Einsatz in VR-Umgebungen entsteht daraus eine Lücke: Benötigt wird eine Infrastruktur, die unterschiedliche Verfahren kapselt, austauschbar macht und als Streaming-Dienst bereitstellt. 
+Das in dieser Arbeit entwickelte System \textit{RTReconstruct} adressiert diese Lücke durch eine containerisierte, modellunabhängige Architektur und standardisierte Schnittstellen. 
+Das folgende Kapitel leitet daraus die konkrete Systemkonzeption ab und spezifiziert Anforderungen, Architekturkomponenten sowie Kommunikations- und Datenfluss.
