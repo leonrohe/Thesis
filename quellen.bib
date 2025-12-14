@@ -288,10 +288,153 @@
 }
 
 % -- 03 Stand der Technik --
-@misc{gdc-photogrammetry-2017,
-  author       = {Bishop, Lars and Cowan, Chris and Janshoshek, Meekal},
-  title        = {Photogrammetry in Games: Integrating RealityCapture into Unity},
-  howpublished = {Game Developers Conference (GDC), NVIDIA Developer Technologies, 2017},
-  note         = {Available at: \url{https://developer.nvidia.com/gdc-2017-photogrammetry}},
-  year         = {2017}
+@article{7a99ce8940e943c39152b8da3bdfb568,
+  title = "State of the art on 3D reconstruction with RGB-D cameras",
+  abstract = "The advent of affordable consumer grade RGB-D cameras has brought about a profound advancement of visual scene reconstruction methods. Both computer graphics and computer vision researchers spend significant effort to develop entirely new algorithms to capture comprehensive shape models of static and dynamic scenes with RGB-D cameras. This led to significant advances of the state of the art along several dimensions. Some methods achieve very high reconstruction detail, despite limited sensor resolution. Others even achieve real-time performance, yet possibly at lower quality. New concepts were developed to capture scenes at larger spatial and temporal extent. Other recent algorithms flank shape reconstruction with concurrent material and lighting estimation, even in general scenes and unconstrained conditions. In this state-of-the-art report, we analyze these recent developments in RGB-D scene reconstruction in detail and review essential related work. We explain, compare, and critically analyze the common underlying algorithmic concepts that enabled these recent advancements. Furthermore, we show how algorithms are designed to best exploit the benefits of RGB-D data while suppressing their often non-trivial data distortions. In addition, this report identifies and discusses important open research questions and suggests relevant directions for future work.",
+  keywords = "Appearance and texture representations, Computing methodologies, Motion capture, Reconstruction",
+  author = "Michael Zollh{\"o}fer and Patrick Stotko and Andreas G{\"o}rlitz and Christian Theobalt and Matthias Nie{\ss}ner and Reinhard Klein and Andreas Kolb",
+  note = "Publisher Copyright: {\textcopyright} 2017 The Authors and The Eurographics Association and John Wiley \& Sons Ltd.",
+  year = "2018",
+  doi = "10.1111/cgf.13386",
+  language = "English",
+  volume = "37",
+  pages = "625--652",
+  journal = "Computer Graphics Forum",
+  issn = "0167-7055",
+  publisher = "Wiley-Blackwell Publishing Ltd",
+  number = "2",
+}
+
+@INPROCEEDINGS{kinectfusion,
+  author={Newcombe, Richard A. and Izadi, Shahram and Hilliges, Otmar and Molyneaux, David and Kim, David and Davison, Andrew J. and Kohi, Pushmeet and Shotton, Jamie and Hodges, Steve and Fitzgibbon, Andrew},
+  booktitle={2011 10th IEEE International Symposium on Mixed and Augmented Reality}, 
+  title={KinectFusion: Real-time dense surface mapping and tracking}, 
+  year={2011},
+  volume={},
+  number={},
+  pages={127-136},
+  keywords={Surface reconstruction;Cameras;Image reconstruction;Real time systems;Simultaneous localization and mapping;Iterative closest point algorithm;Three dimensional displays;Real-Time;Dense Reconstruction;Tracking;GPU;SLAM;Depth Cameras;Volumetric Representation;AR},
+  doi={10.1109/ISMAR.2011.6092378}
+}
+
+	
+@article{niessner2013hashing,
+   author    = {Nie{\ss}ner, M. and Zollh\"ofer, M. and Izadi, S. and Stamminger, M.},
+   title     = {Real-time 3D Reconstruction at Scale using Voxel Hashing},
+   journal   = {ACM Transactions on Graphics (TOG)},
+   publisher = {ACM},
+   year      = {2013}
+}
+
+@INPROCEEDINGS{dynamicfusion,
+  author={Newcombe, Richard A. and Fox, Dieter and Seitz, Steven M.},
+  booktitle={2015 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)}, 
+  title={DynamicFusion: Reconstruction and tracking of non-rigid scenes in real-time}, 
+  year={2015},
+  volume={},
+  number={},
+  pages={343-352},
+  keywords={Real-time systems;Transforms;Geometry;Surface reconstruction;Cameras;Tracking;Shape},
+  doi={10.1109/CVPR.2015.7298631}
+}
+
+
+@article{dai2017bundlefusion,
+  title={BundleFusion: Real-time Globally Consistent 3D Reconstruction using On-the-fly Surface Re-integration},
+  author={Dai, Angela and Nie{\ss}ner, Matthias and Zoll{\"o}fer, Michael and Izadi, Shahram and Theobalt, Christian},
+  journal={ACM Transactions on Graphics 2017 (TOG)},
+  year={2017}
+}
+
+@INPROCEEDINGS{dtam,
+  author={Newcombe, Richard A. and Lovegrove, Steven J. and Davison, Andrew J.},
+  booktitle={2011 International Conference on Computer Vision}, 
+  title={DTAM: Dense tracking and mapping in real-time}, 
+  year={2011},
+  volume={},
+  number={},
+  pages={2320-2327},
+  keywords={Cameras;Tracking;Real time systems;Image reconstruction;Vectors;Robustness;Optimization},
+  doi={10.1109/ICCV.2011.6126513}
+}
+
+@InProceedings{10.1007/978-3-319-10605-2_54,
+  author="Engel, Jakob
+  and Sch{\"o}ps, Thomas
+  and Cremers, Daniel",
+  editor="Fleet, David
+  and Pajdla, Tomas
+  and Schiele, Bernt
+  and Tuytelaars, Tinne",
+  title="LSD-SLAM: Large-Scale Direct Monocular SLAM",
+  booktitle="Computer Vision -- ECCV 2014",
+  year="2014",
+  publisher="Springer International Publishing",
+  address="Cham",
+  pages="834--849",
+  isbn="978-3-319-10605-2"
+}
+
+@article{Mur_Artal_2015,
+   title={ORB-SLAM: A Versatile and Accurate Monocular SLAM System},
+   volume={31},
+   ISSN={1941-0468},
+   url={http://dx.doi.org/10.1109/TRO.2015.2463671},
+   DOI={10.1109/tro.2015.2463671},
+   number={5},
+   journal={IEEE Transactions on Robotics},
+   publisher={Institute of Electrical and Electronics Engineers (IEEE)},
+   author={Mur-Artal, Raul and Montiel, J. M. M. and Tardos, Juan D.},
+   year={2015},
+   month=oct, pages={1147-1163}
+}
+
+@misc{düzçeker2021deepvideomvsmultiviewstereovideo,
+      title={DeepVideoMVS: Multi-View Stereo on Video with Recurrent Spatio-Temporal Fusion}, 
+      author={Arda Düzçeker and Silvano Galliani and Christoph Vogel and Pablo Speciale and Mihai Dusmanu and Marc Pollefeys},
+      year={2021},
+      eprint={2012.02177},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2012.02177}, 
+}
+
+@misc{zhu2022niceslamneuralimplicitscalable,
+      title={NICE-SLAM: Neural Implicit Scalable Encoding for SLAM}, 
+      author={Zihan Zhu and Songyou Peng and Viktor Larsson and Weiwei Xu and Hujun Bao and Zhaopeng Cui and Martin R. Oswald and Marc Pollefeys},
+      year={2022},
+      eprint={2112.12130},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2112.12130}, 
+}
+
+@misc{mildenhall2020nerfrepresentingscenesneural,
+      title={NeRF: Representing Scenes as Neural Radiance Fields for View Synthesis}, 
+      author={Ben Mildenhall and Pratul P. Srinivasan and Matthew Tancik and Jonathan T. Barron and Ravi Ramamoorthi and Ren Ng},
+      year={2020},
+      eprint={2003.08934},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2003.08934}, 
+}
+
+@article{10.1145/3592433,
+  author = {Kerbl, Bernhard and Kopanas, Georgios and Leimkuehler, Thomas and Drettakis, George},
+  title = {3D Gaussian Splatting for Real-Time Radiance Field Rendering},
+  year = {2023},
+  issue_date = {August 2023},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  volume = {42},
+  number = {4},
+  issn = {0730-0301},
+  url = {https://doi.org/10.1145/3592433},
+  doi = {10.1145/3592433},
+  abstract = {Radiance Field methods have recently revolutionized novel-view synthesis of scenes captured with multiple photos or videos. However, achieving high visual quality still requires neural networks that are costly to train and render, while recent faster methods inevitably trade off speed for quality. For unbounded and complete scenes (rather than isolated objects) and 1080p resolution rendering, no current method can achieve real-time display rates. We introduce three key elements that allow us to achieve state-of-the-art visual quality while maintaining competitive training times and importantly allow high-quality real-time (≥ 30 fps) novel-view synthesis at 1080p resolution. First, starting from sparse points produced during camera calibration, we represent the scene with 3D Gaussians that preserve desirable properties of continuous volumetric radiance fields for scene optimization while avoiding unnecessary computation in empty space; Second, we perform interleaved optimization/density control of the 3D Gaussians, notably optimizing anisotropic covariance to achieve an accurate representation of the scene; Third, we develop a fast visibility-aware rendering algorithm that supports anisotropic splatting and both accelerates training and allows realtime rendering. We demonstrate state-of-the-art visual quality and real-time rendering on several established datasets.},
+  journal = {ACM Trans. Graph.},
+  month = jul,
+  articleno = {139},
+  numpages = {14},
+  keywords = {novel view synthesis, radiance fields, 3D gaussians, real-time rendering}
 }
