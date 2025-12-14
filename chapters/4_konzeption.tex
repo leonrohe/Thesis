@@ -1,111 +1,67 @@
 \chapter{Konzeption}
 
-Dieses Kapitel beschreibt die Konzeption des Systems \emph{RTReconstruct}, das im Rahmen
-dieser Arbeit entwickelt wurde. RTReconstruct wird als containerisierte, modellunabhängige
-Plattform verstanden, auf der mehrere Rekonstruktionsverfahren eine gemeinsame
-Streaming-Pipeline nutzen. Ziel ist es, Bild- und Posendaten aus einer Unity-basierten
-VR-Umgebung im Va.Si.Li-Lab fortlaufend an ein Backend zu übertragen, dort durch
-modellspezifische Rekonstruktionsdienste verarbeiten zu lassen und die Ergebnisse in
-die laufende Szene zurückzuführen.
+Dieses Kapitel beschreibt die Konzeption des Systems \textit{RTReconstruct}, das im Rahmen dieser Arbeit entwickelt wurde. RTReconstruct ist eine containerisierte, modellunabhängige Plattform, auf der mehrere Rekonstruktionsverfahren eine gemeinsame Streaming-Pipeline nutzen. Das Ziel besteht darin, Bild- und Positionsdaten der einer Unity-basierten VR-Umgebung des Va.Si.Li.-Lab fortlaufend an ein Backend zu übertragen. Dort sollen die Daten durch modellspezifische Rekonstruktionsdienste verarbeitet und die Ergebnisse in die laufende Szene zurückgeführt werden.
 
-Aufbauend auf Grundlagen, Zielumgebung und Stand der Technik werden im Folgenden
-die Anforderungen an RTReconstruct formuliert, die Gesamtarchitektur beschrieben und
-das Modul- und Schnittstellendesign sowie der Kommunikations- und Datenfluss
-konzeptionell erläutert.
+Aufbauend auf den Grundlagen, der Zielumgebung und dem Stand der Technik werden im Folgenden die Anforderungen an RTReconstruct formuliert, die Gesamtarchitektur beschrieben und das Modul- und Schnittstellendesign sowie der Kommunikations- und Datenfluss konzeptionell erläutert.
 
 \section{Anforderungen}
 
-Aus der in Kapitel~1 formulierten Zielsetzung, der in Kapitel~2 beschriebenen Zielumgebung
-und dem Stand der Technik in Kapitel~3 ergeben sich drei zentrale Leitkriterien für
-RTReconstruct:
+Aus der in Kapitel 1 formulierten Zielsetzung, der in Kapitel 2 beschriebenen Zielumgebung und dem in Kapitel 3 dargestellten Stand der Technik ergeben sich drei zentrale Leitkriterien für RTReconstruct.
 \begin{itemize}
     \item \textbf{Echtzeitfähigkeit:} Die Verarbeitung der Kameradaten und Aktualisierung der
     3D-Szene soll in einer Weise erfolgen, die für interaktive VR-Szenarien geeignet ist.
 
     \item \textbf{Modularität:} Mehrere, teils sehr unterschiedliche Rekonstruktionsverfahren
-    (volumetrische, SLAM-basierte und implizite Ansätze) sollen in eine gemeinsame
+    (z.B. volumetrische oder SLAM-basierte) sollen in eine gemeinsame
     Architektur eingebettet und dort parallel betrieben sowie verglichen werden können.
 
     \item \textbf{Integrationsfähigkeit:} Das System soll sich mit überschaubarem Aufwand in die
     bestehende Unity- und Ubiq-basierte Infrastruktur des Va.Si.Li-Labs einfügen lassen,
     ohne bestehende Mehrbenutzer-Mechaniken grundlegend zu verändern.
 \end{itemize}
-Diese Leitkriterien werden im Folgenden in funktionale und nicht-funktionale Anforderungen konkretisiert. Funktionale Anforderungen beschreiben dabei, \emph{was} das System leisten soll, während nicht-funktionale Anforderungen festlegen, \emph{wie} es diese Aufgaben erfüllt.
+Im Folgenden werden diese Leitkriterien in funktionale und nicht-funktionale Anforderungen konkretisiert. Funktionale Anforderungen beschreiben, \emph{was} das System leisten soll, während nicht-funktionale Anforderungen festlegen, \emph{wie} es diese Aufgaben erfüllt.
 
 \subsection*{Funktionale Anforderungen}
 
 \begin{itemize}
-    \item \textbf{Kontinuierliche Datenerfassung:} In der VR-Umgebung werden fortlaufend
-    Bilddaten und Kopfposen erfasst. Diese Daten sollen in zeitliche Fenster partitioniert
-    werden, die für Rekonstruktionsverfahren verarbeitet werden können.
+    \item \textbf{Kontinuierliche Datenerfassung:} In der VR-Umgebung werden fortlaufend Bild- und Posendaten erfasst. Diese Daten sollen in zeitliche Fenster partitioniert werden, die anschließend von Rekonstruktionsverfahren verarbeitet werden können.
 
-    \item \textbf{Fensterbasierte Übertragung:} Die erfassten Daten werden in Form von
-    \emph{Fragmenten} an ein zentrales Backend übertragen. Ein Fragment fasst ein
-    Fenster von Bildern mit den zugehörigen Intrinsiken und Extrinsiken zusammen und
-    ist eindeutig einer Szene und einem Rekonstruktionsmodell zugeordnet.
+    \item \textbf{Fensterbasierte Übertragung:} Die erfassten Daten werden in Form von \emph{Fragmenten} an ein zentrales Backend übertragen. Ein Fragment fasst ein Fenster von Bildern mit den zugehörigen intrinsischen und extrinsischen Eigenschaften zusammen und ist eindeutig einer Szene und einem Rekonstruktionsmodell zugeordnet.
 
-    \item \textbf{Rekonstruktion durch mehrere Modelle:} Die im System eingebundenen
-    Rekonstruktionsverfahren (z.\,B.\ NeuralRecon, VisFusion, MASt3R-SLAM,
-    SLAM3R) sollen Fragmente entgegennehmen und daraus jeweils eine Szene-
-    repräsentation ableiten können.
+    \item \textbf{Rekonstruktion durch mehrere Modelle:} Die im System eingebundenen Rekonstruktionsverfahren (z. B. NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R) sollen in der Lage sein, Fragmente entgegenzunehmen und daraus jeweils eine Szenenrepräsentation abzuleiten.
 
-    \item \textbf{Rückführung der Ergebnisse:} Die von den Modellen erzeugten Ergebnisse werden an die VR-Clients der zugehörigen
-    Szene zurückgegeben und dort sichtbar gemacht.
+    \item \textbf{Rückführung der Ergebnisse:} Die von den Modellen erzeugten Ergebnisse werden an die VR-Clients der jeweiligen Szene zurückgegeben und dort angezeigt.
 
-    \item \textbf{Szenen- und Mehrbenutzerverwaltung:} Mehrere Szenen und mehrere
-    gleichzeitig aktive Clients sollen unterstützt werden. Ergebnisse eines Modells
-    müssen eindeutig einer Szene zugeordnet und an alle dort beteiligten Clients
-    verteilt werden.
+    \item \textbf{Szenen- und Mehrbenutzerverwaltung:} Es sollen gleichzeitig mehrere Szenen und Clients unterstützt werden. Die Ergebnisse eines Modells müssen eindeutig einer Szene zugeordnet und an alle dort beteiligten Clients verteilt werden.
 
-    \item \textbf{Persistenz der Rekonstruktionen:} Rekonstruktionsergebnisse sollen im Backend
-    gespeichert werden, um sie später für Evaluation und Analyse wiederverwenden zu
-    können.
+    \item \textbf{Persistenz der Rekonstruktionen:} Die Rekonstruktionsergebnisse sollen im Back\-end gespeichert werden, um sie später für die Evaluation und Analyse wiederverwenden zu können.
 \end{itemize}
 
 \subsection*{Nicht-funktionale Anforderungen}
 
 \begin{itemize}
-    \item \textbf{Niedrige Latenz:} Die Zeitspanne zwischen dem Empfang eines Fragments im
-    Backend und der Darstellung des zugehörigen Modells im Headset soll für VR-
-    Anwendungen akzeptabel bleiben. Latenz wird in der Evaluation explizit gemessen.
+    \item \textbf{Niedrige Latenz:} Die Zeitspanne zwischen dem Empfang eines Fragments im Backend und der Darstellung des zugehörigen Modells im Headset muss für VR-Anwendungen akzeptabel bleiben. Die Latenz wird in der Evaluation explizit gemessen.
 
-    \item \textbf{Stabilität:} Das System soll auch bei schwankender Datenrate, kurzzeitig
-    ausfallenden Modellen oder Paketverlust funktionsfähig bleiben. Dazu gehört,
-    dass Clients mit dem zuletzt bekannten Ergebnis weiterarbeiten können.
+    \item \textbf{Stabilität:} Das System muss auch bei schwankender Datenrate, kurzzeitig ausfallenden Modellen oder Paketverlust funktionsfähig bleiben. Dazu gehört, dass Clients mit dem zuletzt bekannten Ergebnis weiterarbeiten können.
 
-    \item \textbf{Skalierbarkeit:} Die Architektur soll den parallelen Betrieb mehrerer
-    Rekonstruktionsmodelle ermöglichen und die Erweiterung um zusätzliche Modelle
-    erlauben, ohne die bestehende Kommunikationslogik umzubauen.
+    \item \textbf{Skalierbarkeit:} Die Architektur soll den parallelen Betrieb mehrerer Rekonstruktionsmodelle ermöglichen und die Erweiterung um zusätzliche Modelle erlauben, ohne dass die bestehende Kommunikationslogik umgebaut werden muss.
 
-    \item \textbf{Modularität der Modelle:} Rekonstruktionsmodelle sollen als entkoppelte
-    Dienste mit einheitlicher Schnittstelle eingebunden werden können. Die
-    Kommunikationslogik soll unabhängig von der internen Implementierung der
-    Modelle bleiben.
+    \item \textbf{Modularität der Modelle:} Die Rekonstruktionsmodelle sollen als entkoppelte Dienste mit einheitlicher Schnittstelle eingebunden werden können. Dabei soll die Kommunikationslogik unabhängig von der internen Implementierung der Modelle bleiben.
 
-    \item \textbf{Wiederverwendbarkeit im Lab:} RTReconstruct soll als generische Infrastrukturkomponente
-    betrachtet werden können, die in unterschiedlichen Va.Si.Li-Szenarien
-    (z.\,B.\ verschiedene Lernräume) wiederverwendet werden kann.
+    \item \textbf{Wiederverwendbarkeit im Lab:} RTReconstruct soll als generische Infrastrukturkomponente betrachtet werden können, die in unterschiedlichen Va.Si.Li-Szenarien (z. B. verschiedene Lernräume) wiederverwendet werden kann.
 \end{itemize}
 
 \section{Gesamtarchitektur}
 
-RTReconstruct wird als modulare Streaming-Pipeline konzipiert, in der drei Rollen
-aufeinander abgestimmt sind:
+RTReconstruct wird als modulare Streaming-Pipeline konzipiert, die aus drei aufeinander abgestimmten Komponenten besteht:
 
 \begin{itemize}
-    \item ein \textbf{VR-Frontend} in Unity, das Bild- und Posendaten erzeugt und
-    Rekonstruktionsresultate visualisiert,
-    \item ein zentraler \textbf{Router} im Backend, der Fragmente verteilt und Ergebnisse
-    sammelt,
-    \item mehrere \textbf{modell-spezifische Worker}, die jeweils ein Rekonstruktionsverfahren
-    ausführen.
+    \item ein \textbf{VR-Frontend} in Unity, das Bild- und Posendaten erzeugt und Rekonstruktionsresultate visualisiert,
+    \item ein zentraler \textbf{Router} im Backend, der Fragmente verteilt und Ergebnisse sammelt,
+    \item mehrere \textbf{modell-spezifische Worker}, die jeweils ein Rekonstruktionsverfahren ausführen.
 \end{itemize}
-Das Frontend sendet fensterbasierte Fragmente an den Router. Der Router ordnet jedes
-Fragment anhand von Modell- und Szenenname einem bestimmten Worker und einer
-bestimmten Szene zu. Die Worker führen die eigentliche Rekonstruktion aus und liefern
-eine 3D-Repräsentation zurück, die der Router speichert und an alle Clients derselben
-Szene weitergibt. Die Komponenten sind containerisiert, sodass Router und Worker als
-separate Dienste betrieben werden können.
+
+Das Frontend sendet fensterbasierte Fragmente an den Router. Dieser ordnet jedes Fragment anhand von Modell- und Szenenname einem bestimmten Worker und einer bestimmten Szene zu. Die Worker führen die eigentliche Rekonstruktion aus und liefern eine 3D-Repräsentation zurück. Diese speichert der Router und gibt sie an alle Clients derselben Szene weiter. Da die Komponenten containerisiert sind, können Router und Worker als separate Dienste betrieben werden.
 
 \begin{figure}[H]
     \centering
@@ -115,14 +71,11 @@ separate Dienste betrieben werden können.
 
 \subsection{Backend-Architektur}
 
-Die Backend-Architektur besteht aus einer zentralen Vermittlungskomponente
-(Router) und einer Menge von Rekonstruktions-Workern, die jeweils ein
-Rekonstruktionsverfahren kapseln.
+Die Backend-Architektur besteht aus einer zentralen Vermittlungskomponente (Router) sowie einer Vielzahl von Rekonstruktions-Workern, die jeweils ein Rekonstruktionsverfahren kapseln.
 
 \paragraph{Router}
 
-Der Router bildet den Kern des Backends. Aus konzeptioneller Sicht übernimmt
-er die Rolle einer Vermittlungs- und Verteilungskomponente. Seine Aufgaben sind:
+Der Router bildet den Kern des Backends. Aus konzeptioneller Sicht übernimmt er die Rolle einer Vermittlungs- und Verteilungskomponente. Seine Aufgaben sind:
 
 \begin{itemize}
     \item Entgegennahme der aus dem VR-Frontend gesendeten Eingabefragmente,
@@ -134,160 +87,98 @@ er die Rolle einer Vermittlungs- und Verteilungskomponente. Seine Aufgaben sind:
     \item Bereitstellung dieser Ergebnisse für alle verbundenen Clients, die eine Szene
           und ein Modell abonniert haben.
 \end{itemize}
-Der Router hält damit den globalen Überblick darüber, welche Szenen existieren,
-welche Rekonstruktionsverfahren für diese Szenen aktiv sind und welche Ergebnisse
-zuletzt erzeugt wurden und den Clients zur Verfügung stehen. Details der konkreten
-Nachrichtenstruktur oder der internen Puffermechanismen werden in Kapitel~5
-beschrieben.
+
+Der Router behält somit den globalen Überblick darüber, welche Szenen existieren, welche Rekonstruktionsverfahren für diese Szenen aktiv sind und welche Ergebnisse zuletzt erzeugt wurden und den Clients zur Verfügung stehen. Details zur konkreten Nachrichtenstruktur oder den internen Puffermechanismen werden in Kapitel 5 beschrieben.
 
 \paragraph{Rekonstruktions-Worker}
 
-Jedes Rekonstruktionsverfahren wird als eigenständiger Worker betrieben, der
-über eine persistente Verbindung mit dem Router gekoppelt ist. Aus Sicht der
-Konzeption erfüllen alle Worker die gleiche Rolle:
+Jedes Rekonstruktionsverfahren wird als eigenständiger Worker betrieben, der über eine persistente Verbindung mit dem Router gekoppelt ist. Aus Sicht der Konzeption erfüllen alle Worker die gleiche Rolle:
 
 \begin{itemize}
     \item Sie nehmen fortlaufend die ihnen zugeordneten Eingabefragmente entgegen,
     \item wenden darauf ihr modellspezifisches Rekonstruktionsverfahren an,
-    \item und melden in regelmäßigen Abständen oder ereignisgesteuert eine
-          aktualisierte 3D-Repräsentation der Szene an den Router zurück.
+    \item und melden in regelmäßigen Abständen oder ereignisgesteuert eine aktualisierte 3D-Repräsentation der Szene an den Router zurück.
 \end{itemize}
-Unterschiede zwischen den integrierten Verfahren (NeuralRecon, VisFusion,
-MASt3R-SLAM, SLAM3R) betreffen ausschließlich die interne Verarbeitung und
-Repräsentation. Die Kommunikationsbeziehung zum Router bleibt identisch, sodass
-neue Modelle ohne Anpassung der übrigen Architektur integriert werden können.
+
+Unterschiede zwischen den integrierten Verfahren (NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R) betreffen ausschließlich die interne Verarbeitung und Repräsentation. Die Kommunikationsbeziehung zum Router bleibt unverändert, sodass neue Modelle ohne Anpassung der übrigen Architektur integriert werden können.
 
 \subsection{Frontend-Architektur}
 
-Das Frontend ist als VR-Client in Unity realisiert und in die
-Va.Si.Li-Lab-Umgebung eingebettet. Aus konzeptioneller Sicht übernimmt es
-die Rolle einer Erfassungs- und Darstellungsebene, die die Nutzenden mit
-der Rekonstruktionsarchitektur verbindet, ohne die bestehende
-Szenenlogik von Va.Si.Li-Lab zu verändern.
-
+Das Frontend wurde als VR-Client in Unity realisiert und in die Va.Si.Li-Lab-Umgebung eingebettet. Aus konzeptioneller Sicht übernimmt es die Rolle einer Erfassungs- und Darstellungsebene, die die Nutzenden mit der Rekonstruktionsarchitektur verbindet, ohne die bestehende Szenenlogik von Va.Si.Li-Lab zu verändern.
 
 Seine Aufgaben lassen sich in drei Bereiche gliedern:
 
 \begin{itemize}
-    \item \textbf{Erfassung und Vorverarbeitung:} Das Frontend greift auf die
-    jeweils genutzten XR-Endgeräte (z.\,B.\ Head-Mounted Displays mit
-    Passthrough-Funktion oder mobile Kamerageräte) zu und erzeugt einen
-    kontinuierlichen Strom von RGB-Beobachtungen mit zugehörigen Posen und
-    Kameraparametern. Damit liegt ein zeitlich und räumlich konsistenter
-    Beobachtungsstrom für die Rekonstruktion vor.
+    \item \textbf{Erfassung und Vorverarbeitung} \\
+    Das Frontend greift auf die jeweils genutzten XR-Endgeräte (z. B. Head-Mounted Displays mit Passthrough-Funktion oder mobile Kamerageräte) zu und erzeugt einen kontinuierlichen Strom von RGB-Beobachtungen mit zugehörigen Posen und Kameraparametern. Damit liegt ein zeitlich und räumlich konsistenter Beobachtungsstrom für die Rekonstruktion vor.
 
-    \item \textbf{Clientseitige Steuerung und Fragmentbildung:} Eine
-    Steuerkomponente verwaltet pro Szene die aktivierten Rekonstruktionsverfahren
-    und bündelt die Beobachtungen zu Fragmenten. Für Modelle mit speziellen
-    Anforderungen kommt eine modellspezifische Sammlungslogik zum Einsatz, die
-    etwa Fenstergrößen oder Auswahlkriterien für Einzelbilder vorgibt. Für alle
-    übrigen Verfahren werden Fragmente über eine generische Standardstrategie
-    gebildet. Die so entstandenen Fragmente werden mit Szenen- und Modellbezug
-    versehen und über die persistente Verbindung an den Router übermittelt.
+    \item \textbf{Clientseitige Steuerung und Fragmentbildung} \\
+    Eine Steuerkomponente verwaltet pro Szene die aktivierten Rekonstruktionsverfahren und bündelt die Beobachtungen zu Fragmenten. Für Modelle mit speziellen Anforderungen kommt eine modellspezifische Sammlungslogik zum Einsatz, die beispielsweise Fenstergrößen oder Auswahlkriterien für Einzelbilder vorgibt. Für alle übrigen Verfahren werden Fragmente über eine generische Standardstrategie gebildet. Die so entstandenen Fragmente werden mit Szenen- und Modellbezug versehen und über die persistente Verbindung an den Router übermittelt.
 
-    \item \textbf{Visualisierung und Integration in Va.Si.Li-Lab:} Auf Basis der
-    vom Backend gelieferten Rekonstruktionsantworten aktualisiert das Frontend die
-    Darstellung der Szene. Die 3D-Repräsentationen werden mit ihren räumlichen
-    Informationen in die laufende VR-Szene eingebettet, sodass die Rekonstruktion
-    als zusätzliche Schicht über bestehenden Va.Si.Li-Szenen liegt.
+    \item \textbf{Visualisierung und Integration in Va.Si.Li-Lab} \\
+    Auf Basis der vom Backend gelieferten Rekonstruktionsantworten aktualisiert das Frontend die Darstellung der Szene. Die 3D-Repräsentationen werden mitsamt ihrer räumlichen Informationen in die laufende VR-Szene eingebettet, sodass die Rekonstruktion als zusätzliche Schicht über den bestehenden Va.Si.Li-Szenen liegt.
 \end{itemize}
-Erfassung, clientseitige Steuerung und Visualisierung sind damit klar von der
-Rekonstruktionslogik im Backend getrennt. Unterschiedliche Rekonstruktionsverfahren
-können aus Sicht des Frontends ausgetauscht werden, ohne Anpassungen an den
-VR-Szenen selbst zu erfordern.
+
+Damit sind Erfassung, clientseitige Steuerung und Visualisierung klar von der Rekonstruktionslogik im Backend getrennt. Aus Sicht des Frontends können unterschiedliche Rekonstruktionsverfahren ausgetauscht werden, ohne dass Anpassungen an den VR-Szenen selbst erforderlich sind.
 
 \section{Modul- und Schnittstellendesign}
 
-Das Modul- und Schnittstellendesign von RTReconstruct verfolgt das Ziel, Frontend,
-zentrale Vermittlungsschicht und Rekonstruktionsmodule über einheitliche,
-modellunabhängige Strukturen zu koppeln. Anstatt konkrete Protokolle oder
-Datenformate festzulegen, definiert die Konzeption die inhaltlichen Rollen der
-ausgetauschten Nachrichten und ihre Beziehung zu Szenen und Modellen.
-
+Das Modul- und Schnittstellendesign von RTReconstruct zielt darauf ab, Frontend, zentrale Vermittlungsschicht und Rekonstruktionsmodule über einheitliche, modellunabhängige Strukturen zu koppeln. Anstatt konkrete Protokolle oder Datenformate festzulegen, definiert die Konzeption die inhaltlichen Rollen der ausgetauschten Nachrichten sowie ihre Beziehung zu Szenen und Modellen.
 
 Konzeptionell unterscheidet RTReconstruct drei Nachrichtengruppen:
 
 \begin{itemize}
-    \item \textbf{Rekonstruktionsanfragen} vom Client an die Vermittlungsschicht und weiter an die Modelle,
-    \item \textbf{Rekonstruktionsantworten} von den Modulen zurück an die Clients,
+    \item \textbf{Rekonstruktionsanfragen} vom Client an den Router und weiter an die Worker,
+    \item \textbf{Rekonstruktionsantworten} von den Workern zurück an die Clients,
     \item \textbf{Sitzungs- und Konfigurationsnachrichten} zur Szenen- und Modellverwaltung.
 \end{itemize}
 
 \subsection*{Rekonstruktionsanfragen}
 
-Rekonstruktionsanfragen (im Folgenden auch als Fragmente bezeichnet) bilden die
-zentrale Eingabeeinheit für alle Modelle. Sie bündeln die Informationen, die ein
-Rekonstruktionsmodul benötigt, um seinen internen Zustand zu aktualisieren oder
-neue Geometrie zu erzeugen. Inhaltlich umfasst eine Anfrage:
+Rekonstruktionsanfragen (im Folgenden auch \glqq Fragmente\grqq genannt) sind die zentrale Eingabeeinheit für alle Modelle. Sie bündeln die Informationen, die ein Rekonstruktionsmodul benötigt, um seinen internen Zustand zu aktualisieren oder neue Geometrie zu erzeugen. Inhaltlich umfasst eine Anfrage:
 
 \begin{itemize}
     \item eine eindeutige Zuordnung zu einer Szene und zu einem adressierten Modell,
-    \item ein zeitlich lokales \emph{Beobachtungsfenster}, bestehend aus mehreren
-          Kamerabeobachtungen,
-    \item zu jeder Beobachtung die zugehörige Kamerageometrie (intrinsische und
-          extrinsische Parameter).
+    \item ein zeitlich lokales \emph{Beobachtungsfenster}, bestehend aus mehreren Kamerabeobachtungen,
+    \item zu jeder Beobachtung die zugehörige Kamerageometrie (intrinsische und extrinsische Parameter).
 \end{itemize}
-Die Beobachtungen stammen aus Kameras der genutzten
-XR-Endgeräte (z.\,B.\ Head-Mounted Displays oder mobile Kamerageräte). Wichtig ist,
-dass die Anfrage ein in sich konsistentes Fragment der Szene beschreibt, das als
-Einheit verarbeitet wird. Die Vermittlungsschicht nutzt die Szenen- und
-Modellangabe, um Rekonstruktionsanfragen transparent an die jeweils zuständigen
-Module weiterzuleiten, ohne deren interne Architektur zu kennen. Für die Modelle
-stellen diese Anfragen die einzige externe Schnittstelle dar; Details der Herkunft
-und Übertragung der Daten sind gekapselt.
+
+Die Beobachtungen stammen aus den Kameras der genutzten XR-Endgeräte, beispielsweise Head-Mounted Displays oder mobilen Kamerageräten. Wichtig ist, dass die Anfrage ein in sich konsistentes Fragment der Szene beschreibt, das als Einheit verarbeitet wird. Die Vermittlungsschicht nutzt die Szenen- und Modellangabe, um Rekonstruktionsanfragen transparent an die jeweils zuständigen Module weiterzuleiten, ohne deren interne Architektur zu kennen. Für die Modelle stellen diese Anfragen die einzige externe Schnittstelle dar, Details der Herkunft und Übertragung der Daten sind gekapselt.
 
 \subsection*{Rekonstruktionsantworten}
 
-Rekonstruktionsantworten transportieren die vom Modul erzeugte oder aktualisierte
-3D-Repräsentation zurück in Richtung Frontend. Sie dienen als abstraktes Gefäß
-für rekonstruktive Artefakte und enthalten konzeptionell:
+Rekonstruktionsantworten transportieren die vom Modul erzeugte oder aktualisierte 3D-Repräsentation zurück zum Frontend. Sie dienen als abstraktes Gefäß für rekonstruktive Artefakte und enthalten konzeptionell Folgendes:
 
 \begin{itemize}
     \item eine Zuordnung zu Szene und Modell,
-    \item eine Beschreibung des bereitgestellten Rekonstruktionstyps
-          (z.\,B.\ Punktwolke oder Flächenmodell),
-    \item eine Transformation, die die Positionierung der Rekonstruktion im globalen
-          Szenenkoordinatensystem festlegt,
-    \item die eigentliche 3D-Repräsentation in einem modellunabhängigen Nutzlastfeld.
+    \item eine Beschreibung des bereitgestellten Rekonstruktionstyps, also ob Punktwolke oder Mesh,
+    \item eine Transformation, die die Positionierung der Rekonstruktion im globalen Szenenkoordinatensystem festlegt,
+    \item die eigentliche 3D-Repräsentation in einem modellunabhängigen Format.
 \end{itemize}
-Die Vermittlungsschicht verwaltet pro Szene und Modell jeweils das aktuellste
-Rekonstruktionsergebnis. Tritt ein Client einer bestehenden Szene bei, kann er auf
-dieser Grundlage sofort eine aktuelle Rekonstruktion abrufen, ohne zunächst eigene
-Rekonstruktionsanfragen erzeugen zu müssen. Wie die 3D-Repräsentation intern im
-Frontend gerendert oder mit weiteren Systemkomponenten verknüpft wird, ist von der
-hier definierten Schnittstelle entkoppelt.
+
+Die Vermittlungsschicht verwaltet pro Szene und Modell das jeweils aktuellste Rekonstruktionsergebnis. Tritt ein Client einer bestehenden Szene bei, kann er auf dieser Grundlage sofort eine aktuelle Rekonstruktion abrufen, ohne zunächst eigene Rekonstruktionsanfragen erzeugen zu müssen. Wie die 3D-Repräsentation intern im Frontend gerendert oder mit weiteren Systemkomponenten verknüpft wird, ist von der hier definierten Schnittstelle entkoppelt.
 
 \subsection*{Sitzungs- und Konfigurationsnachrichten}
 
-Neben rekonstruktiven Ein- und Ausgaben benötigt das System Nachrichten, die den
-Rahmen der Zusammenarbeit zwischen Clients, Szenen und Modellen definieren. Diese
-Sitzungs- und Konfigurationsnachrichten umfassen insbesondere:
+Neben rekonstruktiven Ein- und Ausgaben benötigt das System Nachrichten, die den Rahmen der Zusammenarbeit zwischen Clients, Szenen und Modellen definieren. Diese Sitzungs- und Konfigurationsnachrichten umfassen insbesondere:
 
 \begin{itemize}
     \item das Beitreten und Verlassen von Szenen durch Clients,
     \item das Abonnieren oder Abbestellen bestimmter Modelle innerhalb einer Szene,
-    \item die Anpassung von Visualisierungs- oder Bezugstransformationen bereits
-          vorliegender Rekonstruktionen, ohne eine erneute Berechnung anzustoßen.
+    \item die Anpassung von Visualisierungs- oder Bezugstransformationen bereits vorliegender Rekonstruktionen, ohne eine erneute Berechnung  anzustoßen.
 \end{itemize}
-Sie bilden das organisatorische Gerüst, mit dem mehrere Szenen und mehrere Modelle
-parallel betrieben werden können. Aus architektonischer Sicht trennen sie die
-Lebenszyklusverwaltung von Szenen und Modellen klar von der eigentlichen
-Rekonstruktionslogik: Rekonstruktionsmodule müssen nur auf Anfragen und Antworten
-reagieren, während Sitzungs- und Konfigurationsaspekte vollständig durch Frontend
-und Vermittlungsschicht gehandhabt werden.
+
+Sie bilden das organisatorische Gerüst, mit dem mehrere Szenen und Modelle parallel betrieben werden können. Aus architektonischer Sicht trennen sie die Lebenszyklusverwaltung von Szenen und Modellen klar von der eigentlichen Rekonstruktionslogik: Rekonstruktionsmodule müssen nur auf Anfragen und Antworten reagieren, während Sitzungs- und Konfigurationsaspekte vollständig durch das Frontend und die Vermittlungsschicht gehandhabt werden.
 
 \section{Kommunikations- und Datenfluss}
 
-Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel~2 vorgestellten 
-Konzept einer persistenten, bidirektionalen Verbindung. Die Pipeline arbeitet stromorientiert: 
-Eingabefragmente werden verarbeitet, sobald sie vorliegen, und die resultierenden 
-Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
+Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel 2 vorgestellten Konzept einer persistenten, bidirektionalen Verbindung. Die Pipeline arbeitet stromorientiert. Eingabefragmente werden verarbeitet, sobald sie vorliegen, und die resultierenden Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
 
 \bigskip
 
 \begin{figure}[H]
     \centering
-    \includesvg[width=0.715\linewidth]{figures/export/dataflow.svg}
+    \includesvg[width=0.725\linewidth]{figures/export/dataflow.svg}
     \caption{Streaming-Datenfluss von der Datenerfassung im VR-Frontend bis zur Rekonstruktion und Visualisierung.}
 \end{figure}
 
@@ -295,29 +186,16 @@ Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
 Die Pipeline durchläuft dabei vier zentrale Phasen:
 
 \begin{itemize}
-    \item \textbf{Verbindungsaufbau}: Das Frontend etabliert eine persistente, bidirektionale Verbindung zum Router und erhält im Handshake die Liste verfügbarer Rekonstruktionsmodelle.
-    \item \textbf{Datenerfassung und Übertragung}: Die Capture-Pipeline im VR-Client fasst kontinuierlich Kamerabeobachtungen zu zeitlichen Fenstern zusammen. Jedes Fragment wird mit Szenen- und Modellkennung versehen und an den Router übertragen.
-    \item \textbf{Rekonstruktion}: Der Router ordnet eingehende Fragmente dem adressierten Rekonstruktionsmodell zu und stellt sie als Eingabe bereit. Die Worker führen die modellspezifische 3D-Rekonstruktion durch und liefern das Ergebnis mit zugehöriger Transformation zurück.
-    \item \textbf{Verteilung und Visualisierung}: Der Router hält für jede Szene und jedes Modell das aktuellste Rekonstruktionsergebnis vor und verteilt es an alle Clients dieser Szene. Das Frontend integriert die empfangenen 3D-Repräsentationen in die laufende VR-Szene.
+    \item \textbf{Verbindungsaufbau}: Das Frontend stellt eine persistente, bidirektionale Verbindung zum Router her und erhält im Handshake eine Liste mit den verfügbaren Rekonstruktionsmodellen.
+    \item \textbf{Datenerfassung und Übertragung}: Die Capture-Pipeline des VR-Clients fasst kontinuierlich die Beobachtungen der Kameras zu zeitlichen Fenstern zusammen. Jedes Fragment wird mit einer Szenen- und Modellkennung versehen und anschließend an den Router übermittelt.
+    \item \textbf{Rekonstruktion}: Der Router ordnet die eingehenden Fragmente dem entsprechenden Rekonstruktionsmodell zu und stellt sie als Eingabe bereit. Die Worker führen die modellspezifische 3D-Rekonstruktion durch und liefern das Ergebnis inklusive der zugehörigen Transformation zurück.
+    \item \textbf{Verteilung und Visualisierung}: Der Router speichert für jede Szene und jedes Modell das jeweils aktuellste Rekonstruktionsergebnis und verteilt es an alle Clients dieser Szene. Das Frontend integriert die empfangenen 3D-Repräsentationen in die laufende VR-Szene.
 \end{itemize}
 
-Die Pipeline ist so ausgelegt, dass Frontends, Vermittlungsschicht und
-Rekonstruktionsmodule mit unterschiedlichen Geschwindigkeiten arbeiten können.
-Eingehende Fragmente können gepuffert und Ergebnisse pro Szene und Modell als
-aktueller Zustand vorgehalten werden. Dadurch bleiben die Komponenten zur Laufzeit
-voneinander entkoppelt, was den parallelen Betrieb mehrerer Modelle erleichtert und
-die in Kapitel~6 betrachtete Evaluation der Echtzeitfähigkeit und Skalierbarkeit
-unterstützt.
+Die Pipeline ist so ausgelegt, dass Frontend, Vermittlungsschicht und Rekonstruktionsmodule mit unterschiedlichen Geschwindigkeiten arbeiten können.
+Eingehende Fragmente können gepuffert und Ergebnisse pro Szene und Modell als aktueller Zustand vorgehalten werden. Dadurch bleiben die Komponenten zur Laufzeit voneinander entkoppelt, was den parallelen Betrieb mehrerer Modelle erleichtert und die in Kapitel 6 betrachtete Evaluation der Echtzeitfähigkeit und Skalierbarkeit unterstützt.
 
 \section{Zusammenfassung}
 
-In diesem Kapitel wurde die konzeptionelle Architektur von RTReconstruct
-hergeleitet. Im Zentrum steht ein VR-Frontend in Va.Si.Li-Lab, eine zentrale
-Vermittlungskomponente und eine Menge containerisierter Rekonstruktionsmodule.
-Das Frontend erfasst Kameradaten, bündelt sie zu Fragmenten und visualisiert
-die vom Backend gelieferten Rekonstruktionsergebnisse. Die Vermittlungsschicht
-koppelt diese Fragmente über einheitliche Nachrichtenstrukturen an die
-Rekonstruktionsmodule und verteilt deren Ergebnisse szenenbasiert an die
-Clients. Auf dieser modularen Streaming-Architektur bauen die in Kapitel~5
-beschriebene Implementierung und die in Kapitel~6 analysierte Leistungsfähigkeit
-des Systems auf.
+In diesem Kapitel wurde die konzeptionelle Architektur von RTReconstruct hergeleitet. Im Zentrum stehen ein VR-Frontend in Va.Si.Li-Lab, eine zentrale Vermittlungskomponente sowie eine Vielzahl containerisierter Rekonstruktionsmodule.
+Das Frontend erfasst Kameradaten, bündelt sie zu Fragmenten und visualisiert die vom Backend gelieferten Rekonstruktionsergebnisse. Die Vermittlungsschicht koppelt diese Fragmente über einheitliche Nachrichtenstrukturen an die Rekonstruktionsmodule und verteilt deren Ergebnisse szenenbasiert an die Clients. Auf dieser modularen Streaming-Architektur basieren die in Kapitel 5 beschriebene Implementierung und die in Kapitel 6 analysierte Leistungsfähigkeit des Systems.
