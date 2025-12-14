@@ -176,14 +176,15 @@ Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel 2 vorge
 
 \bigskip
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includesvg[width=0.725\linewidth]{figures/export/dataflow.svg}
     \caption{Streaming-Datenfluss von der Datenerfassung im VR-Frontend bis zur Rekonstruktion und Visualisierung.}
+    \label{fig:dataflow}
+    \includesvg[width=0.75\linewidth]{figures/export/dataflow.svg}
 \end{figure}
 
 \noindent
-Die Pipeline durchläuft dabei vier zentrale Phasen:
+Die Pipeline durchläuft dabei vier zentrale Phasen, welche ebenfalls in Abbildung~\ref{fig:dataflow} als Flowchart visualisiert sind:
 
 \begin{itemize}
     \item \textbf{Verbindungsaufbau}: Das Frontend stellt eine persistente, bidirektionale Verbindung zum Router her und erhält im Handshake eine Liste mit den verfügbaren Rekonstruktionsmodellen.
