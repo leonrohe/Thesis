@@ -1,31 +1,22 @@
 \chapter{Evaluation}
 \label{chap:evaluation} % Hinzugefügt, falls andere Kapitel darauf verweisen
 
-Dieses Kapitel evaluiert das entwickelte RTReconstruct-System hinsichtlich seiner 
-Echtzeitfähigkeit, Modularität und Rekonstruktionsqualität. Zunächst werden die 
-Evaluationsziele definiert und die Testumgebung beschrieben. Anschließend erfolgt 
-die Darstellung der gemessenen Performance-Metriken sowie der Rekonstruktionsqualität 
-der integrierten Modelle. Das Kapitel schließt mit einer Diskussion der Ergebnisse 
-im Kontext der definierten Anforderungen.
+In diesem Kapitel wird das entwickelte RTReconstruct-System hinsichtlich seiner Echtzeitfähigkeit, Modularität und Rekonstruktionsqualität evaluiert. Zunächst werden die Evaluationsziele definiert und die Testumgebung beschrieben. Anschließend werden die gemessenen Performance-Metriken sowie die Rekonstruktionsqualität der integrierten Modelle dargestellt. Das Kapitel schließt mit einer Diskussion der Ergebnisse im Kontext der definierten Anforderungen.
 
 \section{Evaluationsziele}
 \label{sec:eval_ziele}
 
-Die Evaluation verfolgt drei zentrale Ziele, die direkt aus der in Abschnitt formulierten Forschungsfrage abgeleitet sind:
+Die Evaluation verfolgt drei zentrale Ziele, die direkt aus der in Kapitel~\ref{ch:introduction} formulierten Forschungsfrage abgeleitet sind:
 
 \begin{enumerate}
-    \item \textbf{Funktionale Validierung}: Nachweis, dass die modulare Architektur 
-    die definierten funktionalen Anforderungen erfüllt. Insbesondere wird geprüft, 
-    ob verschiedene Rekonstruktionsmodelle parallel betrieben werden können und ob 
-    die End-to-End Kommunikation zwischen VR-Frontend und Backend stabil funktioniert.
+    \item \textbf{Funktionale Validierung}: \\
+    Es wird nachgewiesen, dass die modulare Architektur die definierten funktionalen Anforderungen erfüllt. Insbesondere wird geprüft, ob verschiedene Rekonstruktionsmodelle parallel betrieben werden können und ob die End-to-End-Kommunikation zwischen VR-Frontend und Backend stabil funktioniert.
     
-    \item \textbf{Echtzeitfähigkeit}: Bewertung, ob das System die für VR-Anwendungen 
-    erforderlichen Performance-Anforderungen erfüllt. Dabei werden Latenz, Durchsatz 
-    und Ressourcenauslastung als kritische Metriken untersucht.
+    \item \textbf{Echtzeitfähigkeit}: \\
+    Es wird bewertet, ob das System die für VR-Anwendungen erforderlichen Performance-Anforderungen erfüllt. Dabei werden die kritischen Metriken Latenz, Durchsatz und Ressourcenauslastung untersucht.
     
-    \item \textbf{Rekonstruktionsqualität}: Qualitative und -- soweit möglich -- 
-    quantitative Bewertung der von den integrierten Modellen erzeugten 
-    3D-Rekonstruktionen unter identischen Bedingungen.
+    \item \textbf{Rekonstruktionsqualität}: \\
+    Es erfolgt eine qualitative und, soweit möglich, quantitative Bewertung der von den integrierten Modellen erzeugten 3D-Rekonstruktionen unter identischen Bedingungen.
 \end{enumerate}
 
 \section{Evaluationsmethodik}
@@ -34,34 +25,32 @@ Die Evaluationsmethodik beschreibt die Testumgebung, die verwendeten Testszenari
 \subsection{Test- und Evaluationsumgebung}
 \label{sec:testumgebung}
 
-Um die \textbf{Reproduzierbarkeit} der Performance-Messungen und die \textbf{Vergleichbarkeit} der erzielten Ergebnisse zu gewährleisten, wurde die gesamte Evaluation in einer dedizierten und \textbf{kontrollierten Hard- und Software-Umgebung} durchgeführt. Die zentralen Komponenten und Spezifikationen dieser Umgebung sind in Tabelle~\ref{tab:hardware_and_software} zusammengefasst.
+Um die Reproduzierbarkeit der Performance-Messungen und die Vergleichbarkeit der erzielten Ergebnisse zu gewährleisten, wurde die gesamte Evaluation in einer dedizierten, kontrollierten Hardware- und Software-Umgebung durchgeführt. Die zentralen Komponenten und Spezifikationen dieser Umgebung sind in Tabelle ~\ref{tab:hardware_and_software} zusammengefasst.
 
 \begin{table}[H]
     \centering
-    \label{tab:hardware_and_software}
     \caption{Spezifikationen der Hard- und Software-Umgebung}
+    \label{tab:hardware_and_software}
     \begin{tabularx}{\textwidth}{l X}
         \toprule
         \textbf{Kategorie} & \textbf{Details und Spezifikationen} \\
         \midrule
         \multicolumn{2}{l}{\textbf{Hardware-Umgebung (Backend/Server)}} \\
         \midrule
-        Backend-Server CPU & AMD Ryzen 9 5900X (12 Kerne, 24 Threads) \\
+        Backend-Server CPU & AMD Ryzen 5 2600 (6 Kerne, 12 Threads) \\
         GPU & NVIDIA GeForce GTX 1070 Ti, 8 GB VRAM \\
         VR-System (Frontend) & Meta Quest 3 \\
-        Netzwerk & WiFi 6 Heimnetzwerk \\
+        Netzwerk & WiFi 5 Heimnetzwerk \\
         \midrule
         \multicolumn{2}{l}{\textbf{Software-Umgebung und Frameworks}} \\
         \midrule
-        Betriebssystem & Ubuntu 22.04 LTS (Host) \\
-        Containerisierung & Docker (\textit{[Version einfügen, z.B. 24.0.7]}) \\
-        GPU-Unterstützung & NVIDIA Container Toolkit \\
-        VR-Frontend & Unity (\textit{2022.3 LTS}) \\
+        Betriebssystem & Windows 11, Build 25H2 (Host) \\
+        Containerisierung & Docker (\textit{29.0.1}) \\
+        GPU-Unterstützung & NVIDIA Container Toolkit (\textit{580.97}), CUDA \textit{13} \\
+        VR-Frontend & Unity (\textit{6000.2.12f1}) \\
         \bottomrule
     \end{tabularx}
 \end{table}
-
-Alle Messungen erfolgten unter \textbf{kontrollierten Bedingungen}. Es wurde strikt darauf geachtet, dass während der Performance-Tests \textbf{keine weiteren rechenintensiven Hintergrundprozesse} liefen, um Verzerrungen zu minimieren.
 
 \subsection{Testszenarien und Datensätze}
 
@@ -69,8 +58,10 @@ Für die Evaluation wurden fünf Testszenen mit unterschiedlichen Komplexitätss
 konzipiert: drei virtuelle Szenen mit verfügbarem Ground-Truth zur quantitativen 
 Bewertung sowie zwei reale Szenen aus einem typischen Alltagsumfeld zur Validierung der
 Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in Tabelle~\ref{tab:test_scenes_overview}.
+
 \begin{table}[H]
     \centering
+    \caption{Übersicht und Klassifikation der Testszenen}
     \label{tab:test_scenes_overview}
     \begin{tabularx}{\textwidth}{lcclX}
         \toprule
@@ -78,8 +69,8 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
         \midrule
         \multicolumn{5}{l}{\textbf{Virtuelle Szenen}} \\
         V1 -- Primitive & $5\times 5\times 5$ & 24 & 216 & Geometrische Grundformen, unifarbige Oberflächen \\
-        V2 -- Schlafzimmer & $6\times 5\times 3$ & 44 & 396 & moderate Komplexität, Okklusionen \\
-        V3 -- Mehrzweckraum & $10\times 5\times 3$ & 58 & 522 & Hohe Dichte, komplexe Geometrie \\
+        V2 -- Schlafzimmer & $6\times 5\times 3$ & 44 & 396 & moderate Größe, Okklusionen \\
+        V3 -- Mehrzweckraum & $10\times 5\times 3$ & 58 & 522 & ähnlich V2, große freie Flächen \\
         \midrule
         \multicolumn{5}{l}{\textbf{Reale Szenen}} \\
         R1 & $6\times 4\times 3$ & 48 & 432 & \textit{Schlafzimmer}, Details, Schrägen, Okklusionen \\
@@ -87,21 +78,20 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
         \bottomrule
     \end{tabularx}
     \medskip
-    \caption{Übersicht und Klassifikation der Testszenen}
 \end{table}
 
 \subsubsection{Virtuelle Szenen}
 
-Die drei virtuellen Szenen wurden in Unity erstellt und ermöglichen durch verfügbare \textit{Ground-Truth-Meshes} eine quantitative Evaluation mittels F-Score. Die Szenen folgen einer progressiven Komplexitätssteigerung, um verschiedene Aspekte der Rekonstruktionsverfahren isoliert zu testen. Abbildung~\ref{fig:virtual_scenes} zeigt eine Übersicht aller drei Szenen.
+Die drei virtuellen Szenen wurden in Unity erstellt und ermöglichen durch verfügbare \textit{Ground-Truth-Meshes} eine quantitative Evaluation mittels F-Score. Die Szenen sind so konzipiert, dass sie eine progressive Komplexitätssteigerung durchlaufen, um verschiedene Aspekte der Rekonstruktionsverfahren isoliert zu testen. Abbildung ~\ref{fig:virtual_scenes} zeigt eine Übersicht aller drei Szenen.
 
 \paragraph{Szene V1 -- Geometrische Primitive}
-Szene V1 dient als Baseline-Test und enthält ausschließlich einfache geometrische Primitive (Quader, Pyramide, Zylinder, Kapsel) in einem hexagonalen Raum mit farbigen Wänden. Die unifarbigen, matten Oberflächen ohne Texturen ermöglichen die isolierte Bewertung fundamentaler Rekonstruktionsfähigkeiten: scharfe Kanten, gekrümmte Oberflächen und feature-arme Flächen.
+Szene V1 dient als Baseline-Test und enthält ausschließlich einfache geometrische Primitive (Würfel, Torus, Pyramide) in einem quadratischen Raum mit farbigen Wänden (blau, cyan, gelb, rot). Die unifarbigen, matten Oberflächen ohne Texturen ermöglichen die isolierte Bewertung fundamentaler Rekonstruktionsfähigkeiten: scharfe Kanten, gekrümmte Oberflächen und feature-arme Flächen.
 
 \paragraph{Szene V2 -- Möbliertes Schlafzimmer}
-Szene V2 repräsentiert einen möblierten Innenraum mittlerer Komplexität mit Doppelbett, Sessel, Sideboard, Wandbildern und Stehlampe. Diese Szene testet die Rekonstruktion komplexer Möbelgeometrie, das Verhalten bei Okklusionen, die Texturverarbeitung sowie die Detailerfassung kleiner Dekorationsobjekte.
+Szene V2 repräsentiert einen möblierten Innenraum mittlerer Komplexität mit Doppelbett, Sessel, Couch, Sideboard, Wandbildern und Stehlampe. Diese Szene testet die Rekonstruktion komplexer Möbelgeometrie, das Verhalten bei Okklusionen, die Texturverarbeitung sowie die Detailerfassung verschiedener Materialien und Dekorationsobjekte.
 
-\paragraph{Szene V3 -- Komplexer Mehrzweckraum}
-Szene V3 stellt einen Stresstest für Skalierbarkeit und Detailtreue dar und simuliert einen multifunktionalen Raum mit Schlaf-, Wohn- und Arbeitsbereich. Die hohe Objektdichte mit zwei Betten, Esstisch, Stühlen und diversen Kleinobjekten erzeugt multiple Okklusionsebenen. Erwartet werden längere Inferenzzeiten, höhere GPU-Auslastung und potenzielle Artefakte bei geometrisch komplexen Strukturen und teilweise verdeckten Bereichen.
+\paragraph{Szene V3 -- Erweiterter Mehrzweckraum}
+Szene V3 erweitert das Konzept von V2 durch einen größeren Raumzuschnitt mit deutlich mehr freier Bodenfläche. Der multifunktionale Raum kombiniert Schlaf-, Wohn- und Arbeitsbereich mit Doppelbett, Sessel, Couch, Sideboard, Schreibtisch, Stuhl und diversen Kleinobjekten. Die größere Raumausdehnung und zusätzlichen Möbelelemente testen die Skalierbarkeit der Rekonstruktionsverfahren sowie deren Fähigkeit, sowohl detailreiche Objektbereiche als auch ausgedehnte leere Flächen konsistent zu erfassen.
 
 \begin{figure}[H]
     \centering
@@ -114,15 +104,15 @@ Szene V3 stellt einen Stresstest für Skalierbarkeit und Detailtreue dar und sim
 
 \subsubsection{Reale Szenen}
 
-Die beiden realen Szenen wurden im Va.Si.Li-Lab aufgenommen und validieren die Praxistauglichkeit des Systems unter realen Bedingungen mit natürlichen Störfaktoren.
+Zur Evaluierung der praktischen Anwendbarkeit des Systems wurden realitätsnahe Alltagsräume ausgewählt. Diese ermöglichen es, das System unter natürlichen Lichtverhältnissen und realistischen Raumgeometrien zu testen und somit die Eignung für den alltäglichen Einsatz zu beurteilen.
 
 \paragraph{Szene R1 -- Schlafzimmer}
 
-Szene R1 simuliert ein kleines, dicht möbliertes, privates Umfeld. Details, Schrägen, Okklusionen. Der Testfokus liegt auf der Robustheit gegenüber Textiloberflächen und diffuser Beleuchtung, welche die Rekonstruktion feiner Details und das Verhalten bei Oberflächenhomogenität überprüfen.
+Das Schlafzimmer ist ein schmaler Dachraum mit Arbeits- und Ruhebereich. Am einen Ende befindet sich ein Schreibtisch mit Bürostuhl und Monitor, am anderen Ende ein graues Sofa und ein TV-Board. Ein großes Dachflächenfenster sowie ein seitliches Fenster sorgen für viel Tageslicht, unterstützt durch Arbeitsleuchten am Schreibtisch. Der dunklere Bodenbelag und die hellen Wände erzeugen deutliche Kontraste, die für die Rekonstruktion von Kanten und Strukturen vorteilhaft sind.
 
 \paragraph{Szene R2 -- Wohnzimmer}
 
-Szene R2 simuliert ein großes Wohnzimmer mit offener Gestaltung. Große Flächen, Glas, Reflexionen. Die Szene dient als Skalierbarkeits- und Materialstresstest. Im Fokus stehen die Handhabung großer, glänzender Flächen und Fenster, die Reflexionen verursachen, sowie repetitive Dekorelemente, welche die globale Konsistenz und Anfälligkeit für visuellen Drift testen.
+Das Wohnzimmer ist ein helles, großzügiges Zimmer mit Dachschräge und breiter Fensterfront mit Zugang zum Balkon. Die Einrichtung umfasst eine große Sofalandschaft mit einem Couchtisch aus Glas, TV-Bereich und mehrere Teppiche, ergänzt durch Pflanzen und Deko-Elemente. Der helle Holzboden und die diffuse Beleuchtung durch Fenster und Deckenleuchten erzeugen eine gleichmäßige Ausleuchtung ohne starke Schatten. Die Kombination aus Glasflächen, Stoffoberflächen und Möbelkanten bietet vielfältige Strukturen für die 3D-Rekonstruktion.
 
 \begin{figure}[H]
     \centering
@@ -188,10 +178,9 @@ Metrik für Präzision und Recall berechnet:
 
 \noindent
 Rekonstruierte Punkte gelten als \textbf{True Positive (TP)}, wenn ihr Abstand zum 
-Ground-Truth unter \textit{10} cm liegt, andernfalls als \textbf{False Positive (FP)}. 
+Ground-Truth unter \textit{10}cm liegt, andernfalls als \textbf{False Positive (FP)}. 
 \textbf{False Negatives (FN)} sind Ground-Truth-Punkte ohne entsprechenden 
-rekonstruierten Punkt innerhalb des Schwellenwerts.
-
+rekonstruierten Punkt innerhalb des Schwellenwerts. 
 
 \textbf{Precision} misst die Genauigkeit der Rekonstruktion, indem sie den Anteil 
 korrekt rekonstruierter Punkte angibt. \textbf{Recall} bewertet die 
@@ -199,6 +188,8 @@ Vollständigkeit und gibt an, wie viele Ground-Truth-Punkte erfasst wurden.
 Der \textbf{F-Score} kombiniert beide Metriken als harmonisches Mittel und liefert einen 
 ausgewogenen Gesamtwert. Je näher der F-Score bei \textit{1.0} liegt, 
 desto höher ist die Qualität der Rekonstruktion.
+
+Der explizite Schwellwert von 10cm wurde gewählt, um eine für VR-Anwendungen praxisnahe Toleranzgrenze zu definieren, die Tracking-Ungenauigkeiten der Hardware berücksichtigt und gleichzeitig grobe Geometriefehler zuverlässig als solche klassifiziert.
 
 \paragraph{Qualitative Bewertung}
 Die rekonstruierten Meshes wurden anhand folgender Kriterien bewertet:
@@ -224,15 +215,11 @@ Die funktionale Validierung bestätigt, dass RTReconstruct alle definierten Kern
 \paragraph{End-to-End-Kommunikation}
 Die vollständige Kommunikationskette von der Fragmenterfassung im Unity-Client über 
 die WebSocket-Verbindung zum Router bis zur Verteilung an die Worker-Container und 
-zurück funktioniert stabil. In \textit{15} Testläufen über eine Gesamtdauer von \textit{6} Stunden 
+zurück funktioniert stabil. In \textit{60} Testläufen über eine Gesamtdauer von \textit{6} Stunden 
 traten \textit{0} Verbindungsabbrüche auf.
 
 \paragraph{Parallele Modellausführung}
-Alle vier integrierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, 
-SLAM3R) konnten gleichzeitig betrieben werden. Die containerisierte Architektur 
-ermöglichte eine vollständige Isolierung, sodass unterschiedliche Python- und 
-PyTorch-Versionen parallel lauffähig waren. Einzig limitierender Faktor war die einzelne GPU,
-die durch die Modelle gemeinsam genutzt wurde.
+Alle vier integrierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, SLAM3R) konnten erfolgreich parallel betrieben werden. Die containerisierte Architektur gewährleistete dabei eine vollständige Isolierung der Laufzeitumgebungen, sodass divergierende Python- und PyTorch-Versionen konfliktfrei koexistierten. Als limitierender Faktor im Parallelbetrieb erwies sich die verfügbare VRAM-Kapazität der verwendeten NVIDIA GeForce GTX 1070 Ti (8 GB).
 
 \paragraph{Multi-Szenen-Unterstützung}
 Das System unterstützt die gleichzeitige Verarbeitung mehrerer Szenen. In Tests 
@@ -253,12 +240,14 @@ Die Latenz stellt die zentrale Performance-Metrik für die Echtzeitfähigkeit de
 
 \paragraph{Gesamtlatenz}
 
-Zur Evaluierung der Systemperformance wurde die End-to-End-Latenz \\ \(L_{total}\) als Zeitspanne zwischen dem Absenden eines Fragments vom Client und dem Empfang der zugehörigen Rekonstruktion gemessen. Für jede Kombination aus Testszene und Rekonstruktionsmodell wurden drei unabhängige Testläufe durchgeführt, bei denen identische Eingabedaten verwendet wurden. Um dabei Verzerrungen durch Ressourcenkonflikte zu vermeiden, wurden die Modelle sequenziell im Einzelbetrieb getestet. Abbildung~\ref{fig:latency_boxplots} visualisiert die resultierenden Latenzverteilungen als Boxplots.
-
+Zur Evaluierung der Systemperformance wurde die End-to-End-Latenz \\ \(L_{total}\) als Zeitspanne zwischen dem Absenden eines Fragments vom Client und der Visualisierung der entstandenen Rekonstruktion im Frontend gemessen. Für jede Kombination aus Testszene und Rekonstruktionsmodell wurden drei unabhängige Testläufe durchgeführt, bei denen identische Eingabedaten verwendet wurden. Um dabei Verzerrungen durch Ressourcenkonflikte zu vermeiden, wurden die Modelle sequenziell im Einzelbetrieb getestet. Abbildung~\ref{fig:latency_boxplots} visualisiert die resultierenden Latenzverteilungen als Boxplots.
 
 Die Darstellung zeigt auf der x-Achse die vier evaluierten Rekonstruktionsmodelle (NeuralRecon, VisFusion, MASt3R-SLAM, SLAM3R), während die y-Achse die gemessene Latenz in Millisekunden angibt. Pro Modell sind drei Boxplots dargestellt, die jeweils die Latenzverteilung eines Testlaufs repräsentieren. Die farbliche Kodierung kennzeichnet dabei denselben Testlauf über alle Modelle hinweg.
 
 \begin{figure}[H]
+    \phantomcaption
+    \label{fig:latency_boxplots}
+
     \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=\linewidth]{images/room00_latency.png}
         \caption{Szene V1 -- Geometrische Primitive}
@@ -267,6 +256,11 @@ Die Darstellung zeigt auf der x-Achse die vier evaluierten Rekonstruktionsmodell
         \includegraphics[width=\linewidth]{images/room01_latency.png}
         \caption{Szene V2 -- Möbliertes Schlafzimmer}
     \end{subfigure}
+\end{figure}
+
+\clearpage
+
+\begin{figure}[H]\ContinuedFloat
     \begin{subfigure}{0.5\textwidth}
         \includegraphics[width=\linewidth]{images/room02_latency.png}
         \caption{Szene V3 -- Komplexer Mehrzweckraum}
@@ -275,17 +269,17 @@ Die Darstellung zeigt auf der x-Achse die vier evaluierten Rekonstruktionsmodell
         \includegraphics[width=\linewidth]{images/room03_latency.png}
         \caption{Szene R1 -- Schlafzimmer}
     \end{subfigure}
+
     \begin{subfigure}{\textwidth}
         \centering
         \includegraphics[width=0.49\linewidth]{images/room04_latency.png}
         \caption{Szene R2 -- Wohnzimmer}
     \end{subfigure}
-    \caption{Gesamtlatenz \(L_{total}\) für alle Testszenen und Modelle über drei Testläufe. Die Boxen zeigen den Interquartilbereich (25.\,--\,75.\,Perzentil), die horizontale Linie den Median und die Whiskers den Wertebereich ohne Ausreißer.}
-    \label{fig:latency_boxplots}
+
+    \caption{Gesamtlatenz \(L_{total}\) für alle Testszenen und Modelle über drei Testläufe.}
 \end{figure}
 
-\newpage
-\noindent
+
 Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche und minimale Ausreißer, was auf eine stabile und reproduzierbare Latenzcharakteristik des Systems hinweist. Aufgrund dieser geringen Varianz zwischen den drei Testläufen werden in den folgenden Analysen zur Zusammensetzung der Gesamtlatenz sowie zu Datenvolumina die Messwerte der drei Testläufe aggregiert dargestellt. Dies ermöglicht eine kompaktere Präsentation ohne relevanten Informationsverlust.
 
 
@@ -321,7 +315,7 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
         \textbf{Szene} & \textbf{Modell} & \makecell{\textbf{\O~$\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{\O~$\text{Frag}_{\text{out}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{out}}$~[MB]}} \\
         \midrule
         \multirow{4}{*}{V1} 
-            & NeuralRecon  & \multirow{4}{*}{0.82} & 1.83 & \multirow{4}{*}{19.57} & 44.04 \\
+            & NeuralRecon  & \multirow{4}{*}{1.60} & 1.83 & \multirow{4}{*}{19.57} & 44.04 \\
             & VisFusion    &                       & 2.73 &                        & 65.40 \\
             & MASt3R-SLAM  &                       & 1.60 &                        & 38.42 \\
             & SLAM3R       &                       & 1.60 &                        & 38.42 \\
@@ -354,17 +348,19 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
     }
 \end{table}
 
-Die Tabelle zeigt, dass die Fragmentgrößen zwischen den Modellen variieren, wobei SLAM3R aufgrund seiner größeren Fenstergrößen die umfangreichsten Fragmente benötigt. Die Ergebnisgrößen unterscheiden sich ebenfalls deutlich: Volumetrische Verfahren (NeuralRecon, VisFusion) erzeugen größere Meshes im GLB-Format, während punktbasierte Modelle (MASt3R-SLAM, SLAM3R) kompaktere Punktwolken zurückliefern. Die Summe der genutzten Bandbreite liegt bei X.X~Mbps für den Upload und Y.Y~Mbps für den Download.
+Die Tabelle zeigt, dass die durchschnittlichen Fragmentgrößen für alle Modelle nahezu identisch sind (1{,}56--1{,}84~MB), da alle Modelle dieselbe Fenstergröße verwenden. Die geringfügigen Unterschiede zwischen den Szenen resultieren aus der variierenden JPEG-Komprimierung in Abhängigkeit vom Bildinhalt.
 
+Die durchschnittlichen Ergebnisgrößen pro Fragment unterscheiden sich hingegen deutlicher zwischen den Modellen: VisFusion erzeugt mit $2{,}58$--$4{,}24~\text{MB}$ die größten Meshes im GLB-Format, während NeuralRecon mit $1{,}83$--$3{,}60~\text{MB}$ ähnlich große Meshes produziert. Die punktbasierten Modelle (MASt3R-SLAM, SLAM3R) liefern mit ihren genau 100,000 Punkten konstant ca. $1{,}60~\text{MB}$ zurück. Die Summe der genutzten Bandbreite über alle Fragmente variiert entsprechend der unterschiedlichen Fragmentanzahl pro Szene, wobei beispielsweise in Szene V3 insgesamt 88{,}70~Mbps für den Upload und zwischen 90{,}69~Mbps (MASt3R-SLAM) und 241{,}51~Mbps (VisFusion) für den Download gemessen wurden.
 
-Die präsentierten Latenzmessungen bilden zusammen mit den Datenvolumina die Grundlage für die Bewertung der Echtzeitfähigkeit und Skalierbarkeit des Systems in Abschnitt~\ref{sec:diskussion}.
+Die präsentierten Latenzmessungen bilden zusammen mit den Datenvolumina die Grundlage für die Bewertung der Echtzeitfähigkeit und Skalierbarkeit des Systems in Abschnitt~\ref{subsec:realtime}.
 
 \subsubsection{Durchsatz}
 
-Der Durchsatz ergibt sich für diese Evaluation aus der Anzahl der verarbeiteten Fragmente pro Szene, geteilt durch die mittlere End-To-End Latenz \(L_{total}\) über alle 3 Testläufe. Diese Metrik gibt an, wie viele Fragmente pro Sekunde durch das System verarbeitet werden können und ist ein Indikator für die Aktualisierungsrate der Rekonstruktion im VR-Frontend. Die folgende Tabelle \ref{tab:throughput_results} fasst diese gemessenen Durchsatzwerte für alle Modelle und Szenen zusammen.
+Der Durchsatz quantifiziert die Verarbeitungsgeschwindigkeit des Systems und wird als Quotient aus der Anzahl verarbeiteter Fragmente pro Szene und der mittleren End-to-End-Latenz \(L_{\text{total}}\) über alle drei Testläufe berechnet. Diese Metrik gibt an, wie viele Fragmente pro Sekunde durch das System verarbeitet werden können, und bestimmt damit unmittelbar die Aktualisierungsrate der Rekonstruktion im VR-Frontend. Tabelle~\ref{tab:throughput_results} fasst die gemessenen Durchsatzwerte für alle Modelle und Szenen zusammen.
 
 \begin{table}[h]
     \centering
+    \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
     \label{tab:throughput_results}
     \begin{tabular}{lccccc}
         \toprule
@@ -372,13 +368,16 @@ Der Durchsatz ergibt sich für diese Evaluation aus der Anzahl der verarbeiteten
         \midrule
         NeuralRecon     & 0.62 & 0.45 & 0.32 &  0.48 & 0.45 \\
         VisFusion       & 0.38 & 0.35 & 0.30 &  0.38 & 0.31 \\
-        MASt3R-SLAM     & 0.13 & 0.12 & 0.12 &  0.12 & 0.12 \\
-        SLAM3R          & 0.07 & 0.06 & 0.03 &  0.10 & 0.09 \\
+        SLAM3R          & 0.13 & 0.12 & 0.12 &  0.12 & 0.12 \\
+        MASt3R-SLAM     & 0.07 & 0.06 & 0.03 &  0.10 & 0.09 \\
         \bottomrule
     \end{tabular}
     \bigskip
-    \caption{Durchsatz nach Modell (Fragmente pro Sekunde)}
 \end{table}
+
+Die volumetrischen Verfahren \textit{NeuralRecon} und \textit{VisFusion} erreichen in allen Szenen höhere Durchsatzraten als die SLAM-basierten Ansätze. Bei den virtuellen Szenen sinkt der Durchsatz von V1 zu V3 für alle Modelle: \textit{NeuralRecon} von 0{,}62 auf 0{,}32 fps, \textit{VisFusion} von 0{,}38 auf 0{,}30 fps, \textit{SLAM3R} konstant bei etwa 0{,}12-0{,}13 fps und \textit{MASt3R-SLAM} von 0{,}07 auf 0{,}03 fps.  
+
+In den realen Szenen R1 und R2 liegen die Durchsätze bei allen Modellen höher als in der komplexesten virtuellen Szene V3. So erreicht \textit{NeuralRecon} 0{,}48-0{,}45 fps, \textit{VisFusion} 0{,}38-0{,}31 fps, \textit{SLAM3R} 0{,}12 fps in beiden Szenen und \textit{MASt3R-SLAM} 0{,}10 bzw. 0{,}09 fps.
 
 \subsubsection{Ressourcenauslastung}
 
@@ -390,17 +389,14 @@ Aufschluss darüber, welche Systemkomponente limitierend wirkt.
 \paragraph{Backend-Ressourcen}
 
 Die Backend-Ressourcenauslastung wurde kontinuierlich während der Rekonstruktionsläufe 
-auf dem dedizierten Server (AMD Ryzen 9 5900X, NVIDIA GTX 1070 Ti) erfasst. Die 
-Messungen umfassen GPU-Auslastung und GPU-Speicherverbrauch (erfasst mittels 
-\texttt{nvidia-smi} in 1-Sekunden-Intervallen) sowie CPU- und RAM-Nutzung der 
-containerisierten Komponenten (erfasst mittels \texttt{docker stats}).
+auf dem dedizierten Server (siehe~\ref{tab:hardware_and_software}) erfasst. Die 
+Messungen umfassen GPU-Auslastung und GPU-Speicherverbrauch sowie CPU- und RAM-Nutzung der 
+containerisierten Komponenten.
 
+\textbf{GPU-Ressourcen:}  
+Tabelle~\ref{tab:gpu_resources} zeigt die durchschnittliche GPU-Auslastung sowie den maximalen GPU-Speicherverbrauch während der Rekonstruktion für alle Modelle und Testszenen.
 
-\textbf{GPU-Ressourcen:} Tabelle~\ref{tab:gpu_resources} zeigt die durchschnittliche 
-GPU-Utilization und den maximalen GPU-Speicherverbrauch während der Rekonstruktion, 
-aufgeschlüsselt nach Modell und Testszene.
-
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \caption{GPU-Auslastung und GPU-Speicherverbrauch während der Rekonstruktion}
     \label{tab:gpu_resources}
@@ -427,13 +423,14 @@ aufgeschlüsselt nach Modell und Testszene.
     \end{tabular}
 \end{table}
 
+Die GPU-Auslastung unterscheidet sich deutlich zwischen den Modellklassen. \textit{NeuralRecon} und \textit{VisFusion} erreichen in allen Szenen moderate Auslastungen im Bereich von 43\,\% bis 56\,\%, während \textit{MASt3R-SLAM} und \textit{SLAM3R} durchgehend sehr hohe Werte zwischen 98\,\% und 100\,\% aufweisen.  
 
-\textbf{CPU- und RAM-Auslastung:} Die Ressourcennutzung der einzelnen Docker-Container 
-ist in Tabelle~\ref{tab:container_resources} dargestellt. Die Werte zeigen die 
-durchschnittliche CPU-Last und den RAM-Verbrauch für Router- und Worker-Container, 
-gemittelt über alle Testszenen.
+Beim maximalen GPU-Speicherverbrauch zeigt \textit{NeuralRecon} einen deutlichen Anstieg in der virtuellen Szene V3 mit 7993\,MB, während die Werte in den realen Szenen zwischen 5986 und 6368\,MB liegen. \textit{VisFusion} weist insgesamt geringere Maximalwerte auf (4418-5984\,MB) und zeigt über die Szenen hinweg geringere Schwankungen. Die SLAM-basierten Verfahren \textit{MASt3R-SLAM} und \textit{SLAM3R} erreichen über alle Szenen hinweg konstant hohe Speicherverbräuche im Bereich von etwa 7{,}9-8{,}0\,GB.
 
-\begin{table}[h]
+\textbf{CPU- und RAM-Auslastung:}  
+Tabelle~\ref{tab:container_resources} fasst die durchschnittliche CPU-Last und den RAM-Verbrauch der Router- und Worker-Container zusammen, gemittelt über alle Testszenen.
+
+\begin{table}[H]
     \centering
     \caption{Durchschnittliche CPU- und RAM-Auslastung der Backend-Container}
     \label{tab:container_resources}
@@ -451,16 +448,20 @@ gemittelt über alle Testszenen.
     \end{tabular}
 \end{table}
 
+Der Router-Container weist eine sehr geringe CPU-Auslastung von 0{,}2\,\% sowie einen niedrigen RAM-Verbrauch von 200\,MB auf. Die Worker-Container zeigen im Vergleich dazu deutlich höhere CPU-Lasten, wobei \textit{NeuralRecon} mit 32\,\% die höchste durchschnittliche CPU-Auslastung erreicht. Die übrigen Worker-Container liegen in einem ähnlichen Bereich zwischen 14\,\% und 17\,\%.  
+
+Der RAM-Verbrauch der Worker-Container unterscheidet sich stärker als die CPU-Last. Während \textit{NeuralRecon} und \textit{VisFusion} Speicherverbräuche im Bereich von rund 2{,}8-3{,}0\,GB aufweisen, liegen die Werte für \textit{MASt3R-SLAM} und \textit{SLAM3R} höher, mit einem Maximum bei \textit{SLAM3R} von 4070\,MB.
+
 \paragraph{Frontend-Ressourcen}
 
-Die durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb 
-(ohne aktive Rekonstruktion) als auch während der Rekonstruktions- und 
-Visualisierungsphase gemessen. Tabelle~\ref{frame_rate} zeigt die Ergebnisse.
+Die durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb ohne aktive Rekonstruktion als auch während der Rekonstruktions- und Visualisierungsphase gemessen (Abbildung~\ref{frame_rate}). Im Baseline-Betrieb erreicht der Client eine durchschnittliche Bildrate von 72\,fps.  
+
+Während der Rekonstruktion bleibt die Frame Rate bei Verwendung von \textit{NeuralRecon} unverändert bei 72\,fps. Bei \textit{VisFusion} sinkt die durchschnittliche Bildrate auf 58\,fps. Die Verwendung der SLAM-basierten Verfahren \textit{SLAM3R} und \textit{MASt3R-SLAM} führt zu einem stärkeren Rückgang der Frame Rate auf jeweils 38\,fps aufgrund der Punktwolken Repräsentation.
 
 \begin{figure}[H]
     \centering
+    \caption{FPS des Unity-Clients im Baseline-Betrieb und während der Rekonstruktion}
     \label{frame_rate}
-    % \caption{FPS des Unity-Clients im Baseline-Betrieb und während der Rekonstruktion}
     \includegraphics[width=0.65\textwidth]{images/frontend_fps.png}
 \end{figure}
 
@@ -474,15 +475,21 @@ Meta Quest 3 aufgenommenen Szenen R1 und R2.
 
 Tabelle~\ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit verfügbarem Ground-Truth für einen Schwellenwert von \textit{10}cm.
 
+Die Berechnung erfolgte in CloudCompare mittels Cloud-to-Cloud Distance: Punkte mit 
+Abstand \(\leq 10\)\,cm zum nächsten Ground-Truth-Punkt wurden als True Positives 
+klassifiziert, größere Abstände als False Positives. False Negatives wurden durch 
+umgekehrte Distanzberechnung ermittelt. Da SLAM3R und MASt3R-SLAM keine globale 
+Konsistenz gewährleisten, wurden deren Rekonstruktionen zuvor mittels ICP \needcitation ausgerichtet.
+
 \begin{table}[H]
     \centering
-    \label{tab:fscore_all}
     \caption{F-Score-Ergebnisse nach Modell und Szene}
+    \label{tab:fscore_all}
     \begin{tabular}{lccc|ccc|ccc}
         \toprule
         & \multicolumn{3}{c}{\textbf{V1}} & \multicolumn{3}{c}{\textbf{V2}} & \multicolumn{3}{c}{\textbf{V3}} \\
         \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
-        \textbf{Modell} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F-Score} \\
+        \textbf{Modell} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} \\
         \midrule
         NeuralRecon     & \textit{0.45} & \textit{0.39} & \textit{0.41} & \textit{0.69} & \textit{0.67} & \textit{0.68} & \textit{0.59} & \textit{0.59} & \textit{0.59} \\
         VisFusion       & \textit{0.57} & \textit{0.52} & \textit{0.54} & \textit{0.57} & \textit{0.65} & \textit{0.61} & \textit{0.57} & \textit{0.68} & \textit{0.62} \\
@@ -492,12 +499,11 @@ Tabelle~\ref{tab:fscore_all} zeigt die F-Score-Ergebnisse für alle Szenen mit v
     \end{tabular}
 \end{table}
 
-\noindent
-Die Berechnung erfolgte in CloudCompare mittels Cloud-to-Cloud Distance: Punkte mit 
-Abstand \(\leq 10\)\,cm zum nächsten Ground-Truth-Punkt wurden als True Positives 
-klassifiziert, größere Abstände als False Positives. False Negatives wurden durch 
-umgekehrte Distanzberechnung ermittelt. Da SLAM3R und MASt3R-SLAM keine globale 
-Konsistenz gewährleisten, wurden deren Rekonstruktionen zuvor mittels ICP ausgerichtet.
+Die Ergebnisse zeigen deutliche Unterschiede zwischen den Modellen und Szenen. In Szene V1 erreichte SLAM3R mit einer Precision von \(0{,}66\), einer Recall von \(0{,}56\) und einem F-Score von \(0{,}61\) die höchsten Werte über alle Metriken hinweg. VisFusion folgte mit einem F-Score von \(0{,}54\), während NeuralRecon mit \(0{,}41\) das schwächste Ergebnis in dieser Szene erzielte. MASt3R-SLAM erreichte einen F-Score von \(0{,}50\) und positionierte sich im mittleren Bereich. 
+
+Für Szene V2 verschob sich die Rangfolge deutlich. NeuralRecon erzielte hier mit einer Precision von \(0{,}69\), einer Recall von \(0{,}67\) und einem F-Score von \(0{,}68\) die besten Werte. SLAM3R folgte mit einem F-Score von \(0{,}63\), während VisFusion \(0{,}61\) erreichte. MASt3R-SLAM blieb mit einem F-Score von \(0{,}50\) konstant auf dem Niveau der ersten Szene. 
+
+In der komplexesten Szene V3 dominierte VisFusion mit einem F-Score von \(0{,}62\) sowie der höchsten Recall von \(0{,}68\). NeuralRecon erreichte einen F-Score von \(0{,}59\) und die höchste Precision dieser Szene mit \(0{,}59\). SLAM3R fiel auf einen F-Score von \(0{,}42\) zurück, während MASt3R-SLAM mit \(0{,}45\) einen leichten Rückgang gegenüber den vorherigen Szenen aufwies. Über alle drei virtuellen Szenen hinweg betrachtet ergeben sich mittlere F-Scores von \(0{,}56\) für NeuralRecon, \(0{,}59\) für VisFusion, \(0{,}55\) für SLAM3R und \(0{,}48\) für MASt3R-SLAM. 
 
 \subsubsection{Qualitative Bewertung}
 
@@ -547,7 +553,7 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
         \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/visfusion00.png}
         \caption{VisFusion}
     \end{subfigure}
-    \caption{Vergleich zwischen NeuralRecon (links) und VisFusion (rechts) in Szene V1. VisFusion rekonstruiert die schrägen Flächen erfolgreich und zeigt eine deutlich höhere Vollständigkeit.}
+    \caption{Vergleich zwischen NeuralRecon und VisFusion in Szene V1. VisFusion rekonstruiert die schrägen Flächen erfolgreich und zeigt eine deutlich höhere Vollständigkeit.}
     \label{fig:visfusion_comparison}
 \end{figure}
 
@@ -561,13 +567,13 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
         \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/visfusion.png}
         \caption{Szene V3}
     \end{subfigure}
-    \caption{VisFusion Rekonstruktionen der Szenen V2 (links) und V3 (rechts). Die Performance bleibt auch bei zunehmender Komplexität stabil. Objekte wie die Stehlampe oder der TV-Schrank werden detaillierter erfasst.}
+    \caption{VisFusion Rekonstruktionen der Szenen V2 und V3. Die Performance bleibt auch bei zunehmender Komplexität stabil. Objekte wie die Stehlampe oder der TV-Schrank werden detaillierter erfasst.}
     \label{fig:visfusion_scenes}
 \end{figure}
 
 \paragraph{SLAM3R}
 
-SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich. Mit zunehmender Szenenkomplexität verschlechterte sich die Performance dramatisch: In der komplexen Szene V3 brach sie vollständig ein (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
+SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich. In der komplexen Szene V3 brach sie vollständig ein (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
 
 \begin{figure}[H]
     \centering
@@ -597,7 +603,7 @@ SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige P
         \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/slam3r.png}
         \caption{Szene V3}
     \end{subfigure}
-    \caption{SLAM3R Performance-Vergleich über Szenen: V1 (links), V2 (Mitte), V3 (rechts). Deutlich erkennbar ist die zunehmende Fragmentierung und der Verlust globaler Kohärenz mit steigender Komplexität.}
+    \caption{SLAM3R Performance-Vergleich über Szenen: V1, V2 und V3. Deutlich erkennbar ist die zunehmende Fragmentierung und der Verlust globaler Kohärenz mit steigender Komplexität.}
     \label{fig:slam3r_scenes_progression}
 \end{figure}
 
@@ -644,6 +650,7 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
 
 \begin{table}[H]
     \centering
+    \caption{Qualitative Bewertung der Rekonstruktionsverfahren im Vergleich}
     \label{tab:qualitative_comparison}
     \begin{tabular}{lcccc}
         \toprule
@@ -656,7 +663,6 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
         \bottomrule
     \end{tabular}
     \medskip
-    \caption{Qualitative Bewertung der Rekonstruktionsverfahren im Vergleich}
 \end{table}
 
 \subsubsection{Rekonstruktion unter realen VR-Bedingungen}
@@ -667,24 +673,14 @@ Szenen R1 (Schlafzimmer) und R2 (Wohnzimmer) der Praxisvalidierung des Systems u
 authentischen VR-Bedingungen mit der Meta Quest 3.
 
 \paragraph{Charakteristika der Quest 3-Passthrough-Kamera}
-Die für Tracking optimierten Pass\-through-Kameras der Quest 3 unterscheiden sich in 
-mehreren Hardware-bedingten Eigenschaften von synthetischen Kameras. Sie weisen einen 
-geringen Dynamikumfang auf, zeigen Rolling-Shutter-Effekte bei schnellen Kopfbewegungen 
-und produzieren Bildrauschen bei schwacher Beleuchtung. Zudem ist der Kontrast reduziert.
+Die für das Tracking optimierten Pass-Through-Kameras der Quest 3 unterscheiden sich in mehreren hardwarebedingten Eigenschaften von synthetischen Kameras. Sie weisen einen geringen Dynamikumfang auf, zeigen Rolling-Shutter-Effekte bei schnellen Kopfbewegungen und produzieren Bildrauschen bei schwacher Beleuchtung. Zudem ist der Kontrast reduziert.
 
 \paragraph{Beobachtungen NeuralRecon}
-NeuralRecon wies in den realen Szenen R1 und R2 die geringste Rekonstruktionsqualität 
-aller evaluierten Modelle auf. Die erzeugten Rekonstruktionen zeigten erhebliche 
-Diskontinuitäten in der Oberflächenrepräsentation, wobei feinere geometrische Details 
-größtenteils nicht erfasst wurden. Die Rekonstruktionen beschränkten sich im Wesentlichen 
-auf grobe Approximationen der Szenengeometrie.
+In den realen Szenen R1 und R2 wies NeuralRecon die geringste Rekonstruktionsqualität aller evaluierten Modelle auf. Die erzeugten Rekonstruktionen wiesen erhebliche Diskontinuitäten in der Oberflächenrepräsentation auf und feinere geometrische Details wurden größtenteils nicht erfasst. Die Rekonstruktionen beschränkten sich im Wesentlichen auf grobe Approximationen der Szenengeometrie.
 
 \paragraph{Beobachtungen VisFusion}
-VisFusion erzielte eine marginal verbesserte Rekonstruktionsqualität gegenüber NeuralRecon. 
-Die Oberflächenrepräsentation wies weiterhin partielle Diskontinuitäten auf, wobei eine 
-Erfassung gröberer geometrischer Strukturen erkennbar war. Die Vollständigkeit der 
-Rekonstruktion übertraf NeuralRecon geringfügig, beschränkte sich jedoch ebenfalls 
-primär auf die Erfassung makroskopischer Formmerkmale.
+VisFusion erzielte eine minimal bessere Rekonstruktionsqualität als NeuralRecon. 
+Die Oberflächenrepräsentation wies weiterhin partielle Lücken auf, wobei jedoch eine Erfassung gröberer geometrischer Strukturen erkennbar war. Die Vollständigkeit der Rekonstruktion übertraf die von NeuralRecon geringfügig, beschränkte sich jedoch ebenfalls primär auf die Erfassung grober Formmerkmale.
 
 \begin{figure}[H]
     \centering
@@ -696,19 +692,10 @@ primär auf die Erfassung makroskopischer Formmerkmale.
 \end{figure}
 
 \paragraph{Beobachtungen SLAM3R}
-SLAM3R demonstrierte in den realen Szenen eine signifikant höhere Rekonstruktionsqualität 
-als die volumetrischen Verfahren. Die Punktwolken-Repräsentation ermöglichte eine detaillierte 
-Erfassung der Szenengeometrie mit deutlich reduzierter Diskontinuität gegenüber NeuralRecon 
-und VisFusion. Bemerkenswert ist die verbesserte Performance gegenüber den synthetischen 
-Szenen, die sich in reduzierter Artefaktbildung und beschleunigter Konvergenz manifestierte.
+In den realen Szenen demonstrierte SLAM3R eine signifikant höhere Rekonstruktionsqualität als die volumetrischen Verfahren. Die Punktwolken Repräsentation ermöglichte eine detaillierte Erfassung der Szenengeometrie mit deutlich reduzierter Diskontinuität im Vergleich zu NeuralRecon und VisFusion. Bemerkenswert ist die verbesserte Performance gegenüber den synthetischen Szenen, die sich in reduzierter Artefaktbildung und beschleunigter Konvergenz manifestierte.
 
 \paragraph{Beobachtungen MASt3R-SLAM}
-MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen. Die 
-Rekonstruktionsergebnisse waren qualitativ vergleichbar mit SLAM3R, wiesen jedoch einen 
-marginal erhöhten Detailgrad sowie reduzierte Artefaktbildung auf. Die Oberflächenrepräsentation 
-zeigte sehr geringe Diskontinuität. Analog zu SLAM3R übertraf die Performance in den realen 
-Szenen die Ergebnisse der synthetischen Evaluationen, wobei MASt3R-SLAM insgesamt die 
-höchste Rekonstruktionsgüte in R1 und R2 erreichte.
+MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen. Die Rekonstruktionsergebnisse waren qualitativ mit denen von SLAM3R vergleichbar, wiesen jedoch einen marginal erhöhten Detailgrad sowie eine reduzierte Artefaktbildung auf. Die Oberflächenrepräsentation zeigte eine sehr geringe Diskontinuität. Analog zu SLAM3R übertraf die Performance in den realen Szenen die Ergebnisse der synthetischen Evaluationen. Dabei erreichte MASt3R-SLAM insgesamt die höchste Rekonstruktionsgüte in R1 und R2.
 
 \begin{figure}[H]
     \centering
@@ -721,24 +708,14 @@ höchste Rekonstruktionsgüte in R1 und R2 erreichte.
 \end{figure}
 
 \paragraph{Vergleich synthetische vs. reale Szenen}
-Der Vergleich zwischen den synthetischen Szenen V1--V3 und den realen Szenen R1--R2 
-offenbart distinkte Performance-Charakteristika der unterschiedlichen Modellklassen. 
-Die volumetrischen Verfahren NeuralRecon und VisFusion, welche in den synthetischen 
-Szenen robuste und vollständige Rekonstruktionen generierten, zeigten in den realen 
-Szenen eine signifikant reduzierte Rekonstruktionsqualität mit ausgeprägten 
-Diskontinuitäten und verlorenem geometrischem Detailgrad. Konträr dazu wiesen die 
-SLAM-basierten Verfahren SLAM3R und MASt3R-SLAM eine Performance-Inversion auf: 
-Während diese in den synthetischen Szenen partiell mit Artefaktbildung und prolongierter 
-Konvergenz konfrontiert waren, erzielten sie in den realen Szenen superiore 
-Rekonstruktionsergebnisse mit erhöhtem Detailgrad und minimaler Diskontinuität. 
+Ein Vergleich der synthetischen Szenen V1--V3 mit den realen Szenen R1--R2 offenbart unterschiedliche Leistungsmerkmale der verschiedenen Modellklassen. 
+Die volumetrischen Verfahren NeuralRecon und VisFusion generierten in den synthetischen Szenen robuste und vollständige Rekonstruktionen, zeigten in den realen Szenen jedoch eine signifikant reduzierte Rekonstruktionsqualität mit ausgeprägten Diskontinuitäten und verlorenem geometrischem Detailgrad. Im Gegensatz dazu wiesen die SLAM-basierten Verfahren SLAM3R und MASt3R-SLAM eine Performance-Inversion auf. 
+Während diese in den synthetischen Szenen teilweise mit Artefaktbildung und verlängerter Inferrenz konfrontiert waren, erzielten sie in den realen Szenen hervorragende Rekonstruktionsergebnisse mit erhöhtem Detailgrad und minimalen Diskontinuitäten. 
 MASt3R-SLAM erreichte dabei die höchste Rekonstruktionsgüte in den realen VR-Aufnahmen.
 
 \subsection{Modularität und Systemstabilität}
 
-Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration 
-der vier heterogenen Rekonstruktionsverfahren NeuralRecon, VisFusion, MASt3R-SLAM 
-und SLAM3R unter Beweis gestellt. Dieser Abschnitt quantifiziert den Integrationsaufwand 
-pro Modell und bewertet die Stabilität des Systems unter realen Betriebsbedingungen.
+Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration der vier heterogenen Rekonstruktionsverfahren NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R unter Beweis gestellt. In diesem Abschnitt wird der Integrationsaufwand pro Modell quantifiziert und die Stabilität des Systems unter realen Betriebsbedingungen bewertet.
 
 \subsubsection*{Integrationsaufwand}
 
@@ -757,34 +734,20 @@ fasst den durchschnittlichen Aufwand pro Modell zusammen.
 \toprule
 \textbf{Komponente} & \textbf{NeuralRecon} & \textbf{VisFusion} & \textbf{MASt3R} & \textbf{SLAM3R} \\
 \midrule
-Dockerfile (Zeilen)           & 42  & 38  & 51  & 47  \\
-Worker-Klasse (Zeilen)        & 156 & 148 & 189 & 203 \\
-docker-compose.yml (Zeilen)   & 12  & 12  & 14  & 13  \\
+Dockerfile (Zeilen)           & 47  & 47  & 37  & 66  \\
+Worker-Klasse (Zeilen)        & 205 & 216 & 401 & 282 \\
+docker-compose.yml (Zeilen)   & 20  & 21  & 17  & 20  \\
 \midrule
-\textbf{Gesamt (Zeilen)}      & 210 & 198 & 254 & 263 \\
-Geschätzter Zeitaufwand (h)   & 4--6 & 3--5 & 6--8 & 7--9 \\
+\textbf{Gesamt (Zeilen)}      & 272 & 284 & 455 & 368 \\
+Geschätzter Zeitaufwand (h)   & 6--8 & 2--3 & 6--8 & 6--8 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \noindent
-Der Großteil des Implementierungsaufwands entfällt auf zwei Bereiche: Die Erstellung 
-des Docker-Containers erfordert die korrekte Konfiguration von Base-Image, CUDA-Versionen, 
-Python-Abhängigkeiten und modellspezifischen Bibliotheken. Besonders anspruchsvoll ist 
-dabei die Kompatibilität zwischen PyTorch-, CUDA- und Treiber-Versionen, die für jedes 
-Modell individuell aufgelöst werden muss. Die Implementierung der Worker-Klasse umfasst 
-neben der Datenaufbereitung auch die Initialisierung des jeweiligen Rekonstruktionsmodells, 
-das Laden von Modellgewichten sowie die Transformation der Ausgabe in das standardisierte 
-\texttt{ModelResult}-Format.
+Der Großteil des Implementierungsaufwands entfällt auf zwei Bereiche: Die Erstellung des Docker-Containers erfordert die korrekte Konfiguration des Base-Images, der CUDA-Versionen, der Python-Abhängigkeiten und der modellspezifischen Bibliotheken. Besonders anspruchsvoll ist dabei die Kompatibilität zwischen PyTorch-, CUDA- und Treiber-Versionen, die für jedes Modell individuell gewährleistet werden muss. Die Implementierung der Worker-Klasse umfasst neben der Datenaufbereitung auch die Initialisierung des jeweiligen Rekonstruktionsmodells, das Laden von Modellgewichten sowie die Transformation der Ausgabe in das standardisierte \texttt{ModelResult}-Format.
 
-Die Einbindung in die \texttt{docker-compose.yml} erfordert die Definition eines neuen 
-Service-Eintrags, der den Build-Kontext, GPU-Ressourcen, Umgebungsvariablen (Modellname, 
-Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert. Dieser Schritt 
-ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates 
-erfolgen. Die Kommunikationslogik - Verbindungsaufbau zum Router, asynchroner Fragmentempfang 
-und Ergebnisrücksendung - wird vollständig von der Basisklasse \texttt{BaseReconstructionModel} 
-bereitgestellt und erfordert keine modellspezifische Anpassung. Dies reduziert die 
-Komplexität der Integration erheblich.
+Für die Einbindung in die \texttt{docker-compose.yml} ist die Definition eines neuen Service-Eintrags erforderlich, in dem der Build-Kontext, die GPU-Ressourcen, die Umgebungsvariablen (Modellname, Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert werden. Dieser Schritt ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates erfolgen. Die Kommunikationslogik - Verbindungsaufbau zum Router, asynchroner Fragmentempfang und Ergebnisrücksendung - wird vollständig von der Basisklasse BaseReconstructionModel bereitgestellt und erfordert keine modellspezifische Anpassung. Dies reduziert die Komplexität der Integration erheblich.
 
 \subsubsection*{Systemstabilität}
 
@@ -817,6 +780,7 @@ instabiler Netzwerkverbindung relevant werden kann.
 Die vorliegende Arbeit untersuchte die Eignung einer modularen, containerisierten Systemarchitektur für die Integration verschiedener Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung. Die in Kapitel~6.3 präsentierten Evaluationsergebnisse werden im Folgenden systematisch interpretiert und hinsichtlich ihrer praktischen Implikationen diskutiert. Die Diskussion gliedert sich in fünf Schwerpunkte: Echtzeitfähigkeit und Performance-Charakteristik (6.4.1), Modularität und Erweiterbarkeit der Architektur (6.4.2), Rekonstruktionsqualität und Generalisierbarkeit (6.4.3), Eignung für VR-Anwendungen (6.4.4) sowie die abschließende Beantwortung der Forschungsfrage (6.4.5).
 
 \subsection{Echtzeitfähigkeit und Performance-Charakteristik}
+\label{subsec:realtime}
 
 Die Echtzeitfähigkeit des Systems wird maßgeblich durch die architektonische Entkopplung von Datenerfassung, Inferenz und Visualisierung bestimmt. Die Performance-Analyse zeigt, dass das entwickelte System diese Entkopplung erfolgreich realisiert, wobei sich jedoch deutliche Unterschiede zwischen den integrierten Rekonstruktionsverfahren manifestieren, die primär auf deren jeweilige algorithmische Komplexität zurückzuführen sind.
 
