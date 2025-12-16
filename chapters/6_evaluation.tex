@@ -541,7 +541,7 @@ Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testsz
 
 \paragraph{VisFusion}
 
-VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRecon. Schräge Flächen in Szene V1, die zuvor komplett fehlten, wurden nun erfolgreich rekonstruiert, und insgesamt blieben weniger Bereiche lückenhaft. Die F-Scores stiegen über die Szenen hinweg kontinuierlich an (V1: 0.54, V2: 0.61, V3: 0.62), was auf eine robuste Performance auch bei zunehmender Komplexität hindeutet. Auch im Detail zeigte sich eine Verbesserung: Feinere Strukturen blieben besser erhalten, während gröbere Geometrien ähnlich zuverlässig erfasst wurden wie bei NeuralRecon. Die Meshes waren durchweg glatt, artefaktfrei und wiesen eine höhere geometrische Präzision in komplexen Bereichen auf. Die globale Konsistenz blieb über alle Szenen hinweg stabil.
+VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRecon. Schräge Flächen in Szene V1, die zuvor komplett fehlten, wurden nun erfolgreich rekonstruiert, und insgesamt blieben weniger Bereiche lückenhaft. Die F-Scores stiegen über die Szenen hinweg kontinuierlich an (V1: 0.54, V2: 0.61, V3: 0.62), was auf eine robuste Performance auch bei zunehmender Komplexität hindeutet. Auch im Detail zeigte sich eine Verbesserung: Feinere Strukturen blieben besser erhalten, während gröbere Geometrien ähnlich zuverlässig erfasst wurden wie bei NeuralRecon. Die Meshes waren durchweg glatt, artefaktfrei und wiesen eine höhere geometrische Präzision in komplexen Bereichen auf. Die globale Konsistenz blieb über alle Szenen hinweg ebenfalls stabil.
 
 \begin{figure}[H]
     \centering
@@ -573,7 +573,7 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
 
 \paragraph{SLAM3R}
 
-SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich. In der komplexen Szene V3 brach sie vollständig ein (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
+SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich, während das Modell der komplexen Szene V3 vollständig einbrach (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
 
 \begin{figure}[H]
     \centering
@@ -610,7 +610,7 @@ SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige P
 
 \paragraph{MASt3R-SLAM}
 
-MASt3R-SLAM erzeugte ebenfalls Punktwolken und zeigte über alle Szenen hinweg konstante F-Scores (V1: 0.50, V2: 0.50, V3: 0.45). In der einfachen Szene V1 war das Verfahren jedoch SLAM3R deutlich unterlegen: Der Drift war stärker ausgeprägt, und die globale Kohärenz litt bereits in dieser unkomplizierten Umgebung. Auch Fragmente traten bereits in V1 häufiger auf als bei SLAM3R und beeinträchtigten die visuelle Qualität der Rekonstruktion. Mit zunehmender Szenenkomplexität zeigte sich jedoch ein anderes Bild: Während SLAM3R in V2 und besonders in V3 stark einbrach, blieb MASt3R-SLAM relativ stabil. In den komplexeren Szenen V2 und V3 übertraf es SLAM3R sowohl in der räumlichen Konsistenz als auch in der globalen Ausrichtung. Die Fragmentierung durch frei schwebende Punkte war zwar weiterhin vorhanden und trug zur Unübersichtlichkeit bei, jedoch deutlich moderater als bei SLAM3R in diesen Szenen. Rekonstruktionsabschnitte fügten sich besser zu einem Gesamtbild zusammen, auch wenn eine manuelle Registrierung weiterhin notwendig blieb, um die Rekonstruktionen mit dem Ground Truth abzugleichen. Die lokale Detailtreue mit Farbinformation war durchgängig gegeben, und die Performance blieb über die Szenen hinweg bemerkenswert konsistent, während SLAM3R zunehmend instabil wurde.
+MASt3R-SLAM erzeugte ebenfalls Punktwolken und zeigte über alle Szenen hinweg konstante F-Scores (V1: 0.50, V2: 0.50, V3: 0.45). In der einfachen Szene V1 war das Verfahren jedoch SLAM3R deutlich unterlegen: Der Drift war stärker ausgeprägt, und die globale Kohärenz litt bereits in dieser unkomplizierten Umgebung. Auch Fragmente traten bereits in V1 häufiger auf als bei SLAM3R und beeinträchtigten die visuelle Qualität der Rekonstruktion. Mit zunehmender Szenenkomplexität zeigte sich jedoch ein anderes Bild: Während SLAM3R in V2 und besonders in V3 stark einbrach, blieb MASt3R-SLAM relativ stabil. In den komplexeren Szenen V2 und V3 übertraf es SLAM3R sowohl in der räumlichen Konsistenz als auch in der globalen Ausrichtung. Die Fragmentierung durch frei schwebende Punkte war zwar weiterhin vorhanden und trug zur Unübersichtlichkeit bei, jedoch deutlich moderater als bei SLAM3R in diesen Szenen. Die rekonstruierten Abschnitte fügten sich besser zu einem Gesamtbild zusammen, auch wenn eine manuelle Registrierung weiterhin notwendig war, um die Rekonstruktionen mit dem Ground Truth abzugleichen. Die lokale Detailtreue mit Farbinformationen war durchgängig gegeben und die Performance blieb über die Szenen hinweg bemerkenswert konsistent, während SLAM3R zunehmend instabiler wurde.
 
 \begin{figure}[H]
     \centering
@@ -658,7 +658,7 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
         \midrule
         Vollständigkeit & mittel & hoch & hoch & hoch \\
         Detailtreue & gering & mittel & sehr hoch & sehr hoch \\
-        Artefaktfreiheit & sehr hoch & sehr hoch & sehr gering & gering \\
+        Artefaktfreiheit & sehr hoch & sehr hoch & gering & gering \\
         Oberflächenqualität & sehr hoch & sehr hoch & mittel & mittel \\
         \bottomrule
     \end{tabular}
@@ -667,20 +667,17 @@ Tabelle \ref{tab:qualitative_comparison} fasst die qualitativen Beobachtungen zu
 
 \subsubsection{Rekonstruktion unter realen VR-Bedingungen}
 
-Während die virtuellen Szenen V1--V3 die Rekonstruktionsqualität unter kontrollierten 
-Bedingungen mit synthetischen, hochauflösenden Kameras evaluieren, dienen die realen 
-Szenen R1 (Schlafzimmer) und R2 (Wohnzimmer) der Praxisvalidierung des Systems unter 
-authentischen VR-Bedingungen mit der Meta Quest 3.
+Während die virtuellen Szenen V1--V3 die Rekonstruktionsqualität unter kontrollierten Bedingungen mit synthetischen, hochauflösenden Kameras evaluieren, dienen die realen Szenen R1 (Schlafzimmer) und R2 (Wohnzimmer) der praxisnahen Validierung des Systems unter authentischen VR-Bedingungen mit der Meta Quest 3.
 
 \paragraph{Charakteristika der Quest 3-Passthrough-Kamera}
-Die für das Tracking optimierten Pass-Through-Kameras der Quest 3 unterscheiden sich in mehreren hardwarebedingten Eigenschaften von synthetischen Kameras. Sie weisen einen geringen Dynamikumfang auf, zeigen Rolling-Shutter-Effekte bei schnellen Kopfbewegungen und produzieren Bildrauschen bei schwacher Beleuchtung. Zudem ist der Kontrast reduziert.
+Bei der Evaluation des Systems zeigten die für das Tracking optimierten Pass-Through-Kameras der Quest 3 mehrere hardwarebedingte Eigenschaften, die sich von denen synthetischer Kameras unterscheiden. Auffällig war der geringe Dynamikumfang, der insbesondere bei stark variierenden Lichtverhältnissen zu Detailverlusten in hellen und dunklen Bildbereichen führte. Rolling-Shutter-Effekte traten bei schnellen Kopfbewegungen deutlich hervor und verursachten sichtbare Verzerrungen. Zudem wurde bei schwacher Beleuchtung verstärktes Bildrauschen beobachtet, während der insgesamt reduzierte Kontrast die Bildqualität zusätzlich beeinträchtigte.
 
 \paragraph{Beobachtungen NeuralRecon}
-In den realen Szenen R1 und R2 wies NeuralRecon die geringste Rekonstruktionsqualität aller evaluierten Modelle auf. Die erzeugten Rekonstruktionen wiesen erhebliche Diskontinuitäten in der Oberflächenrepräsentation auf und feinere geometrische Details wurden größtenteils nicht erfasst. Die Rekonstruktionen beschränkten sich im Wesentlichen auf grobe Approximationen der Szenengeometrie.
+In den realen Szenen R1 und R2 wies NeuralRecon die geringste Rekonstruktionsqualität aller evaluierten Modelle auf. Die erzeugten Rekonstruktionen wiesen erhebliche Lücken in der Oberfläche auf, und feinere geometrische Details wurden größtenteils nicht erfasst. Die Rekonstruktionen beschränkten sich im Wesentlichen auf grobe Approximationen der Szenengeometrie.
 
 \paragraph{Beobachtungen VisFusion}
-VisFusion erzielte eine minimal bessere Rekonstruktionsqualität als NeuralRecon. 
-Die Oberflächenrepräsentation wies weiterhin partielle Lücken auf, wobei jedoch eine Erfassung gröberer geometrischer Strukturen erkennbar war. Die Vollständigkeit der Rekonstruktion übertraf die von NeuralRecon geringfügig, beschränkte sich jedoch ebenfalls primär auf die Erfassung grober Formmerkmale.
+VisFusion erzielte eine geringfügig bessere Rekonstruktionsqualität als NeuralRecon. 
+Die Oberfläche wies weiterhin partielle Lücken auf, es war jedoch eine Erfassung gröberer geometrischer Strukturen erkennbar. Die Vollständigkeit der Rekonstruktion übertraf die von NeuralRecon geringfügig, beschränkte sich jedoch ebenfalls primär auf die Erfassung grober Formmerkmale.
 
 \begin{figure}[H]
     \centering
@@ -692,32 +689,30 @@ Die Oberflächenrepräsentation wies weiterhin partielle Lücken auf, wobei jedo
 \end{figure}
 
 \paragraph{Beobachtungen SLAM3R}
-In den realen Szenen demonstrierte SLAM3R eine signifikant höhere Rekonstruktionsqualität als die volumetrischen Verfahren. Die Punktwolken Repräsentation ermöglichte eine detaillierte Erfassung der Szenengeometrie mit deutlich reduzierter Diskontinuität im Vergleich zu NeuralRecon und VisFusion. Bemerkenswert ist die verbesserte Performance gegenüber den synthetischen Szenen, die sich in reduzierter Artefaktbildung und beschleunigter Konvergenz manifestierte.
+In den realen Szenen zeigte SLAM3R eine deutlich höhere Rekonstruktionsqualität als die volumetrischen Verfahren. Die Punktwolken-Repräsentation ermöglichte eine detaillierte Erfassung der Szenengeometrie mit deutlich reduzierter Diskontinuität. Bemerkenswert ist die verbesserte Performance gegenüber den synthetischen Szenen, die sich in reduzierter Artefaktbildung und beschleunigter Konvergenz äußerte.
 
 \paragraph{Beobachtungen MASt3R-SLAM}
-MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen. Die Rekonstruktionsergebnisse waren qualitativ mit denen von SLAM3R vergleichbar, wiesen jedoch einen marginal erhöhten Detailgrad sowie eine reduzierte Artefaktbildung auf. Die Oberflächenrepräsentation zeigte eine sehr geringe Diskontinuität. Analog zu SLAM3R übertraf die Performance in den realen Szenen die Ergebnisse der synthetischen Evaluationen. Dabei erreichte MASt3R-SLAM insgesamt die höchste Rekonstruktionsgüte in R1 und R2.
+MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen. Die Rekonstruktionsergebnisse waren qualitativ mit denen von SLAM3R vergleichbar, wiesen jedoch einen höheren Detailgrad sowie eine geringere Artefaktbildung auf. Die Darstellung der Oberflächen zeigte eine sehr geringe Diskontinuität. Analog zu SLAM3R übertraf die Performance in den realen Szenen die Ergebnisse der synthetischen Evaluationen. Insgesamt erreichte MASt3R-SLAM somit die höchste Rekonstruktionsgüte in R1 und R2.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.49\linewidth]{images/room04_slam3r00.png}
     \includegraphics[width=0.49\linewidth]{images/room04_mast3r00.png}
-    \caption{Rekonstruktionen der SLAM-basierten Verfahren in Szene R2. Links: SLAM3R 
-    mit hohem Detailgrad. Rechts: MASt3R-SLAM mit höchster Rekonstruktionsgüte und reduzierter 
-    Artefaktbildung.}
+    \caption{Rekonstruktionen der SLAM-basierten Verfahren in Szene R2. Obwohl beide Modelle einen hohen Detailgrad haben, liegt MASt3R-SLAM vorne (Esstisch, Sofa)}
     \label{fig:real_slam}
 \end{figure}
 
 \paragraph{Vergleich synthetische vs. reale Szenen}
-Ein Vergleich der synthetischen Szenen V1--V3 mit den realen Szenen R1--R2 offenbart unterschiedliche Leistungsmerkmale der verschiedenen Modellklassen. 
-Die volumetrischen Verfahren NeuralRecon und VisFusion generierten in den synthetischen Szenen robuste und vollständige Rekonstruktionen, zeigten in den realen Szenen jedoch eine signifikant reduzierte Rekonstruktionsqualität mit ausgeprägten Diskontinuitäten und verlorenem geometrischem Detailgrad. Im Gegensatz dazu wiesen die SLAM-basierten Verfahren SLAM3R und MASt3R-SLAM eine Performance-Inversion auf. 
-Während diese in den synthetischen Szenen teilweise mit Artefaktbildung und verlängerter Inferrenz konfrontiert waren, erzielten sie in den realen Szenen hervorragende Rekonstruktionsergebnisse mit erhöhtem Detailgrad und minimalen Diskontinuitäten. 
+Ein Vergleich der synthetischen Szenen V1--V3 mit den realen Szenen R1--R2 zeigt die unterschiedlichen Leistungsmerkmale der verschiedenen Modellklassen. 
+Während die volumetrischen Verfahren NeuralRecon und VisFusion in den synthetischen Szenen robuste und vollständige Rekonstruktionen generierten, zeigten sie in den realen Szenen eine signifikant reduzierte Rekonstruktionsqualität mit ausgeprägten Diskontinuitäten und verlorenem geometrischem Detailgrad. Im Gegensatz dazu wiesen die SLAM-basierten Verfahren SLAM3R und MASt3R-SLAM eine umgekehrte Performance auf. 
+Während sie in den synthetischen Szenen teilweise mit Artefaktbildung und verlängerter Inferrenz konfrontiert waren, erzielten sie in den realen Szenen hervorragende Rekonstruktionsergebnisse mit erhöhtem Detailgrad und minimalen Diskontinuitäten. 
 MASt3R-SLAM erreichte dabei die höchste Rekonstruktionsgüte in den realen VR-Aufnahmen.
 
 \subsection{Modularität und Systemstabilität}
 
-Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration der vier heterogenen Rekonstruktionsverfahren NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R unter Beweis gestellt. In diesem Abschnitt wird der Integrationsaufwand pro Modell quantifiziert und die Stabilität des Systems unter realen Betriebsbedingungen bewertet.
+Die Modularität der entwickelten Architektur wird durch die erfolgreiche Integration der vier heterogenen Rekonstruktionsverfahren NeuralRecon, VisFusion, MASt3R-SLAM und SLAM3R unter Beweis gestellt. In diesem Abschnitt wird der jeweilige Integrationsaufwand bestimmt und die Stabilität des Systems unter realen Bedingungen bewertet.
 
-\subsubsection*{Integrationsaufwand}
+\subsubsection{Integrationsaufwand}
 
 Die Integration eines neuen Rekonstruktionsmodells in RTReconstruct erfordert drei 
 zentrale Implementierungsschritte: die Erstellung eines modellspezifischen Docker-Containers 
@@ -744,36 +739,22 @@ Geschätzter Zeitaufwand (h)   & 6--8 & 2--3 & 6--8 & 6--8 \\
 \end{tabular}
 \end{table}
 
-\noindent
-Der Großteil des Implementierungsaufwands entfällt auf zwei Bereiche: Die Erstellung des Docker-Containers erfordert die korrekte Konfiguration des Base-Images, der CUDA-Versionen, der Python-Abhängigkeiten und der modellspezifischen Bibliotheken. Besonders anspruchsvoll ist dabei die Kompatibilität zwischen PyTorch-, CUDA- und Treiber-Versionen, die für jedes Modell individuell gewährleistet werden muss. Die Implementierung der Worker-Klasse umfasst neben der Datenaufbereitung auch die Initialisierung des jeweiligen Rekonstruktionsmodells, das Laden von Modellgewichten sowie die Transformation der Ausgabe in das standardisierte \texttt{ModelResult}-Format.
+Der Großteil des Aufwandes für die Implementierung entfällt auf zwei Bereiche: Die Erstellung des Docker-Containers erfordert die korrekte Konfiguration des Base-Images, der CUDA-Versionen, der Python-Abhängigkeiten und der modellspezifischen Bibliotheken. Besonders anspruchsvoll ist dabei die Gewährleistung der Kompatibilität zwischen PyTorch-, CUDA- und Treiber-Versionen, die für jedes Modell individuell erfolgen muss. Die Implementierung der Worker-Klasse umfasst neben der Datenaufbereitung auch die Initialisierung des jeweiligen Rekonstruktionsmodells, das Laden von Modellgewichten und die Transformation der Ausgabe in das standardisierte \texttt{ModelResult}-Format.
 
-Für die Einbindung in die \texttt{docker-compose.yml} ist die Definition eines neuen Service-Eintrags erforderlich, in dem der Build-Kontext, die GPU-Ressourcen, die Umgebungsvariablen (Modellname, Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert werden. Dieser Schritt ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates erfolgen. Die Kommunikationslogik - Verbindungsaufbau zum Router, asynchroner Fragmentempfang und Ergebnisrücksendung - wird vollständig von der Basisklasse BaseReconstructionModel bereitgestellt und erfordert keine modellspezifische Anpassung. Dies reduziert die Komplexität der Integration erheblich.
+Um den Dienst in die \texttt{docker-compose.yml} einzubinden, muss ein neuer Service-Eintrag definiert werden, in dem der Build-Kontext, die GPU-Ressourcen, die Umgebungsvariablen (Modellname, Server-URL) sowie die Netzwerkanbindung an den zentralen Router spezifiziert werden. Dieser Schritt ist weitgehend standardisiert und kann durch Anpassung eines bestehenden Service-Templates erfolgen. Die Basisklasse \texttt{BaseReconstructionModel} stellt die Kommunikationslogik bereit, die den Verbindungsaufbau zum Router, den asynchronen Fragmentempfang und die Ergebnisrücksendung umfasst. Diese Logik erfordert keine modellspezifische Anpassung. Dies reduziert die Komplexität der Integration erheblich.
 
-\subsubsection*{Systemstabilität}
+\subsubsection{Systemstabilität}
 
-Die Stabilität des Systems wurde hinsichtlich der Isolierung von Fehlern einzelner 
-Komponenten untersucht. Dabei wurden drei Aspekte betrachtet.
+Die Stabilität des Systems wurde in Bezug auf die Isolierung von Fehlern einzelner Komponenten untersucht. Dabei wurden drei Aspekte berücksichtigt.
 
 \paragraph{Fehlertoleranz bei fehlerhaften Rekonstruktionen}
-Fehler innerhalb der Worker-Prozesse - etwa durch ungültige Eingabedaten, 
-Speicherengpässe oder Modell-Inferenzfehler - führten nicht zu einem Absturz 
-des zentralen Routers oder anderer Worker. Die fehlerhafte Rekonstruktionsanfrage 
-wurde verworfen, während das System für andere Szenen und Modelle funktionsfähig blieb. 
-Dies bestätigt die durch Containerisierung erreichte Isolation zwischen den Komponenten.
+Falls es innerhalb eines Worker-Containers Fehler bei der Inferrenz gibt, beispielsweise durch ein fehlerhaftes Eingabefragment oder durch einen Speicherengpass, führt das nicht zu einem vollständigen Absturz des Worker-Containers. Zuerst wird ein Fehlercode an den Router gesendet, damit dieser weiß, dass es zu einem Fehler kam und kein ungültiges Ergebnis an den Client sendet. Danach setzt der Worker-Container seinen internen Zustand zurück um weitere Fehler zu vermeiden und fährt anschließend mit der Rekonstruktion fort.
 
 \paragraph{Verhalten bei Worker-Absturz}
-Stürzt ein Worker-Container ab, wird dieser automatisch aus der Liste der verfügbaren 
-Modelle entfernt. Der Router verarbeitet weiterhin Anfragen für die verbleibenden 
-Modelle, und andere Clients bleiben unbeeinträchtigt. Ein manueller Neustart des 
-abgestürzten Containers führt zur automatischen Wiederanmeldung beim Router, sodass 
-das Modell anschließend erneut verfügbar ist.
+Wenn ein Worker-Container doch abstürzt oder einfach manuell beendet wird, wird dieser automatisch aus der Liste der verfügbaren Modelle entfernt. Der Router verarbeitet weiterhin Anfragen für die verbleibenden Modelle und andere Clients sind nicht betroffen. Durch einen manuellen Neustart des Containers erfolgt eine automatische Wiederanmeldung beim Router, sodass das Modell anschließend erneut verfügbar ist.
 
 \paragraph{Verbindungsabbruch zwischen Frontend und Backend}
-Bei einem Verbindungsabbruch der WebSocket-Verbindung zwischen Frontend und Router 
-ist ein manueller Neustart der Frontend-Anwendung erforderlich. Ein automatischer 
-Reconnect-Mechanismus wurde nicht implementiert. Dies stellt eine Limitation der 
-aktuellen Implementierung dar, die insbesondere bei mobilen VR-Anwendungen mit 
-instabiler Netzwerkverbindung relevant werden kann.
+Bei einem Verbindungsabbruch der WebSocket-Verbindung zwischen Frontend und Router ist ein Neustart der Unity-Anwendung erforderlich. Ein automatischer Reconnect-Mechanismus wurde nicht implementiert. Dies stellt eine Einschränkung der aktuellen Implementierung dar, die insbesondere bei mobilen VR-Anwendungen mit instabiler Netzwerkverbindung relevant werden kann.
 
 \section{Diskussion}
 
