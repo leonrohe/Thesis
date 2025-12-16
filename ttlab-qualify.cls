@@ -80,7 +80,7 @@
 \ExecuteOptions{paper=a4}
 \ProcessOptions*\relax
 
-\LoadClass[titlepage=on, fontsize=12pt, bibliography=totoc, headings=small, captions=tableheading, parskip=half]{scrreprt}
+\LoadClass[titlepage=on, fontsize=12pt, bibliography=totoc, headings=small, captions=tableheading]{scrreprt}
 
 %%% Font:
 \RequirePackage{iftex}
