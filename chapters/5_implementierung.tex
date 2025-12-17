@@ -9,7 +9,7 @@ Das System RTReconstruct realisiert eine modulare Streaming-Pipeline, die räuml
 
 \subsection{Backend-Technologien}
 
-Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen~\cite{ramirez2023fastapi}. Dies ist für die Architektur essenziell, denn der zentrale Router agiert als Vermittlungsstelle welche gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
+Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen~\cite{ramirez2023fastapi}. Dies ist für die Architektur essenziell, denn der zentrale Router agiert als Vermittlungsstelle, welche gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
 
 Die Persistenz der Rekonstruktionsergebnisse wird durch eine SQLite-Datenbank gewährleistet, die Metadaten und Binär-Blobs (GLB-Dateien) speichert. Aufgrund der modularen Struktur werden alle Komponenten mittels Docker Compose orchestriert, wobei das NVIDIA Container Toolkit den Zugriff der Worker-Container auf die Host-GPU ermöglicht.
 
@@ -225,8 +225,8 @@ Frames, die diese Bewegungskriterien und die Verfügbarkeit aller notwendigen Se
 
 Die Darstellung der empfangenen 3D-Daten muss in Echtzeit erfolgen, ohne die Framerate der VR-Anwendung maßgeblich zu beeinträchtigen. Für Mesh-Daten (z.\,B.\ von NeuralRecon) wurde aus diesem Grund ein Chunking-Verfahren implementiert (\texttt{MeshUtils.ChunkMesh}). Da empfangene GLB-Modelle geometrisch komplex sein können, werden sie nach dem Import in ein $N \times N \times N$ Gitter unterteilt. Die Chunk-Größe wurde auf $5 \times 5 \times 5$ Meter festgelegt, was ein gutes Gleichgewicht zwischen Frustum-Culling-Effizienz und Verwaltungsoverhead darstellt. Dies ermöglicht der Unity-Engine, nicht sichtbare Bereiche mittels Frustum Culling effizient auszublenden und erhöht die Rendering-Performance auf mobiler Hardware signifikant.
 
-Punktwolken (z.,B.\ von SLAM3R) werden über \texttt{GraphicsBuffer} direkt an die GPU übergeben und mittels eines Compute-Shaders im VFX Graph gerendert, anstatt sie als klassische GameObjects zu instanziieren. Dieses Vorgehen reduziert die CPU-Last erheblich und ermöglicht eine effizientere Verarbeitung großer Datenmengen.
-Die Darstellung ist derzeit auf 100.000 Punkte limitiert, da die Meta Quest 3 bei höheren Punktzahlen signifikante Performance-Einbußen zeigt. Diese Einschränkung stellt einen bewussten Kompromiss zwischen visueller Detailgenauigkeit und Systemleistung dar, um eine flüssige Bildwiederholrate in der VR-Umgebung zu gewährleisten.
+Punktwolken (z.\,B.\ von SLAM3R) werden über \texttt{GraphicsBuffer} direkt an die GPU übergeben und mittels eines Compute-Shaders im VFX Graph gerendert, anstatt sie als klassische GameObjects zu instanziieren. Dieses Vorgehen reduziert die CPU-Last erheblich und ermöglicht eine effizientere Verarbeitung großer Datenmengen.
+Die Darstellung ist derzeit auf 100\,000 Punkte limitiert, da die Meta Quest 3 bei höheren Punktzahlen signifikante Performance-Einbußen zeigt. Diese Einschränkung stellt einen bewussten Kompromiss zwischen visueller Detailgenauigkeit und Systemleistung dar, um eine flüssige Bildwiederholrate in der VR-Umgebung zu gewährleisten.
 
 \begin{figure}[H]
     \centering
@@ -236,7 +236,7 @@ Die Darstellung ist derzeit auf 100.000 Punkte limitiert, da die Meta Quest 3 be
     \begin{subfigure}{0.49\textwidth}
         \includegraphics[width=\linewidth]{images/ReconsTransparent/room02/mast3r00.png}
     \end{subfigure}
-    \caption{Visualisierung einer Mesh-Rekonstruktion (VisFusion, links) und einer Punktwolken-Rekonstruktion (MASt3Rrechts)}
+    \caption{Visualisierung einer Mesh-Rekonstruktion (VisFusion, links) und einer Punktwolken-Rekonstruktion (MASt3R, rechts)}
 \end{figure}
 
 \subsection{Integration in das Va.Si.Li-Lab}

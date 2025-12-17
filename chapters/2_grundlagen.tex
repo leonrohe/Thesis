@@ -30,7 +30,7 @@ Die extrinsischen Parameter beschreiben dagegen die Position und Orientierung de
 
 Volumetrische Verfahren repräsentieren die 3D-Szene als diskretes Gitter von Voxeln, wobei jeder Voxel Informationen über die lokale Geometrie speichert. Eine weit verbreitete Darstellung ist das \textit{Truncated Signed Distance Field} (TSDF), bei dem für jeden Voxel die Distanz zur nächsten Oberfläche gespeichert wird. Positive Distanzen kennzeichnen dabei den Bereich vor der Oberfläche, negative den Bereich dahinter~\cite{Curless1996AVM}.
 
-Der zentrale Vorteil volumetrischer Verfahren liegt in der schrittweisen Integration mehrerer Ansichten. Durch die fortlaufende Fusion von Beobachtungen aus verschiedenen Kameraperspektiven entsteht eine dichte, global konsistente 3D-Repräsentation. Aus dieser Volumenrepräsentation kann durch den Marching-Cubes-Algorithmus~\cite{10.1145/37402.37422}, ein vollständiges Mesh der rekonstruierten Szene erzeugt werden. Diese Verfahren sind besonders geeignet für Echtzeitanwendungen, da sie inkrementelle Updates ermöglichen und eine effiziente GPU basierte Beschleunigung unterstützen.
+Der zentrale Vorteil volumetrischer Verfahren liegt in der schrittweisen Integration mehrerer Ansichten. Durch die fortlaufende Fusion von Beobachtungen aus verschiedenen Kameraperspektiven entsteht eine dichte, global konsistente 3D-Repräsentation. Aus dieser Volumenrepräsentation kann durch den Marching-Cubes-Algorithmus~\cite{10.1145/37402.37422}, ein vollständiges Mesh der rekonstruierten Szene erzeugt werden. Diese Verfahren sind besonders geeignet für Echtzeitanwendungen, da sie inkrementelle Updates ermöglichen und eine effiziente GPU-basierte Beschleunigung unterstützen.
 
 \subsection{SLAM-Verfahren}
 
@@ -75,7 +75,7 @@ Das entwickelte System wird in eine bestehende VR-Infrastruktur integriert. Der 
 \subsection{Unity und XR-Frameworks}
 
 Unity ist eine der führenden Entwicklungsumgebungen für interaktive 3D-Anwendungen~\cite{FortuneGameEngineMarket2025}.
-Die Engine basiert auf einer komponentenorientierten Architektur. Jedes Objekt wird durch ein \textit{GameObject} beschrieben und kann durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden kann.
+Die Engine basiert auf einer komponentenorientierten Architektur. Jedes Objekt wird durch ein \textit{GameObject} beschrieben und kann durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden.
 
 Für VR-Anwendungen stellt Unity spezialisierte XR-Subsysteme und Plug-ins bereit. Diese ermöglichen Head-Tracking, stereoskopisches Rendering und die Integration gängiger HMDs (z.\,B.\ Meta Quest, HTC Vive, Valve Index).
 Über die C\#-Scripting-API lassen sich Interaktionslogik, Benutzeroberflächen und Netzwerkkommunikation flexibel implementieren.

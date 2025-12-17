@@ -1,6 +1,6 @@
 \chapter{Konzeption}
 
-Dieses Kapitel beschreibt die Konzeption des Systems \textit{RTReconstruct}, das im Rahmen dieser Arbeit entwickelt wurde. RTReconstruct ist eine containerisierte, modellunabhängige Plattform, auf der mehrere Rekonstruktionsverfahren eine gemeinsame Streaming-Pipeline nutzen. Das Ziel besteht darin, Bild- und Positionsdaten der einer Unity-basierten VR-Umgebung des Va.Si.Li.-Lab fortlaufend an ein Backend zu übertragen. Dort sollen die Daten durch modellspezifische Rekonstruktionsdienste verarbeitet und die Ergebnisse in die laufende Szene zurückgeführt werden.
+Dieses Kapitel beschreibt die Konzeption des Systems \textit{RTReconstruct}, das im Rahmen dieser Arbeit entwickelt wurde. RTReconstruct ist eine containerisierte, modellunabhängige Plattform, auf der mehrere Rekonstruktionsverfahren eine gemeinsame Streaming-Pipeline nutzen. Das Ziel besteht darin, Bild- und Positionsdaten einer Unity-basierten VR-Umgebung des Va.Si.Li-Lab fortlaufend an ein Backend zu übertragen. Dort sollen die Daten durch modellspezifische Rekonstruktionsdienste verarbeitet und die Ergebnisse in die laufende Szene zurückgeführt werden.
 
 Aufbauend auf den Grundlagen, der Zielumgebung und dem Stand der Technik werden im Folgenden die Anforderungen an RTReconstruct formuliert, die Gesamtarchitektur beschrieben und das Modul- und Schnittstellendesign sowie der Kommunikations- und Datenfluss konzeptionell erläutert.
 
@@ -58,7 +58,7 @@ RTReconstruct wird als modulare Streaming-Pipeline konzipiert, die aus drei aufe
 \begin{itemize}
     \item ein \textbf{VR-Frontend} in Unity, das Bild- und Posendaten erzeugt und Rekonstruktionsresultate visualisiert,
     \item ein zentraler \textbf{Router} im Backend, der Fragmente verteilt und Ergebnisse sammelt,
-    \item mehrere \textbf{modell-spezifische Worker}, die jeweils ein Rekonstruktionsverfahren ausführen.
+    \item mehrere \textbf{modellspezifische Worker}, die jeweils ein Rekonstruktionsverfahren ausführen.
 \end{itemize}
 
 Das Frontend sendet fensterbasierte Fragmente an den Router. Dieser ordnet jedes Fragment anhand von Modell- und Szenenname einem bestimmten Worker und einer bestimmten Szene zu. Die Worker führen die eigentliche Rekonstruktion aus und liefern eine 3D-Repräsentation zurück. Diese speichert der Router und gibt sie an alle Clients derselben Szene weiter. Da die Komponenten containerisiert sind, können Router und Worker als separate Dienste betrieben werden.
@@ -66,7 +66,7 @@ Das Frontend sendet fensterbasierte Fragmente an den Router. Dieser ordnet jedes
 \begin{figure}[H]
     \centering
     \includesvg[width=\linewidth]{figures/export/gesamtarchitektur.svg}
-    \caption{Gesamtarchitektur von RTReconstruct mit VR-Frontend, zentralem Router und modell-spezifischen Workern.}
+    \caption{Gesamtarchitektur von RTReconstruct mit VR-Frontend, zentralem Router und modellspezifischen Workern.}
 \end{figure}
 
 \subsection{Backend-Architektur}
