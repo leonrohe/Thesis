@@ -516,11 +516,11 @@ Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testsz
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/gt00.png}
         \caption{Ground Truth}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/neucon00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/neucon00.png}
         \caption{NeuralRecon Rekonstruktion}
     \end{subfigure}
     \caption{Lückenhafte Rekonstruktion von Szene V1 durch NeuralRecon. Schräge Flächen werden nicht erfasst, während horizontale und vertikale Strukturen teilweise rekonstruiert werden.}
@@ -530,11 +530,11 @@ Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testsz
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/gt00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room01/gt00.png}
         \caption{Ground Truth Detail}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/neucon00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room01/neucon00.png}
         \caption{NeuralRecon Detail}
     \end{subfigure}
     \caption{Detailverlust bei NeuralRecon. Objekte wie die Stehlampe oder der TV-Schrank in Szene V2 gehen in der Rekonstruktion größtenteils verloren.}
@@ -548,11 +548,11 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/neucon00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/neucon00.png}
         \caption{Neural Recon}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/visfusion00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/visfusion00.png}
         \caption{VisFusion}
     \end{subfigure}
     \caption{Vergleich zwischen NeuralRecon und VisFusion in Szene V1. VisFusion rekonstruiert die schrägen Flächen erfolgreich und zeigt eine deutlich höhere Vollständigkeit.}
@@ -562,11 +562,11 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/visfusion00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room01/visfusion00.png}
         \caption{Szene V2}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/visfusion.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room02/visfusion00.png}
         \caption{Szene V3}
     \end{subfigure}
     \caption{VisFusion Rekonstruktionen der Szenen V2 und V3. Die Performance bleibt auch bei zunehmender Komplexität stabil. Objekte wie die Stehlampe oder der TV-Schrank werden detaillierter erfasst.}
@@ -580,11 +580,11 @@ SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige P
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/gt00.png}
         \caption{SLAM3R Rekonstruktion}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/slam3r00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/slam3r00.png}
         \caption{SLAM3R Rekonstruktion}
     \end{subfigure}
     \caption{SLAM3R Rekonstruktion von Szene V1 mit erkennbaren Drift-Problemen. Trotz Versätzen bleiben lokale Details und Farbinformation gut erhalten.}
@@ -594,15 +594,15 @@ SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige P
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/slam3r00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/slam3r00.png}
         \caption{Szene V1}
     \end{subfigure}
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/slam3r00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room01/slam3r00.png}
         \caption{Szene V2}
     \end{subfigure}
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/slam3r.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room02/slam3r00.png}
         \caption{Szene V3}
     \end{subfigure}
     \caption{SLAM3R Performance-Vergleich über Szenen: V1, V2 und V3. Deutlich erkennbar ist die zunehmende Fragmentierung und der Verlust globaler Kohärenz mit steigender Komplexität.}
@@ -617,11 +617,11 @@ MASt3R-SLAM erzeugte ebenfalls Punktwolken und zeigte über alle Szenen hinweg k
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/gt00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/gt00.png}
         \caption{Ground Truth}
     \end{subfigure}
     \begin{subfigure}{0.49\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/mast3r0.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/mast3r0.png}
         \caption{MASt3R-SLAM Rekonstruktion}
     \end{subfigure}
     \caption{MASt3R-SLAM Rekonstruktion von Szene V1 mit ausgeprägten Drift-Problemen. Die Versätze und frei schwebenden Punkte sind hier deutlich stärker als bei SLAM3R in derselben Szene.}
@@ -631,15 +631,15 @@ MASt3R-SLAM erzeugte ebenfalls Punktwolken und zeigte über alle Szenen hinweg k
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room00/mast3r0.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room00/mast3r0.png}
         \caption{Szene V1}
     \end{subfigure}
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room01/mast3r00.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room01/mast3r00.png}
         \caption{Szene V2}
     \end{subfigure}
     \begin{subfigure}{0.32\linewidth}
-        \includegraphics[width=\linewidth]{images/EvaluationScreenshots/room02/mast3r.png}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room02/mast3r00.png}
         \caption{Szene V3}
     \end{subfigure}
     \caption{MASt3R-SLAM Performance-Vergleich über Szenen: V1 (links), V2 (Mitte), V3 (rechts). Im Gegensatz zu SLAM3R bleibt die Konsistenz über die Szenen hinweg relativ stabil.}
@@ -683,8 +683,8 @@ Die Oberfläche wies weiterhin partielle Lücken auf, es war jedoch eine Erfassu
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.49\linewidth]{images/room03_neucon00.png}
-    \includegraphics[width=0.49\linewidth]{images/room03_visfusion00.png}
+    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room03/neucon00.png}
+    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room03/visfusion00.png}
     \caption{Rekonstruktionen der volumetrischen Verfahren in Szene R1. Links: NeuralRecon 
     mit erheblichen Diskontinuitäten. Rechts: VisFusion mit marginal verbesserter Vollständigkeit.}
     \label{fig:real_volumetric}
@@ -698,8 +698,8 @@ MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.49\linewidth]{images/room04_slam3r00.png}
-    \includegraphics[width=0.49\linewidth]{images/room04_mast3r00.png}
+    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room04/slam3r00.png}
+    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room04/mast3r00.png}
     \caption{Rekonstruktionen der SLAM-basierten Verfahren in Szene R2. Obwohl beide Modelle einen hohen Detailgrad haben, liegt MASt3R-SLAM vorne (Esstisch, Sofa)}
     \label{fig:real_slam}
 \end{figure}
