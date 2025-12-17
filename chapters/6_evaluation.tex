@@ -74,7 +74,7 @@ Praxistauglichkeit. Alle Modelle arbeiten während der Evaluation dabei mit eine
         \midrule
         \multicolumn{5}{l}{\textbf{Reale Szenen}} \\
         R1 & $6\times 4\times 3$ & 48 & 432 & \textit{Schlafzimmer}, Details, Schrägen, Okklusionen \\
-        R2 & $7.5\times 5\times 3$ & 43 & 387 & \textit{Wohnzimmer}, Glas, Reflexionen, große Flächen \\
+        R2 & $7,5\times 5\times 3$ & 43 & 387 & \textit{Wohnzimmer}, Glas, Reflexionen, große Flächen \\
         \bottomrule
     \end{tabularx}
     \medskip
@@ -185,7 +185,7 @@ rekonstruierten Punkt innerhalb des Schwellenwerts.
 korrekt rekonstruierter Punkte angibt. \textbf{Recall} bewertet die 
 Vollständigkeit und gibt an, wie viele Ground-Truth-Punkte erfasst wurden. 
 Der \textbf{F-Score} kombiniert beide Metriken als harmonisches Mittel und liefert einen 
-ausgewogenen Gesamtwert. Je näher der F-Score bei \textit{1.0} liegt, 
+ausgewogenen Gesamtwert. Je näher der F-Score bei \textit{1,0} liegt, 
 desto höher ist die Qualität der Rekonstruktion.
 
 Der explizite Schwellwert von 10cm wurde gewählt, um eine für VR-Anwendungen praxisnahe Toleranzgrenze zu definieren, die Tracking-Ungenauigkeiten der Hardware berücksichtigt und gleichzeitig grobe Geometriefehler zuverlässig als solche klassifiziert.
@@ -314,34 +314,34 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
         \textbf{Szene} & \textbf{Modell} & \makecell{\textbf{\O~$\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{\O~$\text{Frag}_{\text{out}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{in}}$~[MB]}} & \makecell{\textbf{$\sum\text{Frag}_{\text{out}}$~[MB]}} \\
         \midrule
         \multirow{4}{*}{V1} 
-            & NeuralRecon  & \multirow{4}{*}{0.82} & 1.83 & \multirow{4}{*}{19.57} & 44.04 \\
-            & VisFusion    &                       & 2.73 &                        & 65.40 \\
-            & MASt3R-SLAM  &                       & 1.60 &                        & 38.42 \\
-            & SLAM3R       &                       & 1.60 &                        & 38.42 \\
+            & NeuralRecon  & \multirow{4}{*}{0{,}82} & 1{,}83 & \multirow{4}{*}{19{,}57} & 44{,}04 \\
+            & VisFusion    &                       & 2{,}73 &                        & 65{,}40 \\
+            & MASt3R-SLAM  &                       & 1{,}60 &                        & 38{,}42 \\
+            & SLAM3R       &                       & 1{,}60 &                        & 38{,}42 \\
         \midrule
         \multirow{4}{*}{V2} 
-            & NeuralRecon  & \multirow{4}{*}{1.62} & 2.84 & \multirow{4}{*}{69.57} & 122.28 \\
-            & VisFusion    &                      & 3.25  &                        & 139.85 \\
-            & MASt3R-SLAM  &                      & 1.60  &                        & 68.60 \\
-            & SLAM3R       &                      & 1.60  &                        & 68.84 \\
+            & NeuralRecon  & \multirow{4}{*}{1{,}62} & 2{,}84 & \multirow{4}{*}{69{,}57} & 122{,}28 \\
+            & VisFusion    &                      & 3{,}25  &                        & 139{,}85 \\
+            & MASt3R-SLAM  &                      & 1{,}60  &                        & 68{,}60 \\
+            & SLAM3R       &                      & 1{,}60  &                        & 68{,}84 \\
         \midrule
         \multirow{4}{*}{V3} 
-            & NeuralRecon  & \multirow{4}{*}{1.56} & 3.60 & \multirow{4}{*}{88.70} & 204.93 \\
-            & VisFusion    &                      & 4.24  &                        & 241.51 \\
-            & MASt3R-SLAM  &                      & 1.59  &                        & 90.69 \\
-            & SLAM3R       &                      & 1.60  &                        & 91.26 \\
+            & NeuralRecon  & \multirow{4}{*}{1{,}56} & 3{,}60 & \multirow{4}{*}{88{,}70} & 204{,}93 \\
+            & VisFusion    &                      & 4{,}24  &                        & 241{,}51 \\
+            & MASt3R-SLAM  &                      & 1{,}59  &                        & 90{,}69 \\
+            & SLAM3R       &                      & 1{,}60  &                        & 91{,}26 \\
         \midrule
         \multirow{4}{*}{R1} 
-            & NeuralRecon  & \multirow{4}{*}{1.63} & 2.19 & \multirow{4}{*}{78.50} & 105.29 \\
-            & VisFusion    &                       & 2.58 &                       & 124.14 \\
-            & MASt3R-SLAM  &                       & 1.60 &                       & 76.85 \\
-            & SLAM3R       &                       & 1.60 &                       & 76.85 \\
+            & NeuralRecon  & \multirow{4}{*}{1{,}63} & 2{,}19 & \multirow{4}{*}{78{,}50} & 105{,}29 \\
+            & VisFusion    &                       & 2{,}58 &                       & 124{,}14 \\
+            & MASt3R-SLAM  &                       & 1{,}60 &                       & 76{,}85 \\
+            & SLAM3R       &                       & 1{,}60 &                       & 76{,}85 \\
         \midrule
         \multirow{4}{*}{R2} 
-            & NeuralRecon  & \multirow{4}{*}{1.84} & 2.48 & \multirow{4}{*}{79.33} & 106.87 \\
-            & VisFusion    &                       & 3.70 &                        & 159.19 \\
-            & MASt3R-SLAM  &                       & 1.60 &                        & 68.84 \\
-            & SLAM3R       &                       & 1.60 &                        & 68.84 \\
+            & NeuralRecon  & \multirow{4}{*}{1{,}84} & 2{,}48 & \multirow{4}{*}{79{,}33} & 106{,}87 \\
+            & VisFusion    &                       & 3{,}70 &                        & 159{,}19 \\
+            & MASt3R-SLAM  &                       & 1{,}60 &                        & 68{,}84 \\
+            & SLAM3R       &                       & 1{,}60 &                        & 68{,}84 \\
         \bottomrule
     \end{tabular}%
     }
@@ -365,10 +365,10 @@ Der Durchsatz quantifiziert die Verarbeitungsgeschwindigkeit des Systems und wir
         \toprule
         \textbf{Modell} & \textbf{V1} & \textbf{V2} & \textbf{V3} & \textbf{R1} & \textbf{R2}\\
         \midrule
-        NeuralRecon     & 0.62 & 0.45 & 0.32 &  0.48 & 0.45 \\
-        VisFusion       & 0.38 & 0.35 & 0.30 &  0.38 & 0.31 \\
-        SLAM3R          & 0.13 & 0.12 & 0.12 &  0.12 & 0.12 \\
-        MASt3R-SLAM     & 0.07 & 0.06 & 0.03 &  0.10 & 0.09 \\
+        NeuralRecon     & 0{,}62 & 0{,}45 & 0{,}32 &  0{,}48 & 0{,}45 \\
+        VisFusion       & 0{,}38 & 0{,}35 & 0{,}30 &  0{,}38 & 0{,}31 \\
+        SLAM3R          & 0{,}13 & 0{,}12 & 0{,}12 &  0{,}12 & 0{,}12 \\
+        MASt3R-SLAM     & 0{,}07 & 0{,}06 & 0{,}03 &  0{,}10 & 0{,}09 \\
         \bottomrule
     \end{tabular}
     \bigskip
@@ -416,7 +416,7 @@ Tabelle~\ref{tab:gpu_resources} zeigt die durchschnittliche GPU-Auslastung sowie
             & Max. VRAM [MB]          & \textit{7969} & \textit{8016} & \textit{7984} & \textit{8014} & \textit{7966} \\
         \midrule
         \multirow{2}{*}{SLAM3R} 
-            & \O GPU-Utilization [\%] & \textit{98.5} & \textit{99} & \textit{99} & \textit{98} & \textit{99} \\
+            & \O GPU-Utilization [\%] & \textit{98,5} & \textit{99} & \textit{99} & \textit{98} & \textit{99} \\
             & Max. VRAM [MB]          & \textit{8022} & \textit{7986} & \textit{8012} & \textit{7637} & \textit{7921} \\
         \bottomrule
     \end{tabular}
@@ -490,10 +490,10 @@ Konsistenz gewährleisten, wurden deren Rekonstruktionen zuvor mittels ICP~\cite
         \cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10}
         \textbf{Modell} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} & \textbf{Prec.} & \textbf{Rec.} & \textbf{F} \\
         \midrule
-        NeuralRecon     & \textit{0.45} & \textit{0.39} & \textit{0.41} & \textit{0.69} & \textit{0.67} & \textit{0.68} & \textit{0.59} & \textit{0.59} & \textit{0.59} \\
-        VisFusion       & \textit{0.57} & \textit{0.52} & \textit{0.54} & \textit{0.57} & \textit{0.65} & \textit{0.61} & \textit{0.57} & \textit{0.68} & \textit{0.62} \\
-        SLAM3R          & \textit{0.66} & \textit{0.56} & \textit{0.61} & \textit{0.67} & \textit{0.59} & \textit{0.63} & \textit{0.41} & \textit{0.43} & \textit{0.42} \\
-        MASt3R-SLAM     & \textit{0.52} & \textit{0.48} & \textit{0.50} & \textit{0.47} & \textit{0.53} & \textit{0.50} & \textit{0.43} & \textit{0.48} & \textit{0.45} \\
+        NeuralRecon     & \textit{0,45} & \textit{0,39} & \textit{0,41} & \textit{0,69} & \textit{0,67} & \textit{0,68} & \textit{0,59} & \textit{0,59} & \textit{0,59} \\
+        VisFusion       & \textit{0,57} & \textit{0,52} & \textit{0,54} & \textit{0,57} & \textit{0,65} & \textit{0,61} & \textit{0,57} & \textit{0,68} & \textit{0,62} \\
+        SLAM3R          & \textit{0,66} & \textit{0,56} & \textit{0,61} & \textit{0,67} & \textit{0,59} & \textit{0,63} & \textit{0,41} & \textit{0,43} & \textit{0,42} \\
+        MASt3R-SLAM     & \textit{0,52} & \textit{0,48} & \textit{0,50} & \textit{0,47} & \textit{0,53} & \textit{0,50} & \textit{0,43} & \textit{0,48} & \textit{0,45} \\
         \bottomrule
     \end{tabular}
 \end{table}
@@ -572,7 +572,7 @@ VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRec
 
 \paragraph{SLAM3R}
 
-SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0.66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0.67) verstärkten sich die Konsistenzprobleme bereits merklich, während das Modell der komplexen Szene V3 vollständig einbrach (F-Score: 0.42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
+SLAM3R verfolgte einen grundlegend anderen Ansatz und erzeugte dichte, farbige Punktwolken anstelle von Meshes. Bereits in der einfachen Szene V1 (F-Score: 0{,}66) zeigten sich deutliche Drift-Probleme, die zu Versätzen zwischen Rekonstruktionsabschnitten führten. Im Vergleich zu MASt3R-SLAM waren diese Probleme jedoch noch moderater ausgeprägt. Lokale Details blieben gut erhalten, und die realistische Farbdarstellung trug zur visuellen Qualität bei. In Szene V2 (F-Score: 0{,}67) verstärkten sich die Konsistenzprobleme bereits merklich, während das Modell der komplexen Szene V3 vollständig einbrach (F-Score: 0{,}42). Hier akkumulierten sich Ungenauigkeiten massiv, das Verfahren verlor häufig den Anschluss zwischen aufeinanderfolgenden Rekonstruktionsabschnitten, was zu ausgeprägten Versätzen und Brüchen im Gesamtmodell führte. Die fehlende globale Ausrichtung machte eine manuelle Registrierung der Rekonstruktionen notwendig, um sie mit dem Ground Truth abzugleichen. Große Bereiche blieben fragmentiert und inkonsistent, die globale Kohärenz ging vollständig verloren.
 
 \begin{figure}[H]
     \centering
