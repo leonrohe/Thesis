@@ -24,7 +24,7 @@ Das Kameramodell beschreibt die mathematische Beziehung zwischen 3D-Punkten in d
 
 Die intrinsischen Parameter beschreiben die optischen Eigenschaften einer Kamera und umfassen die Brennweite $f_x, f_y$ in Pixel-Einheiten, den Hauptpunkt $(c_x, c_y)$, der die Position des optischen Zentrums im Bild angibt, sowie optionale Verzeichnungsparameter zur Korrektur optischer Verzerrungen. Diese Parameter sind kameraspezifisch und bleiben über verschiedene Aufnahmen hinweg konstant, solange die Einstellungen der Kamera nicht verändert werden.
 
-Die extrinsischen Parameter beschreiben dagegen die Position und Orientierung der Kamera im 3D-Raum. Sie werden durch eine Translation $\mathbf{t} \in \mathbb{R}^3$ und eine Rotation $\mathbf{R} \in SO(3)$ definiert, wobei letztere alternativ auch als Quaternion $\mathbf{q}$ repräsentiert werden kann. Diese Parameter ändern sich mit jeder Kamerabewegung und müssen für jedes aufgenommene Bild bekannt oder geschätzt werden, um eine konsistente 3D-Rekonstruktion zu ermöglichen. In VR-Systemen werden die extrinsischen Parameter typischerweise durch das Tracking-System des Headsets bereitgestellt.
+Die extrinsischen Parameter beschreiben dagegen die Position und Orientierung der Kamera im 3D-Raum. Sie werden durch eine Translation $\mathbf{t} \in \mathbb{R}^3$ und eine Rotation $\mathbf{q}$ definiert, wobei letztere  als Quaternion repräsentiert wird. Diese Parameter ändern sich mit jeder Kamerabewegung und müssen für jedes aufgenommene Bild bekannt oder geschätzt werden, um eine konsistente 3D-Rekonstruktion zu ermöglichen. In VR-Systemen werden die extrinsischen Parameter typischerweise durch das Tracking-System des Headsets bereitgestellt.
 
 \subsection{Volumetrische Verfahren}
 
@@ -75,7 +75,7 @@ Das entwickelte System wird in eine bestehende VR-Infrastruktur integriert. Der 
 \subsection{Unity und XR-Frameworks}
 
 Unity ist eine der führenden Entwicklungsumgebungen für interaktive 3D-Anwendungen~\cite{FortuneGameEngineMarket2025}.
-Die Engine basiert auf einer komponentenorientierten Architektur. Jedes Objekt wird durch ein \textit{GameObject} beschrieben und kann durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden.
+Die Engine basiert auf einer komponentenorientierten Architektur. Jedes Objekt wird dabei durch ein \textit{GameObject} beschrieben und kann durch \textit{Components} um Funktionen wie Physik, Rendering oder Benutzereingaben erweitert werden.
 
 Für VR-Anwendungen stellt Unity spezialisierte XR-Subsysteme und Plug-ins bereit. Diese ermöglichen Head-Tracking, stereoskopisches Rendering und die Integration gängiger HMDs (z.\,B.\ Meta Quest, HTC Vive, Valve Index).
 Über die C\#-Scripting-API lassen sich Interaktionslogik, Benutzeroberflächen und Netzwerkkommunikation flexibel implementieren.
@@ -83,10 +83,10 @@ Dank der Unterstützung moderner Grafik-APIs (OpenGL, Vulkan, DirectX) und platt
 
 \subsection{Va.Si.Li-Lab}
 
-Das Va.Si.Li-Lab (Virtual Simulation Lab) des Text Technology Labs der Goethe-Universität Frankfurt ist eine mehrbenutzerfähige VR-Plattform für simulationsbasierte Lern- und Forschungsszenarien. Sie wurde im Rahmen des Projekts \glqq Digital Teaching and Learning Lab\grqq \ entwickelt und dient primär der Analyse multimodaler Interaktionsdaten, die in simulationsbasierten Lernprozessen erhoben werden~\cite{Mehler:et:al:2023:a}.
+Das Va.Si.Li-Lab (\textbf{V}R-L\textbf{a}b for \text{Si}mulation-based \textbf{L}earn\textbf{i}ng) des Text Technology Labs der Goethe-Universität Frankfurt ist eine mehrbenutzerfähige VR-Plattform für simulationsbasierte Lern- und Forschungsszenarien. Sie wurde im Rahmen des Projekts \glqq Digital Teaching and Learning Lab\grqq \ entwickelt und dient primär der Analyse multimodaler Interaktionsdaten, die in simulationsbasierten Lernprozessen erhoben werden~\cite{Mehler:et:al:2023:a}.
 
-Die Plattform richtet sich insbesondere an Studierende der Erziehungswissenschaften und des Lehramts. Sie bietet die Möglichkeit, pädagogisch-professionelle Handlungssituationen in einem handlungsentlastenden Kontext in virtuellen Umgebungen zu erproben. Dabei werden komplexe, nicht planbare Interaktionen simuliert, in denen professionelles Wissen auf spielerische Weise evaluiert werden kann. Ein besonderer Fokus liegt auf der Simulation komplexer pädagogischer Interaktionszusammenhänge, die in traditionellen Lernumgebungen nur schwer darstellbar wären.
+Die Plattform richtet sich insbesondere an Studierende der Erziehungswissenschaften und des Lehramts. Sie bietet die Möglichkeit, pädagogisch-professionelle Handlungssituationen in einem entspannteren Kontext in virtuellen Umgebungen auszuprobieren. Dabei werden komplexe, nicht planbare Interaktionen simuliert, in denen professionelles Wissen auf spielerische Weise evaluiert werden kann. Ein besonderer Fokus liegt auf der Simulation komplexer pädagogischer Interaktionszusammenhänge, die in traditionellen Lernumgebungen nur schwer darstellbar wären.
 
-Technisch basiert das Va.Si.Li-Lab auf Unity und nutzt das Ubiq-Framework für die Netzwerkkommunikation und Synchronisation zwischen mehreren VR-Clients. Die Plattform unterstützt verschiedene Endgeräte und ermöglicht sowohl lokale als auch Remote-Teilnahme über internetfähige Geräte.
+Technisch basiert das Va.Si.Li-Lab auf Unity und nutzt das Ubiq-Framework für die Netzwerkkommunikation und Synchronisation zwischen mehreren VR-Clients~\cite{10.1145/3489849.3489871}. Die Plattform unterstützt verschiedene Endgeräte und ermöglicht sowohl lokale als auch Remote-Teilnahme über internetfähige Geräte.
 
 Für die vorliegende Arbeit bietet das Va.Si.Li-Lab eine ideale Zielumgebung, da es eine stabile VR-Infrastruktur mit Mehrbenutzerfähigkeit bereitstellt und gleichzeitig durch seine modulare Architektur die Integration neuer Funktionalitäten wie Echtzeit-3D-Rekonstruktion ermöglicht. Die Integration von RTReconstruct erfolgt als eigenständiges Modul, das die vorhandenen Tracking- und Visualisierungskomponenten nutzt, ohne die bestehende Szenenlogik grundlegend zu verändern.

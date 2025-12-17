@@ -1,10 +1,11 @@
 \chapter{Konzeption}
 
-Dieses Kapitel beschreibt die Konzeption des Systems \textit{RTReconstruct}, das im Rahmen dieser Arbeit entwickelt wurde. RTReconstruct ist eine containerisierte, modellunabhängige Plattform, auf der mehrere Rekonstruktionsverfahren eine gemeinsame Streaming-Pipeline nutzen. Das Ziel besteht darin, Bild- und Positionsdaten einer Unity-basierten VR-Umgebung des Va.Si.Li-Lab fortlaufend an ein Backend zu übertragen. Dort sollen die Daten durch modellspezifische Rekonstruktionsdienste verarbeitet und die Ergebnisse in die laufende Szene zurückgeführt werden.
+Dieses Kapitel beschreibt die Konzeption des Systems \textit{RTReconstruct}, das im Rahmen dieser Arbeit entwickelt wurde. RTReconstruct ist eine containerisierte, modellunabhängige Plattform, auf der mehrere Rekonstruktionsverfahren eine gemeinsame Streaming-Pipeline nutzen. Das Ziel besteht darin, Bild- und Positionsdaten einer Unity-basierten VR-Umgebung fortlaufend an ein Backend zu übertragen. Dort sollen die Daten durch modellspezifische Rekonstruktionsdienste verarbeitet und die Ergebnisse in die laufende Szene zurückgeführt werden.
 
 Aufbauend auf den Grundlagen, der Zielumgebung und dem Stand der Technik werden im Folgenden die Anforderungen an RTReconstruct formuliert, die Gesamtarchitektur beschrieben und das Modul- und Schnittstellendesign sowie der Kommunikations- und Datenfluss konzeptionell erläutert.
 
 \section{Anforderungen}
+\label{sec:andorderungen}
 
 Aus der in Kapitel 1 formulierten Zielsetzung, der in Kapitel 2 beschriebenen Zielumgebung und dem in Kapitel 3 dargestellten Stand der Technik ergeben sich drei zentrale Leitkriterien für RTReconstruct.
 \begin{itemize}
@@ -40,7 +41,7 @@ Im Folgenden werden diese Leitkriterien in funktionale und nicht-funktionale Anf
 \subsection*{Nicht-funktionale Anforderungen}
 
 \begin{itemize}
-    \item \textbf{Niedrige Latenz:} Die Zeitspanne zwischen dem Empfang eines Fragments im Backend und der Darstellung des zugehörigen Modells im Headset muss für VR-Anwendungen akzeptabel bleiben. Die Latenz wird in der Evaluation explizit gemessen.
+    \item \textbf{Niedrige Latenz:} Die Zeitspanne zwischen dem Empfang eines Fragments im Backend und der Darstellung des zugehörigen Modells im Headset muss für VR-Anwendungen akzeptabel bleiben.
 
     \item \textbf{Stabilität:} Das System muss auch bei schwankender Datenrate, kurzzeitig ausfallenden Modellen oder Paketverlust funktionsfähig bleiben.
 
@@ -129,7 +130,7 @@ Konzeptionell unterscheidet RTReconstruct drei Nachrichtengruppen:
 
 \begin{itemize}
     \item \textbf{Rekonstruktionsanfragen} vom Client an den Router und weiter an die Worker,
-    \item \textbf{Rekonstruktionsantworten} von den Workern zurück an die Clients,
+    \item \textbf{Rekonstruktionsantworten} von den Workern and den Router und zurück an die Clients,
     \item \textbf{Sitzungs- und Konfigurationsnachrichten} zur Szenen- und Modellverwaltung.
 \end{itemize}
 
@@ -147,7 +148,7 @@ Die Beobachtungen stammen aus den Kameras der genutzten XR-Endgeräte, beispiels
 
 \subsection*{Rekonstruktionsantworten}
 
-Rekonstruktionsantworten transportieren die vom Modul erzeugte oder aktualisierte 3D-Repräsentation zurück zum Frontend. Sie dienen als abstraktes Gefäß für rekonstruktive Artefakte und enthalten konzeptionell Folgendes:
+Rekonstruktionsantworten transportieren die vom Modul erzeugte oder aktualisierte 3D-Repräsentation zurück zum Frontend. Sie dienen als abstrakte Sammlung für rekonstruktive Artefakte und enthalten konzeptionell Folgendes:
 
 \begin{itemize}
     \item eine Zuordnung zu Szene und Modell,
@@ -164,7 +165,7 @@ Neben rekonstruktiven Ein- und Ausgaben benötigt das System Nachrichten, die de
 
 \begin{itemize}
     \item das Beitreten und Verlassen von Szenen durch Clients,
-    \item die Anpassung von Visualisierungs- oder Bezugstransformationen bereits vorliegender Rekonstruktionen, ohne eine erneute Berechnung  anzustoßen.
+    \item die Anpassung von Visualisierungs- oder Bezugstransformationen bereits vorliegender Rekonstruktionen, ohne eine erneute Berechnung  zu benötigen.
 \end{itemize}
 
 Sie bilden das organisatorische Gerüst, mit dem mehrere Szenen und Modelle parallel betrieben werden können. Aus architektonischer Sicht trennen sie die Lebenszyklusverwaltung von Szenen und Modellen klar von der eigentlichen Rekonstruktionslogik: Rekonstruktionsmodule müssen nur auf Anfragen und Antworten reagieren, während Sitzungs- und Konfigurationsaspekte vollständig durch das Frontend und den Router gehandhabt werden.
@@ -177,9 +178,9 @@ Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel~\ref{ch
 
 \begin{figure}[h]
     \centering
+    \includesvg[width=0.75\linewidth]{figures/export/dataflow.svg}
     \caption{Streaming-Datenfluss von der Datenerfassung im VR-Frontend bis zur Rekonstruktion und Visualisierung.}
     \label{fig:dataflow}
-    \includesvg[width=0.75\linewidth]{figures/export/dataflow.svg}
 \end{figure}
 
 \noindent

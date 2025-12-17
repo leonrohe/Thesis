@@ -36,7 +36,7 @@ Die Ergebnisse der Evaluation zeigen, dass sich die entwickelte Architektur \tex
     Die additive Integration in das Va.Si.Li-Lab erfolgte ohne disruptive Eingriffe in die Mehrbenutzerlogik. RTReconstruct fungiert als optionaler, zuschaltbarer Dienst und erweitert die Plattform um räumlichen Kontext.
 \end{enumerate}
 
-Außerdem konnten Deployment-spezifische Trade-offs klar ermittelt werden. Volumetrische Verfahren eignen sich für kontrollierte Setups mit präzisen Kamera-Extrinsiken, während SLAM-Verfahren trotz höherer Latenz robustere Ergebnisse mit Consumer-Hardware (Meta Quest 3) liefern.
+Außerdem konnten Deployment-spezifische Trade-offs klar ermittelt werden. Volumetrische Verfahren eignen sich für kontrollierte Setups mit präzisen Kamera-Extrinsiken, während SLAM-Verfahren, trotz höherer Latenz, robustere Ergebnisse mit Consumer-Hardware (Meta Quest 3) liefern.
 
 \section{Limitationen}
 
@@ -44,7 +44,7 @@ Trotz erfolgreicher Validierung der Kernfunktionalitäten bestehen einige Einsch
 
 \begin{itemize}
     \item \textbf{Hardware Limitationen} \\
-    Die verwendete GPU (GTX 1070 Ti, 8\,GB VRAM) begrenzt die Anzahl parallel effektiv betreibbarer Worker und verhindert die Evaluation neuerer, speicherintensiver Modelle. Moderne Hardware (z.\,B. RTX 4090) könnte die Inferenzzeiten signifikant reduzieren.
+    Die verwendete GPU (GTX 1070 Ti, 8\,GB VRAM) begrenzt die Anzahl parallel effektiv betreibbarer Worker und verhindert die Evaluation neuerer, speicherintensiver Modelle. Moderne Consumer-Hardware (z.\,B. RTX 4090) könnte die Inferenzzeiten signifikant reduzieren.
     
     \item \textbf{Fehlende inkrementelle Updates} \\
     Das System überträgt vollständige Meshes und Punktwolken bei jedem Update, statt nur geometrische Differenzen. Dies führt zu redundanter Bandbreitennutzung, insbesondere bei volumetrischen Verfahren mit großen GLB-Modellen, und limitiert die praktische Update-Frequenz in drahtlosen VR-Szenarien unnötig.
@@ -63,6 +63,7 @@ Trotz erfolgreicher Validierung der Kernfunktionalitäten bestehen einige Einsch
 \end{itemize}
 
 \section{Zukünftige Arbeiten}
+\label{sec:future_works}
 
 Aufbauend auf den Ergebnissen und identifizierten Limitationen lassen sich Erweiterungen in vier Kategorien gliedern: Architekturoptimierungen zur Reduktion von Latenz und Ressourcenbedarf, funktionale Erweiterungen für verbesserte Nutzerinteraktion und Visualisierung, Modellintegration neuerer Rekonstruktionsverfahren sowie wissenschaftliche Perspektiven zur systematischen Evaluation und Nutzerstudien.
 
@@ -107,4 +108,4 @@ In Nutzerstudien könnte untersucht werden, wie Nutzer Rekonstruktionsartefakte 
 \section{Abschließende Bewertung}
 Die Arbeit zeigt, dass containerisierte, modular aufgebaute Architekturen für die Echtzeit-3D-Rekonstruktion in VR technisch realisierbar, praktikabel und wissenschaftlich wertvoll sind. Das entwickelte System RTReconstruct stellt eine erweiterbare Plattform dar, die systematische Vergleiche heterogener Rekonstruktionsverfahren unter identischen Bedingungen ermöglicht. Eine Lücke, die bisherige monolithische End-to-End-Systeme nicht adressieren.
 
-Die Ergebnisse bilden die Grundlage für weiterführende Forschungen zu interaktiven, verteilten Rekonstruktionssystemen in immersiven Lern- und Forschungsumgebungen. Ein Anwendungsfeld, das bislang wenig systematisch erforscht wurde.
+Die Ergebnisse bilden die Grundlage für weiterführende Forschungen zu interaktiven, verteilten Rekonstruktionssystemen. Ein Anwendungsfeld, das bislang wenig systematisch erforscht wurde.

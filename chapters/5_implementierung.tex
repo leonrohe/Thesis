@@ -11,15 +11,15 @@ Das System RTReconstruct realisiert eine modulare Streaming-Pipeline, die räuml
 
 Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen~\cite{ramirez2023fastapi}. Dies ist für die Architektur essenziell, denn der zentrale Router agiert als Vermittlungsstelle, welche gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
 
-Die Persistenz der Rekonstruktionsergebnisse wird durch eine SQLite-Datenbank gewährleistet, die Metadaten und Binär-Blobs (GLB-Dateien) speichert. Aufgrund der modularen Struktur werden alle Komponenten mittels Docker Compose orchestriert, wobei das NVIDIA Container Toolkit den Zugriff der Worker-Container auf die Host-GPU ermöglicht.
+Die Persistenz der Rekonstruktionsergebnisse wird durch eine SQLite-Datenbank gewährleistet, die Metadaten und Binär-Blobs (GLB-Dateien) speichert. Aufgrund der modularen Struktur werden alle Komponenten mittels \textit{Docker Compose} orchestriert, wobei das NVIDIA Container Toolkit den Zugriff der Worker-Container auf die Host-GPU ermöglicht.
 
 \subsection{Frontend-Technologien}
 
-Das Frontend wurde in Unity \textit{6000.2.12f1} implementiert. Für die Netzwerkkommunikation kommt die Bibliothek \textit{NativeWebSocket} zum Einsatz, da sie im Gegensatz zu Standard-.NET-Sockets eine bessere Kompatibilität mit WebGL- und Android-Builds (Meta Quest) bietet~\cite{endel2024nativewebsocket}. Das Rendering der 3D-Rekonstruktionen erfolgt hybrid: Punktwolken werden über den Visual Effect Graph (VFX Graph) GPU-beschleunigt dargestellt, während Mesh-Daten mittels der Bibliothek \textit{glTFast} zur Laufzeit importiert werden~\cite{atteneder2024gltfast}.
+Das Frontend wurde in Unity \textit{6000.2.12f1} implementiert. Für die Netzwerkkommunikation kommt die Bibliothek \textit{NativeWebSocket} zum Einsatz, da sie ohne externe Abhängigkeiten auskommt und so für WebGL- und Android-Builds (Meta Quest) geeignet ist~\cite{endel2024nativewebsocket}. Das Rendering der 3D-Rekonstruktionen erfolgt hybrid: Punktwolken werden über den Visual Effect Graph (VFX Graph) GPU-beschleunigt dargestellt, während Mesh-Daten mittels der Bibliothek \textit{glTFast} zur Laufzeit importiert werden~\cite{atteneder2024gltfast}.
 
 \section{Kommunikationsstandard}
 
-Um die Latenz bei der Übertragung großer Bild- und Geometriedaten zu minimieren, wurde statt eines textbasierten Formats (wie JSON) ein maßgeschneidertes binäres Protokoll implementiert. Die Wahl eines binären Protokolls begründet sich durch die Vermeidung des ca.\ 33\,\% Overhead von Base64-Kodierung~\cite{josefsson2006rfc4648}, was insbesondere im drahtlosen VR-Betrieb die Bandbreite signifikant schont. Durch die JPEG-Komprimierung der Bilder und das GLB-Format für 3D-Modelle wird die Datenmenge weiter reduziert.
+Um die Latenz bei der Übertragung großer Bild- und Geometriedaten zu minimieren, wurde statt eines textbasierten Formats (wie JSON) ein maßgeschneidertes binäres Protokoll implementiert. Die Wahl eines binären Protokolls begründet sich durch die Vermeidung des ca.\ 33\,\% Overhead, welcher durch die Base64-Kodierung von Bildern entstehen würde~\cite{josefsson2006rfc4648}. Insbesondere im drahtlosen VR-Betrieb schont das die Bandbreite signifikant. Durch die JPEG-Komprimierung der Bilder und das GLB-Format für 3D-Modelle wird die Datenmenge weiter reduziert.
 
 \subsection{Allgemeiner Aufbau}
 
@@ -56,7 +56,7 @@ struct PacketHeader {
 
 \subsection{Pakettypen}
 
-Basierend auf den in Kapitel 4 definierten Anforderungen wurden drei Hauptpakettypen spezifiziert: \texttt{ModelFragment}, \texttt{ModelResult} und \texttt{TransformFragment}. Jeder Pakettyp ist für eine spezifische Kommunikationsrichtung und Funktionalität zuständig.
+Basierend auf den in Kapitel 4 definierten Anforderungen wurden drei Hauptpakettypen erstellt: \texttt{ModelFragment}, \texttt{ModelResult} und \texttt{TransformFragment}. Jeder Pakettyp ist für eine spezifische Kommunikationsrichtung und Funktionalität zuständig.
 
 \subsubsection{ModelFragment (Client an Server)}
 Das \texttt{ModelFragment} bündelt eine Sequenz von Frames (Fenster) für die Inferenz. Um die Serialisierung effizient zu gestalten, werden die Arrays für Bilder, Intrinsics und Extrinsics nacheinander geschrieben, anstatt sie pro Frame zu verschachteln.
@@ -120,7 +120,7 @@ struct ModelResult {
 \end{lstlisting}
 
 \subsubsection{TransformFragment (Client an Server)}
-Das \texttt{TransformFragment} ist ein leichtgewichtiges Steuerpaket. Es dient dazu, die Position eines Modells auf dem Server nachträglich zu korrigieren (z.\,B. bei manuellem Alignment durch den Nutzer), ohne die rechenintensiven Bilddaten erneut zu übertragen.
+Das \texttt{TransformFragment} ist ein leichtgewichtiges Steuerpaket. Es dient dazu, die Position eines Modells auf dem Server nachträglich zu korrigieren (z.\,B. bei manuellem Alignment durch den Nutzer), ohne erneut eine rechenintensive Rekonstruktion anzufordern.
 
 \bigskip
 
@@ -145,7 +145,7 @@ Das Backend fungiert als Schaltzentrale des Systems. Es setzt sich aus dem zentr
 
 Der Router (\texttt{fragment\_hub.py}) verwaltet den globalen Zustand aller verbundenen Clients und aktiven Szenen. Er implementiert zwei WebSocket-Endpunkte:
 \begin{enumerate}
-    \item \texttt{/ws/client}: Hier verbinden sich Unity-Clients. Nach einem initialen Handshake, in dem der Client seine Rolle (Host/Visitor) und die gewünschte Szene übermittelt, registriert der Router den Client zur angefragten Szene.
+    \item \texttt{/ws/client}: Hier verbinden sich Unity-Clients. Nach einem initialen Handshake, in dem der Client seine Rolle (Host/Visitor) und die gewünschte Szene übermittelt, registriert der Router den Client zur angeforderten Szene.
     \item \texttt{/ws/model/\{name\}}: Hier verbinden sich die Modell-Worker. Für jedes Modell wird eine \texttt{Warteschlange} angelegt, welche Eingabefragmente puffert.
 \end{enumerate}
 

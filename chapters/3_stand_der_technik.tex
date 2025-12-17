@@ -33,7 +33,7 @@ Trotz erheblicher Fortschritte auf der Seite der Algorithmen teilen viele End-to
   Rekonstruktionslogik, Tracking und Ausgabeformate sind in der Regel fest in die jeweilige Pipeline integriert. Der Austausch einzelner Komponenten oder der parallele Betrieb mehrerer Modelle erfordert pro Verfahren individuelle Code-Anpassungen, separate Laufzeitumgebungen und dedizierte Test-Setups.
 
   \item \textbf{Fehlende Streaming-Infrastruktur} \\
-  Viele Systeme sind für die Batch-Verarbeitung oder Single-Client-Szenarien ausgelegt. Eine kontinuierliche Verteilung inkrementeller Updates an mehrere synchronisierte VR-Clients während einer laufenden Sitzung wird nicht nativ unterstützt. Oft müssen Rekonstruktionsergebnisse exportiert und anschließend in die VR-Engine importiert werden.
+  Viele Systeme sind für die Batch-Verarbeitung oder Single-Client-Szenarien ausgelegt. Eine kontinuierliche Verteilung inkrementeller Updates an mehrere synchronisierte VR-Clients während einer laufenden Sitzung wird nicht nativ unterstützt. Oft müssen Rekonstruktionsergebnisse erst exportiert und anschließend in die VR-Engine importiert werden.
 
   \item \textbf{Unzureichende Pose-Flexibilität} \\
   Verfahren mit externer Pose-Anforderung (z.\,B.\ TSDF-basierte Rekonstruktion) und Verfahren mit interner Pose-Schätzung (z.\,B.\ SLAM-basierte Ansätze) benötigen unterschiedliche Eingabedaten~\cite{sun2021neuralreconrealtimecoherent3d, murai2025mast3rslamrealtimedenseslam}. Viele bestehende Pipelines sind nicht darauf ausgelegt, beide Kategorien parallel zu unterstützen oder zwischen ihnen zu wechseln, ohne dass Anpassungen der Frontend- oder Pipeline-Logik erforderlich sind.
@@ -53,14 +53,14 @@ Die Auswahl erfolgte nach folgenden Kriterien:
     \item \textbf{Pose-Heterogenität:} 
     Verfahren mit externer Pose-Anforderung und Verfahren mit interner Schätzung.
     \item \textbf{Repräsentationsformate:} 
-    Sowohl geschlossene Oberflächenmodelle (Mesh) als auch Punktwolken.
+    Sowohl geschlossene Oberflächenmodelle (Meshes) als auch Punktwolken.
     \item \textbf{Aktualität und Verfügbarkeit:} 
     Publikationen aus den Jahren 2021-2024 mit verfügbaren Open-Source-Implementierungen.
-    \item \textbf{GPU-Kompatibilität.}
-    Echtzeitfähigkeit auf Consumer-Hardware (NVIDIA RTX 4090).
+    \item \textbf{GPU-Kompatibilität:}
+    Echtzeitfähigkeit auf Consumer-Hardware (z\.B\.~NVIDIA RTX 4090).
 \end{itemize}
 
-Die vier Modelle wurden so ausgewählt, dass sie die in dieser Arbeit relevanten Schnittstellenvarianten abdecken: volumetrische Mesh-/TSDF-Ausgabe mit externen Posen (NeuralRecon, VisFusion) sowie punktbasierte, inkrementelle Rekonstruktion mit interner/impliziter Pose-Schätzung (MASt3R-SLAM, SLAM3R). Dadurch ist eine Evaluation der Architektur unter heterogenen Ausgabeformaten und Tracking-Annahmen möglich, ohne dass die Schnittstellen für Kommunikations- und Visualisierung verändert werden müssen.
+Die vier Modelle wurden so ausgewählt, dass sie die in dieser Arbeit relevanten Schnittstellenvarianten abdecken: volumetrische Mesh-Ausgabe mit externen Posen (NeuralRecon, VisFusion) sowie punktbasierte, inkrementelle Rekonstruktion mit interner/impliziter Pose-Schätzung (MASt3R-SLAM, SLAM3R). Dadurch ist eine Evaluation der Architektur unter heterogenen Ausgabeformaten und Tracking-Annahmen möglich, ohne dass die Schnittstellen für Kommunikations- und Visualisierung verändert werden müssen.
 
 \begin{table}[H]
   \centering
@@ -79,7 +79,7 @@ Die vier Modelle wurden so ausgewählt, dass sie die in dieser Arbeit relevanten
   \end{tabularx}
 \end{table}
 
-Nicht integriert wurden bewusst klassische Sparse-SLAM-Verfahren (z.\,B.\ ORB-SLAM ohne Dense-Mapping), da diese keine für die VR-Visualisierung geeigneten dichten Repräsentationen liefern~\cite{7219438}, sowie NeRF-basierte Verfahren, die aufgrund langer Trainingszeiten für Streaming-Szenarien ungeeignet sind~\cite{mildenhall2020nerfrepresentingscenesneural}. Ebenfalls nicht integriert wurde 3D Gaussian Splatting (3DGS), obwohl es sehr aktuell ist, da der Ansatz primär auf Real-Time Radiance Field Rendering bzw. Novel-View-Synthesis ausgelegt ist. Typischerweise entsteht dabei eine optimierungsbasierte Szenenrepräsentation aus (vor-)kalibrierten Mehransichten, anstatt eine engine-nahe, explizite Geometrie-Repräsentation (z. B. Mesh/TSDF) für Interaktion, Kollision und Navigation bereitzustellen~\cite{10.1145/3592433}.
+Nicht integriert wurden bewusst klassische Sparse-SLAM-Verfahren (z.\,B.\ ORB-SLAM ohne Dense-Mapping), da diese keine für die VR-Visualisierung geeigneten dichten Repräsentationen liefern~\cite{7219438}, sowie NeRF-basierte Verfahren, die aufgrund langer Trainingszeiten für Streaming-Szenarien ungeeignet sind~\cite{mildenhall2020nerfrepresentingscenesneural}. Ebenfalls nicht integriert wurde 3D Gaussian Splatting (3DGS), obwohl es sehr aktuell ist, da der Ansatz primär auf Real-Time Radiance Field Rendering bzw. Novel-View-Synthesis ausgelegt ist. Typischerweise entsteht dabei eine optimierungsbasierte Szenenrepräsentation aus (vor-)kalibrierten Mehransichten, anstatt eine engine-nahe, explizite Geometrie-Repräsentation (z. B. Mesh) für Interaktion, Kollision und Navigation bereitzustellen~\cite{10.1145/3592433}.
 
 \subsection{Volumetrische Verfahren}
 
@@ -98,7 +98,7 @@ Nicht integriert wurden bewusst klassische Sparse-SLAM-Verfahren (z.\,B.\ ORB-SL
 \section{Forschungslücke und Abgrenzung}
 \label{sec:gap}
 
-Die in Abschnitt~\ref{sec:e2e_pipelines} dargestellten Limitationen bestehender End-to-End-Pipelines sowie die daraus resultierenden, heterogenen Schnittstellen- und Ausgabeanforderungen der ausgewählten Modelle (\ref{tab:model_comparison}) verdeutlichen eine Lücke an der Schnittstelle zwischen Forschungsprototypen und VR-Deployment. Trotz erheblicher Fortschritte auf der Seite der Algorithmen fehlt es an wiederverwendbarer Infrastruktur, die diese auch integrieren.
+Die in Abschnitt~\ref{sec:e2e_pipelines} dargestellten Limitationen bestehender End-to-End-Pipelines sowie die daraus resultierenden, heterogenen Schnittstellen- und Ausgabeanforderungen der ausgewählten Modelle (\ref{tab:model_comparison}) verdeutlichen eine Kluft an der Schnittstelle zwischen Forschungsprototypen und VR-Deployment. Trotz erheblicher Fortschritte auf der Seite der Algorithmen fehlt es an wiederverwendbarer Infrastruktur, die diese auch integrieren.
 
 Konkret fehlen Infrastrukturen, die folgende Anforderungen \textit{gleichzeitig} erfüllen:
 
@@ -110,7 +110,7 @@ Konkret fehlen Infrastrukturen, die folgende Anforderungen \textit{gleichzeitig}
   Ergebnisse müssen inkrementell in laufende VR-Szenen mit mehreren synchronisierten Clients gestreamt werden können, während die Rekonstruktion fortschreitet. Batch-orientierte Pipelines (Aufnahme \(\rightarrow\) Offline-Verarbeitung \(\rightarrow\) Import) unterstützen dies nicht, und Forschungsprototypen bieten selten standardisierte Streaming-Protokolle oder Multi-Client-Synchronisation.
 
   \item \textbf{Heterogene Ausgabeformate} \\
-  Die Architektur muss unterschiedliche 3D-Repräsentationen (Mesh vs.\ Punktwolke) einheitlich visualisieren und dabei die jeweiligen Charakteristika der Formate (z.\,B.\ Chunking, VFXGraph) berücksichtigen.
+  Die Architektur muss unterschiedliche 3D-Repräsentationen (Mesh/Punktwolke) einheitlich visualisieren und dabei die jeweiligen Charakteristika der Formate (z.\,B.\ Chunking, VFXGraph) berücksichtigen.
 
   \item \textbf{Pose-Flexibilität} \\
   Systeme, die externe Posen benötigen, und solche mit interner bzw. impliziter Schätzung sollen parallel betrieben werden können, ohne dass die Frontend-Logik oder das Kommunikationsprotokoll angepasst werden müssen.
@@ -118,4 +118,4 @@ Konkret fehlen Infrastrukturen, die folgende Anforderungen \textit{gleichzeitig}
 
 Aktuelle Publikationen zu den evaluierten Modellen befassen sich vorwiegend mit der Rekonstruktionsqualität und algorithmischen Verbesserungen, nicht jedoch mit Deployment-Architekturen für die VR-Integration oder dem systematischen Vergleich heterogener Verfahren unter identischen Bedingungen. Dadurch bleibt der praktische Integrationsaufwand (u. a. Anpassung von Datenformaten, Implementierung von Streaming-Logik, Synchronisation mehrerer Clients) weitgehend den Anwendern überlassen.
 
-Das in dieser Arbeit entwickelte System \textit{RTReconstruct} adressiert diese Lücke durch eine containerisierte, modellunabhängige Architektur mit standardisiertem Streaming-Protokoll. Es bildet die Grundlage für die in Kapitel 4 beschriebene Konzeption, Implementierung und Evaluation.
+Das in dieser Arbeit entwickelte System \textit{RTReconstruct} adressiert diese Lücke durch eine containerisierte, modellunabhängige Architektur mit standardisiertem Streaming-Protokoll. Die im folgenden beschriebene Konzeption bildet dabei die Grundlage für die spätere Implementierung und Evaluation des Systems.
