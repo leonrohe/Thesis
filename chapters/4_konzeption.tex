@@ -42,13 +42,13 @@ Im Folgenden werden diese Leitkriterien in funktionale und nicht-funktionale Anf
 \begin{itemize}
     \item \textbf{Niedrige Latenz:} Die Zeitspanne zwischen dem Empfang eines Fragments im Backend und der Darstellung des zugehörigen Modells im Headset muss für VR-Anwendungen akzeptabel bleiben. Die Latenz wird in der Evaluation explizit gemessen.
 
-    \item \textbf{Stabilität:} Das System muss auch bei schwankender Datenrate, kurzzeitig ausfallenden Modellen oder Paketverlust funktionsfähig bleiben. Dazu gehört, dass Clients mit dem zuletzt bekannten Ergebnis weiterarbeiten können.
+    \item \textbf{Stabilität:} Das System muss auch bei schwankender Datenrate, kurzzeitig ausfallenden Modellen oder Paketverlust funktionsfähig bleiben.
 
     \item \textbf{Skalierbarkeit:} Die Architektur soll den parallelen Betrieb mehrerer Rekonstruktionsmodelle ermöglichen und die Erweiterung um zusätzliche Modelle erlauben, ohne dass die bestehende Kommunikationslogik umgebaut werden muss.
 
     \item \textbf{Modularität der Modelle:} Die Rekonstruktionsmodelle sollen als entkoppelte Dienste mit einheitlicher Schnittstelle eingebunden werden können. Dabei soll die Kommunikationslogik unabhängig von der internen Implementierung der Modelle bleiben.
 
-    \item \textbf{Wiederverwendbarkeit im Lab:} RTReconstruct soll als generische Infrastrukturkomponente betrachtet werden können, die in unterschiedlichen Va.Si.Li-Szenarien (z. B. verschiedene Lernräume) wiederverwendet werden kann.
+    \item \textbf{Wiederverwendbarkeit:} RTReconstruct soll als generische Infrastrukturkomponente betrachtet werden können, die in unterschiedlichen Szenarien wiederverwendet werden kann.
 \end{itemize}
 
 \section{Gesamtarchitektur}
@@ -88,7 +88,7 @@ Der Router bildet den Kern des Backends. Aus konzeptioneller Sicht übernimmt er
           und ein Modell abonniert haben.
 \end{itemize}
 
-Der Router behält somit den globalen Überblick darüber, welche Szenen existieren, welche Rekonstruktionsverfahren für diese Szenen aktiv sind und welche Ergebnisse zuletzt erzeugt wurden und den Clients zur Verfügung stehen. Details zur konkreten Nachrichtenstruktur oder den internen Puffermechanismen werden in Kapitel 5 beschrieben.
+Der Router behält somit den globalen Überblick darüber, welche Szenen existieren, welche Rekonstruktionsverfahren für diese Szenen aktiv sind und welche Ergebnisse zuletzt erzeugt wurden und den Clients zur Verfügung stehen. Details zur konkreten Nachrichtenstruktur oder den internen Puffermechanismen werden in Kapitel~\ref{ch:implementation} beschrieben.
 
 \paragraph{Rekonstruktions-Worker}
 
@@ -104,7 +104,7 @@ Unterschiede zwischen den integrierten Verfahren (NeuralRecon, VisFusion, MASt3R
 
 \subsection{Frontend-Architektur}
 
-Das Frontend wurde als VR-Client in Unity realisiert und in die Va.Si.Li-Lab-Umgebung eingebettet. Aus konzeptioneller Sicht übernimmt es die Rolle einer Erfassungs- und Darstellungsebene, die die Nutzenden mit der Rekonstruktionsarchitektur verbindet, ohne die bestehende Szenenlogik von Va.Si.Li-Lab zu verändern.
+Das Frontend wurde als VR-Client in Unity realisiert und anschließend in die Va.Si.Li-Lab-Umgebung eingebettet. Aus konzeptioneller Sicht übernimmt es die Rolle einer Erfassungs- und Darstellungsebene, die die Nutzenden mit der Rekonstruktionsarchitektur verbindet, ohne die bestehende Szenenlogik von Va.Si.Li-Lab zu verändern.
 
 Seine Aufgaben lassen sich in drei Bereiche gliedern:
 
@@ -164,15 +164,14 @@ Neben rekonstruktiven Ein- und Ausgaben benötigt das System Nachrichten, die de
 
 \begin{itemize}
     \item das Beitreten und Verlassen von Szenen durch Clients,
-    \item das Abonnieren oder Abbestellen bestimmter Modelle innerhalb einer Szene,
     \item die Anpassung von Visualisierungs- oder Bezugstransformationen bereits vorliegender Rekonstruktionen, ohne eine erneute Berechnung  anzustoßen.
 \end{itemize}
 
-Sie bilden das organisatorische Gerüst, mit dem mehrere Szenen und Modelle parallel betrieben werden können. Aus architektonischer Sicht trennen sie die Lebenszyklusverwaltung von Szenen und Modellen klar von der eigentlichen Rekonstruktionslogik: Rekonstruktionsmodule müssen nur auf Anfragen und Antworten reagieren, während Sitzungs- und Konfigurationsaspekte vollständig durch das Frontend und die Vermittlungsschicht gehandhabt werden.
+Sie bilden das organisatorische Gerüst, mit dem mehrere Szenen und Modelle parallel betrieben werden können. Aus architektonischer Sicht trennen sie die Lebenszyklusverwaltung von Szenen und Modellen klar von der eigentlichen Rekonstruktionslogik: Rekonstruktionsmodule müssen nur auf Anfragen und Antworten reagieren, während Sitzungs- und Konfigurationsaspekte vollständig durch das Frontend und den Router gehandhabt werden.
 
 \section{Kommunikations- und Datenfluss}
 
-Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel 2 vorgestellten Konzept einer persistenten, bidirektionalen Verbindung. Die Pipeline arbeitet stromorientiert. Eingabefragmente werden verarbeitet, sobald sie vorliegen, und die resultierenden Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
+Der Kommunikations- und Datenfluss in RTReconstruct folgt dem in Kapitel~\ref{ch:grundlagen} vorgestellten Konzept einer persistenten, bidirektionalen Verbindung. Die Pipeline arbeitet stromorientiert. Eingabefragmente werden verarbeitet, sobald sie vorliegen, und die resultierenden Rekonstruktionsergebnisse werden fortlaufend an die Clients zurückgegeben.
 
 \bigskip
 
@@ -194,9 +193,9 @@ Die Pipeline durchläuft dabei vier zentrale Phasen, welche ebenfalls in Abbildu
 \end{itemize}
 
 Die Pipeline ist so ausgelegt, dass Frontend, Vermittlungsschicht und Rekonstruktionsmodule mit unterschiedlichen Geschwindigkeiten arbeiten können.
-Eingehende Fragmente können gepuffert und Ergebnisse pro Szene und Modell als aktueller Zustand vorgehalten werden. Dadurch bleiben die Komponenten zur Laufzeit voneinander entkoppelt, was den parallelen Betrieb mehrerer Modelle erleichtert und die in Kapitel 6 betrachtete Evaluation der Echtzeitfähigkeit und Skalierbarkeit unterstützt.
+Eingehende Fragmente können gepuffert und Ergebnisse pro Szene und Modell als aktueller Zustand vorgehalten werden. Dadurch bleiben die Komponenten zur Laufzeit voneinander entkoppelt, was den parallelen Betrieb mehrerer Modelle erleichtert und die in Kapitel~\ref{chap:evaluation} betrachtete Evaluation der Echtzeitfähigkeit und Skalierbarkeit unterstützt.
 
 \section{Zusammenfassung}
 
-In diesem Kapitel wurde die konzeptionelle Architektur von RTReconstruct hergeleitet. Im Zentrum stehen ein VR-Frontend in Va.Si.Li-Lab, eine zentrale Vermittlungskomponente sowie eine Vielzahl containerisierter Rekonstruktionsmodule.
+In diesem Kapitel wurde die konzeptionelle Architektur von RTReconstruct hergeleitet. Im Zentrum stehen ein VR-Frontend, eine zentrale Vermittlungskomponente sowie eine Vielzahl containerisierter Rekonstruktionsmodule.
 Das Frontend erfasst Kameradaten, bündelt sie zu Fragmenten und visualisiert die vom Backend gelieferten Rekonstruktionsergebnisse. Die Vermittlungsschicht koppelt diese Fragmente über einheitliche Nachrichtenstrukturen an die Rekonstruktionsmodule und verteilt deren Ergebnisse szenenbasiert an die Clients. Auf dieser modularen Streaming-Architektur basieren die in Kapitel 5 beschriebene Implementierung und die in Kapitel 6 analysierte Leistungsfähigkeit des Systems.

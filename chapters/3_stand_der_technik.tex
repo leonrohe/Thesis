@@ -7,6 +7,7 @@ Ziel ist es, etablierte End-to-End-Pipelines sowie ausgewählte Einzelverfahren 
 und ihre Relevanz für die in dieser Arbeit entwickelte modulare Architektur zu begründen.
 
 \section{End-to-End-Rekonstruktionspipelines}
+\label{sec:e2e_pipelines}
 
 Die Entwicklung echtzeitfähiger 3D-Rekonstruktionssysteme wurde maßgeblich durch zwei Paradigmen geprägt: RGB-D-basierte Ansätze, die auf Tiefensensoren aufbauen, sowie rein monokulare Verfahren, die ausschließlich RGB-Bildströme verarbeiten~\cite{7a99ce8940e943c39152b8da3bdfb568}.
 
@@ -14,14 +15,14 @@ Die Entwicklung echtzeitfähiger 3D-Rekonstruktionssysteme wurde maßgeblich dur
 
 Frühe echtzeitfähige Systeme wie KinectFusion~\cite{kinectfusion} etablierten die volumetrische Fusion von Tiefendaten mittels TSDF-Repräsentation. Diese Architektur ermöglichte erstmals die inkrementelle Rekonstruktion während der Kamerabewegung und wurde in zahlreichen Arbeiten erweitert, etwa durch dynamisches Hashing (VoxelHashing~\cite{niessner2013hashing}), elastische Oberflächenverfolgung (DynamicFusion~\cite{dynamicfusion}) oder Multi-View-Konsistenz (BundleFusion~\cite{dai2017bundlefusion}).
 
-Alle Modelle gehen dabei von der Annahme aus, dass eine RGB-D-Kamera verfügbar ist, die synchronisierte Farb- und Tiefendaten liefert. Aufgrund dieser Hardware-Abhängigkeit ist die Anwendbarkeit auf VR-Headsets mit integrierten Tiefensensoren beschränkt, eine Voraussetzung die bei gängigen Consumer-VR-Systemen wie der Meta Quest-Serie typischerweise nicht erfüllt ist. Für Multi-User-VR-Szenarien bedeutet dies, dass entweder alle Teilnehmenden über identische, tiefenfähige Hardware verfügen müssen oder RGB-D-Verfahren als Lösungsklasse ausscheiden. Zudem sind viele dieser Systeme primär für einzelne Nutzer konzipiert, das sie nur ein lokales Interface bieten. Eine kontinuierliche Verteilung inkrementeller Rekonstruktionsupdates an mehrere synchronisierte Clients wird nicht nativ unterstützt.
+Alle Modelle gehen dabei von der Annahme aus, dass eine RGB-D-Kamera verfügbar ist, die synchronisierte Farb- und Tiefendaten liefert. Aufgrund dieser Hardware-Abhängigkeit ist die Anwendbarkeit auf VR-Headsets mit integrierten Tiefensensoren beschränkt, eine Voraussetzung die bei gängigen Consumer-VR-Systemen wie der Meta Quest-Serie typischerweise nicht erfüllt ist. Für Multi-User-VR-Szenarien bedeutet dies, dass entweder alle Teilnehmenden über identische, tiefenfähige Hardware verfügen müssen oder RGB-D-Verfahren als Lösungsklasse ausscheiden. Zudem sind viele dieser Systeme primär für einzelne Nutzer konzipiert, da sie nur ein lokales Interface bieten. Eine kontinuierliche Verteilung inkrementeller Rekonstruktionsupdates an mehrere synchronisierte Clients wird nicht nativ unterstützt.
 
 \subsection{Monokulare Pipelines}
 
 Mit DTAM~\cite{dtam}, LSD-SLAM~\cite{10.1007/978-3-319-10605-2_54} und ORB-SLAM~\cite{7219438} entstanden monokulare Systeme,
 die Tiefe aus Kamerabewegung und photometrischer bzw.\ Feature-basierter Konsistenz ableiten. Diese Verfahren sind mit Standard-RGB-Kameras hardwareseitig kompatibel und somit prinzipiell für Consumer-VR-Headsets geeignet.
 
-Allerdings wurden klassische Systeme häufig für die Offline-Verarbeitung oder für spezifische Anwendungsfälle (z.\,B.\ robotische Navigation) entwickelt. Eine Integration in interaktive VR-Umgebungen erfordert in der Regel Anpassungen der Daten-Pipelines, da die Eingabeformate, Tracking-Annahmen und die Ausgaberepräsentationen eng an die jeweilige Implementierung gekoppelt sind. Neuere lernbasierte Ansätze wie DeepVideoMVS~\cite{düzçeker2021deepvideomvsmultiviewstereovideo} oder NICE-SLAM~\cite{zhu2022niceslamneuralimplicitscalable} kombinieren neuronale Tiefenschätzung mit Mapping-Komponenten, bleiben aber häufig an spezifische Frameworks und Datenformate gebunden. Ein systematischer Vergleich mehrerer Verfahren unter identischen Bedingungen ist daher nur mit erheblichem Integrationsaufwand verbunden.
+Allerdings wurden diese klassischen Systeme häufig für die Offline-Verarbeitung oder für spezifische Anwendungsfälle (z.\,B.\ robotische Navigation) entwickelt. Eine Integration in interaktive VR-Umgebungen erfordert in der Regel Anpassungen der Daten-Pipelines, da die Eingabeformate, Tracking-Annahmen und die Ausgaberepräsentationen eng an die jeweilige Implementierung gekoppelt sind. Neuere lernbasierte Ansätze wie DeepVideoMVS~\cite{düzçeker2021deepvideomvsmultiviewstereovideo} oder NICE-SLAM~\cite{zhu2022niceslamneuralimplicitscalable} kombinieren neuronale Tiefenschätzung mit Mapping-Komponenten, bleiben aber häufig an spezifische Frameworks und Datenformate gebunden. Ein systematischer Vergleich mehrerer Verfahren unter identischen Bedingungen ist daher nur mit erheblichem Integrationsaufwand verbunden.
 
 \subsection{Limitationen für VR-Integration}
 
@@ -55,7 +56,7 @@ Die Auswahl erfolgte nach folgenden Kriterien:
     Sowohl geschlossene Oberflächenmodelle (Mesh) als auch Punktwolken.
     \item \textbf{Aktualität und Verfügbarkeit:} 
     Publikationen aus den Jahren 2021-2024 mit verfügbaren Open-Source-Implementierungen.
-    \item \textbf{GPU-Kompatibilität} \\
+    \item \textbf{GPU-Kompatibilität.}
     Echtzeitfähigkeit auf Consumer-Hardware (NVIDIA RTX 4090).
 \end{itemize}
 
@@ -97,7 +98,7 @@ Nicht integriert wurden bewusst klassische Sparse-SLAM-Verfahren (z.\,B.\ ORB-SL
 \section{Forschungslücke und Abgrenzung}
 \label{sec:gap}
 
-Die in Abschnitt 3.1 dargestellten Limitationen bestehender End-to-End-Pipelines sowie die daraus resultierenden, heterogenen Schnittstellen- und Ausgabeanforderungen der ausgewählten Modelle (\ref{tab:model_comparison}) verdeutlichen eine Lücke an der Schnittstelle zwischen Forschungsprototypen und VR-Deployment. Trotz erheblicher Fortschritte auf der Seite der Algorithmen fehlt es an wiederverwendbarer Infrastruktur, die diese Verfahren in laufende Multi-User-VR-Sitzungen integriert.
+Die in Abschnitt~\ref{sec:e2e_pipelines} dargestellten Limitationen bestehender End-to-End-Pipelines sowie die daraus resultierenden, heterogenen Schnittstellen- und Ausgabeanforderungen der ausgewählten Modelle (\ref{tab:model_comparison}) verdeutlichen eine Lücke an der Schnittstelle zwischen Forschungsprototypen und VR-Deployment. Trotz erheblicher Fortschritte auf der Seite der Algorithmen fehlt es an wiederverwendbarer Infrastruktur, die diese auch integrieren.
 
 Konkret fehlen Infrastrukturen, die folgende Anforderungen \textit{gleichzeitig} erfüllen:
 
@@ -109,7 +110,7 @@ Konkret fehlen Infrastrukturen, die folgende Anforderungen \textit{gleichzeitig}
   Ergebnisse müssen inkrementell in laufende VR-Szenen mit mehreren synchronisierten Clients gestreamt werden können, während die Rekonstruktion fortschreitet. Batch-orientierte Pipelines (Aufnahme \(\rightarrow\) Offline-Verarbeitung \(\rightarrow\) Import) unterstützen dies nicht, und Forschungsprototypen bieten selten standardisierte Streaming-Protokolle oder Multi-Client-Synchronisation.
 
   \item \textbf{Heterogene Ausgabeformate} \\
-  Die Architektur muss unterschiedliche 3D-Repräsentationen (TSDF/Mesh vs.\ Punktwolke) einheitlich visualisieren und dabei die jeweiligen Charakteristika der Formate (z.\,B.\ Chunking, LOD, inkrementelle Updates) berücksichtigen.
+  Die Architektur muss unterschiedliche 3D-Repräsentationen (Mesh vs.\ Punktwolke) einheitlich visualisieren und dabei die jeweiligen Charakteristika der Formate (z.\,B.\ Chunking, VFXGraph) berücksichtigen.
 
   \item \textbf{Pose-Flexibilität} \\
   Systeme, die externe Posen benötigen, und solche mit interner bzw. impliziter Schätzung sollen parallel betrieben werden können, ohne dass die Frontend-Logik oder das Kommunikationsprotokoll angepasst werden müssen.

@@ -40,7 +40,7 @@ Um die Reproduzierbarkeit der Performance-Messungen und die Vergleichbarkeit der
         Backend-Server CPU & AMD Ryzen 5 2600 (6 Kerne, 12 Threads) \\
         GPU & NVIDIA GeForce GTX 1070 Ti, 8 GB VRAM \\
         VR-System (Frontend) & Meta Quest 3 \\
-        Netzwerk & WiFi 5 Heimnetzwerk \\
+        Netzwerk & WiFi 5 Heimnetzwerk, 60~Mbit Internet-Verbindung \\
         \midrule
         \multicolumn{2}{l}{\textbf{Software-Umgebung und Frameworks}} \\
         \midrule
@@ -68,7 +68,7 @@ Praxistauglichkeit. Eine kurze Übersicht über alle Testszenen findet sich in T
         \textbf{Szene} & \textbf{Größe (m)} & \textbf{Fragments} & \textbf{Frames} & \textbf{Merkmale} \\
         \midrule
         \multicolumn{5}{l}{\textbf{Virtuelle Szenen}} \\
-        V1 -- Primitive & $5\times 5\times 5$ & 24 & 216 & Geometrische Grundformen, unifarbige Oberflächen \\
+        V1 -- Primitive & $5\times 5\times 5$ & 24 & 216 & Geometrische Grundformen, einfarbige Oberflächen \\
         V2 -- Schlafzimmer & $6\times 5\times 3$ & 44 & 396 & moderate Größe, Okklusionen \\
         V3 -- Mehrzweckraum & $10\times 5\times 3$ & 58 & 522 & ähnlich V2, große freie Flächen \\
         \midrule
@@ -108,7 +108,7 @@ Zur Evaluierung der praktischen Anwendbarkeit des Systems wurden realitätsnahe 
 
 \paragraph{Szene R1 -- Schlafzimmer}
 
-Das Schlafzimmer ist ein schmaler Dachraum mit Arbeits- und Ruhebereich. Am einen Ende befindet sich ein Schreibtisch mit Bürostuhl und Monitor, am anderen Ende ein graues Sofa und ein TV-Board. Ein großes Dachflächenfenster sowie ein seitliches Fenster sorgen für viel Tageslicht, unterstützt durch Arbeitsleuchten am Schreibtisch. Der dunklere Bodenbelag und die hellen Wände erzeugen deutliche Kontraste, die für die Rekonstruktion von Kanten und Strukturen vorteilhaft sind.
+Das Schlafzimmer ist ein schmaler Raum mit Dachschräge und Arbeits- und Ruhebereich. Am einen Ende befindet sich ein Schreibtisch mit Bürostuhl und Monitor, am anderen Ende ein graues Sofa und ein TV-Board. Ein großes Dachflächenfenster sowie ein seitliches Fenster sorgen für viel Tageslicht. Der dunklere Bodenbelag und die hellen Wände erzeugen deutliche Kontraste, die für die Rekonstruktion von Kanten und Strukturen vorteilhaft sind.
 
 \paragraph{Szene R2 -- Wohnzimmer}
 
@@ -192,7 +192,7 @@ desto höher ist die Qualität der Rekonstruktion.
 Der explizite Schwellwert von 10cm wurde gewählt, um eine für VR-Anwendungen praxisnahe Toleranzgrenze zu definieren, die Tracking-Ungenauigkeiten der Hardware berücksichtigt und gleichzeitig grobe Geometriefehler zuverlässig als solche klassifiziert.
 
 \paragraph{Qualitative Bewertung}
-Die rekonstruierten Meshes wurden anhand folgender Kriterien bewertet:
+Die Rekonstruktionen wurden anhand folgender Kriterien bewertet:
 
 \begin{itemize}
     \item \textbf{Vollständigkeit}: Wie viel Prozent der Szene wurde erfasst?
@@ -231,8 +231,7 @@ fehlerfrei.
 
 \paragraph{Visualisierung in VR}
 Die über das Backend empfangenen Meshes wurden erfolgreich im Unity-Client 
-visualisiert. Das in Kapitel 5 beschriebene Spatial 
-Hashing ermöglichte eine performante Darstellung auch bei größeren Meshes und Punktwolken mit bis zu 100.000 Punkten.
+visualisiert. Das in Kapitel 5 beschriebene Visualisierungskonzept ermöglichte eine performante Darstellung auch bei größeren Meshes und Punktwolken mit bis zu 100.000 Punkten.
 
 \subsection{Performance-Analyse}
 
@@ -282,15 +281,14 @@ Die Darstellung zeigt auf der x-Achse die vier evaluierten Rekonstruktionsmodell
 \end{figure}
 
 
-Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche und minimale Ausreißer, was auf eine stabile und reproduzierbare Latenzcharakteristik des Systems hinweist. Aufgrund dieser geringen Varianz zwischen den drei Testläufen werden in den folgenden Analysen zur Zusammensetzung der Gesamtlatenz sowie zu Datenvolumina die Messwerte der drei Testläufe aggregiert dargestellt. Dies ermöglicht eine kompaktere Präsentation ohne relevanten Informationsverlust.
+Die Boxplots zeigen für alle Modelle und Szenen geringe Interquartilbereiche. Dies weist auf eine stabile und reproduzierbare Latenzcharakteristik des Systems hin. Aufgrund der geringen Varianz zwischen den drei Testläufen werden in den folgenden Analysen zur Zusammensetzung der Gesamtlatenz sowie zu den Datenvolumina die Messwerte der drei Testläufe aggregiert dargestellt. Dies ermöglicht eine kompaktere Präsentation ohne relevanten Informationsverlust.
 
-
-Die Abbildung zeigt deutliche Unterschiede in der Gesamtlatenz zwischen den Testszenen: Szene V1 weist die niedrigsten Latenzwerte auf, während die Latenz in den komplexeren Szenen V3, R1 und R2 ansteigt. Zudem variiert die Latenz zwischen den Modellen, wobei MAST3R durchgängig die höchsten Werte erreicht. Um die Ursachen dieser Variation zu identifizieren, wird die Gesamtlatenz im Folgenden in ihre Komponenten zerlegt.
+Die Ergebnisse zeigen einen klaren Trend: Je komplexer die virtuele Szene wird (V1 \(\longrightarrow\) V3), desto höher fällt die Gesamtlatenz aus. Gleichzeitig fällt auf, dass SLAM-Verfahren in den realen Szenen (R1/R2) teils überraschend besser bzw. robuster abschneiden als in den virtuellen Szenen. Um die Gründe für diese Unterschiede besser einzugrenzen, wird die Gesamtlatenz im nächsten Schritt in ihre einzelnen Komponenten zerlegt.
 
 
 \paragraph{Zusammensetzung der Gesamtlatenz}
 
-Die beobachteten Latenzunterschiede zwischen den Testszenen lassen sich durch die Zerlegung der Gesamtlatenz in ihre konstituierenden Komponenten \(L_{\text{network}}\), \(L_{\text{inference}}\) und \(L_{\text{render}}\) analysieren. Diese Aufschlüsselung ermöglicht es, szenenabhängige Effekte auf die Inferenzzeit von fixen Overhead-Kosten der Netzwerkkommunikation und Rendering-Pipeline zu separieren. Abbildung~\ref{fig:latency_stacked_bar} visualisiert die resultierende Zusammensetzung für alle Modelle und Testszenen.
+Die beobachteten Latenzunterschiede zwischen den Testszenen lassen sich durch die Zerlegung der Gesamtlatenz in ihre konstituierenden Komponenten \(L_{\text{network}}\), \(L_{\text{inference}}\) und \(L_{\text{render}}\) analysieren. Mithilfe dieser Unterteilung ist es möglich, szenenabhängige Effekte von den fixen Overhead-Kosten der Netzwerkkommunikation und der Rendering-Pipeline zu trennen. Abbildung~\ref{fig:latency_stacked_bar} visualisiert die resultierende Zusammensetzung für alle Modelle und Testszenen.
 
 \begin{figure}[H]
     \centering
@@ -300,7 +298,7 @@ Die beobachteten Latenzunterschiede zwischen den Testszenen lassen sich durch di
 \end{figure}
 
 
-Die Aufschlüsselung zeigt, dass \(L_{\text{inference}}\) den dominierenden Anteil der Gesamtlatenz ausmacht und zwischen den Szenen stark variiert. Der Anteil von \(L_{\text{network}}\) und \(L_{\text{render}}\) bleibt über die Szenen hinweg relativ konstant, nimmt jedoch prozentual mit steigender Szenenkomplexität ab. Die Netzwerklatenz \(L_{\text{network}}\) wird dabei maßgeblich durch die Größe der übertragenen Daten bestimmt, deren Quantifizierung im Folgenden dargestellt wird.
+Die Unterteilung zeigt, dass \(L_{\text{inference}}\) den dominierenden Anteil der Gesamtlatenz ausmacht und zwischen den Szenen stark variiert. Der Anteil von \(L_{\text{network}}\) und \(L_{\text{render}}\) bleibt über die Szenen hinweg relativ konstant, nimmt jedoch prozentual mit steigender Szenenkomplexität ab. Die Netzwerklatenz \(L_{\text{network}}\) wird dabei maßgeblich durch die Größe der übertragenen Daten bestimmt, deren Quantifizierung im Folgenden dargestellt wird.
 
 
 \paragraph{Fragment- und Ergebnisgrößen}
@@ -352,7 +350,7 @@ Um die Netzwerklatenz \(L_{\text{network}}\) zu kontextualisieren und die Bandbr
 
 Die Tabelle zeigt, dass die durchschnittlichen Fragmentgrößen für alle Szenen nahezu identisch sind (1{,}56--1{,}84~MB), mit Ausnahme von Szene \textit{V1} (0{,}82~MB). Diese Unterschiede sind ein Resultat der JPEG-Komprimierung, die je nach Bildinhalt unterschiedlich effektiv ist.
 
-Die durchschnittlichen Ergebnisgrößen pro Fragment unterscheiden sich hingegen deutlicher zwischen den Modellen: VisFusion erzeugt mit $2{,}58$--$4{,}24~\text{MB}$ die größten Meshes im GLB-Format, während NeuralRecon mit $1{,}83$--$3{,}60~\text{MB}$ ähnlich große Meshes produziert. Die punktbasierten Modelle (MASt3R-SLAM, SLAM3R) liefern mit ihren genau 100,000 Punkten konstant ca. $1{,}60~\text{MB}$ zurück. Die Summe der genutzten Bandbreite über alle Fragmente variiert entsprechend der unterschiedlichen Fragmentanzahl pro Szene, wobei beispielsweise in Szene V3 insgesamt 88{,}70~Mbps für den Upload und zwischen 90{,}69~Mbps (MASt3R-SLAM) und 241{,}51~Mbps (VisFusion) für den Download gemessen wurden.
+Die durchschnittlichen Ergebnisgrößen pro Fragment unterscheiden sich hingegen deutlicher zwischen den Modellen: VisFusion erzeugt mit $2{,}58$--$4{,}24~\text{MB}$ die größten Meshes im GLB-Format, während NeuralRecon mit $1{,}83$--$3{,}60~\text{MB}$ ähnlich große Meshes produziert. Die punktbasierten Modelle (MASt3R-SLAM, SLAM3R) liefern mit ihren 100,000 Punkten konstant ca. $1{,}60~\text{MB}$ zurück. Die Summe der genutzten Bandbreite über alle Fragmente variiert entsprechend der unterschiedlichen Fragmentanzahl pro Szene, wobei beispielsweise in Szene V3 insgesamt 88{,}70~MB für den Upload und zwischen 90{,}69~MB (MASt3R-SLAM) und 241{,}51~MB (VisFusion) für den Download gemessen wurden.
 
 Die präsentierten Latenzmessungen bilden zusammen mit den Datenvolumina die Grundlage für die Bewertung der Echtzeitfähigkeit und Skalierbarkeit des Systems in Abschnitt~\ref{subsec:realtime}.
 
@@ -456,15 +454,15 @@ Der RAM-Verbrauch der Worker-Container unterscheidet sich ebenfalls. Während \t
 
 \paragraph{Frontend-Ressourcen}
 
-Die durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb ohne aktive Rekonstruktion als auch während der Rekonstruktions- und Visualisierungsphase gemessen (Abbildung~\ref{frame_rate}). Im Baseline-Betrieb erreicht der Client eine durchschnittliche Bildrate von 72\,fps.  
+Die durchschnittliche Frame Rate des Unity-Clients wurde sowohl im Baseline-Betrieb ohne aktive Rekonstruktion als auch während der Rekonstruktions- und Visualisierungsphase gemessen (Abbildung~\ref{frame_rate}). Da sich die GPU-/CPU-Auslastung auf der Meta Quest 3 im laufenden Betrieb nur eingeschränkt messen lies, wird die Performance hier ausschließlich über die FPS ausgewertet. Im Baseline-Betrieb erreicht der Client eine durchschnittliche Bildrate von 72\,fps.  
 
 Während der Rekonstruktion bleibt die Frame Rate bei Verwendung von \textit{NeuralRecon} unverändert bei 72\,fps. Bei \textit{VisFusion} sinkt die durchschnittliche Bildrate auf 58\,fps. Die Verwendung der SLAM-basierten Verfahren \textit{SLAM3R} und \textit{MASt3R-SLAM} führt zu einem stärkeren Rückgang der Frame Rate auf jeweils 38\,fps aufgrund der Punktwolken Repräsentation.
 
 \begin{figure}[H]
     \centering
+    \includegraphics[width=0.6\textwidth]{images/frontend_fps.png}
     \caption{FPS des Unity-Clients im Baseline-Betrieb und während der Rekonstruktion}
     \label{frame_rate}
-    \includegraphics[width=0.65\textwidth]{images/frontend_fps.png}
 \end{figure}
 
 \subsection{Rekonstruktionsqualität}
@@ -543,7 +541,7 @@ Die Rekonstruktionen von NeuralRecon zeigten deutliche Lücken über alle Testsz
 
 \paragraph{VisFusion}
 
-VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRecon. Schräge Flächen in Szene V1, die zuvor komplett fehlten, wurden nun erfolgreich rekonstruiert, und insgesamt blieben weniger Bereiche lückenhaft. Die F-Scores stiegen über die Szenen hinweg kontinuierlich an (V1: 0.54, V2: 0.61, V3: 0.62), was auf eine robuste Performance auch bei zunehmender Komplexität hindeutet. Auch im Detail zeigte sich eine Verbesserung: Feinere Strukturen blieben besser erhalten, während gröbere Geometrien ähnlich zuverlässig erfasst wurden wie bei NeuralRecon. Die Meshes waren durchweg glatt, artefaktfrei und wiesen eine höhere geometrische Präzision in komplexen Bereichen auf. Die globale Konsistenz blieb über alle Szenen hinweg ebenfalls stabil.
+VisFusion überzeugte mit einer spürbar höheren Vollständigkeit als NeuralRecon. Schräge Flächen in Szene V1, die zuvor komplett fehlten, wurden nun erfolgreich rekonstruiert, und insgesamt blieben weniger Bereiche lückenhaft. Die F-Scores stiegen über die Szenen hinweg kontinuierlich an (vgl.~\ref{tab:fscore_all}), was auf eine robuste Performance auch bei zunehmender Komplexität hindeutet. Auch im Detail zeigte sich eine Verbesserung: Feinere Strukturen blieben besser erhalten, während gröbere Geometrien ähnlich zuverlässig erfasst wurden wie bei NeuralRecon. Die Meshes waren durchweg glatt, artefaktfrei und wiesen eine höhere geometrische Präzision in komplexen Bereichen auf. Die globale Konsistenz blieb über alle Szenen hinweg ebenfalls stabil.
 
 \begin{figure}[H]
     \centering
@@ -683,10 +681,16 @@ Die Oberfläche wies weiterhin partielle Lücken auf, es war jedoch eine Erfassu
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room03/neucon00.png}
-    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room03/visfusion00.png}
-    \caption{Rekonstruktionen der volumetrischen Verfahren in Szene R1. Links: NeuralRecon 
-    mit erheblichen Diskontinuitäten. Rechts: VisFusion mit marginal verbesserter Vollständigkeit.}
+    \begin{subfigure}{0.49\textwidth}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room03/neucon00.png}
+        \caption{Neural Recon}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room03/visfusion00.png}
+        \caption{MASt3R-SLAM}
+    \end{subfigure}
+    \caption{Rekonstruktionen der volumetrischen Verfahren in Szene R1. NeuralRecon 
+    mit erheblichen Diskontinuitäten. VisFusion mit marginal verbesserter Vollständigkeit.}
     \label{fig:real_volumetric}
 \end{figure}
 
@@ -698,8 +702,14 @@ MASt3R-SLAM erzielte die höchste Rekonstruktionsqualität in den realen Szenen.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room04/slam3r00.png}
-    \includegraphics[width=0.49\linewidth]{images/ReconsTransparent/room04/mast3r00.png}
+    \begin{subfigure}{0.49\textwidth}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room04/slam3r00.png}
+        \caption{SLAM3R}
+    \end{subfigure}
+    \begin{subfigure}{0.49\textwidth}
+        \includegraphics[width=\linewidth]{images/ReconsTransparent/room04/mast3r00.png}
+        \caption{MASt3R-SLAM}
+    \end{subfigure}
     \caption{Rekonstruktionen der SLAM-basierten Verfahren in Szene R2. Obwohl beide Modelle einen hohen Detailgrad haben, liegt MASt3R-SLAM vorne (Esstisch, Sofa)}
     \label{fig:real_slam}
 \end{figure}
@@ -773,7 +783,7 @@ Trotz dieser Performance-Unterschiede zwischen den Verfahren zeigen die gemessen
 
 Um die Ursachen der unterschiedlichen Gesamtlatenzen genauer zu verstehen, erfolgte eine Zerlegung der End-to-End-Latenz in ihre Komponenten. Diese Analyse zeigt die Inferenzzeit als limitierenden Faktor (vgl.~\ref{fig:latency_stacked_bar}). Bei NeuralRecon und VisFusion machte $L_{\text{inference}}$ etwa 63--78\% der Gesamtlatenz aus und blieb über alle Szenen hinweg konstant. Bei den SLAM-basierten Verfahren MASt3R-SLAM und SLAM3R dominierte die Inferenz mit ca. 90\% die Gesamtlatenz, während $L_{\text{network}}$ und $L_{\text{render}}$ jeweils knapp unter 10\% lagen.
 
-Im Gegensatz zur variablen Inferenzzeit blieben die Komponenten $L_{\text{network}}$ und $L_{\text{render}}$ über alle Szenen hinweg konstant. Ihre absolute Dauer von typischerweise unter 1000~ms für die gesamte Kommunikations- und Visualisierungspipeline ist bemerkenswert: Sie demonstriert, dass die gewählte Architektur mit binärem Protokoll, WebSocket-Streaming und GPU-beschleunigter Visualisierung einen vernachlässigbaren Overhead verursacht. Die Datenvolumina von 0{,}82--1{,}84~MB für Uploads und 1,60--4,24~MB für Downloads pro Fragment (vgl.~\ref{tab:data_volumes}) werden effizient übertragen. Das Chunking-basierte Rendering verzögert die Darstellung von Meshes nicht wahrnehmbar. Die Gesamtperformance des Systems skaliert somit nahezu linear mit der Inferenzgeschwindigkeit der integrierten Modelle -- ein zentrales Designziel modularer Architekturen.
+Im Gegensatz zur variablen Inferenzzeit blieben die Komponenten $L_{\text{network}}$ und $L_{\text{render}}$ über alle Szenen hinweg konstant. Ihre absolute Dauer von typischerweise unter 1000~ms für die gesamte Kommunikations- und Visualisierungspipeline ist bemerkenswert: Sie demonstriert, dass die gewählte Architektur mit binärem Protokoll, WebSocket-Streaming und GPU-beschleunigter Visualisierung einen vernachlässigbaren Overhead verursacht. Die Datenvolumina von 0{,}82--1{,}84~MB für Uploads und 1,60--4,24~MB für Downloads pro Fragment (vgl.~\ref{tab:data_volumes}) werden effizient übertragen. Das Chunking-basierte Rendering verzögert die Darstellung von Meshes nicht wahrnehmbar. Die Gesamtperformance des Systems skaliert somit nahezu linear mit der Inferenzgeschwindigkeit der integrierten Modelle, was ein zentrales Designziel modularer Architekturen darstellt.
 
 Die inferenzdominierte Performance spiegelt sich auch in der GPU-Ressourcenauslastung wider. MASt3R-SLAM und SLAM3R erreichten eine nahezu vollständige GPU-Auslastung von 98--100\%, während die volumetrischen Verfahren mit 44--56\% deutlich moderater ausgelastet waren (vgl.~\ref{tab:gpu_resources}). Die verwendete NVIDIA GTX 1070 Ti aus dem Jahr 2017 stellt einen Engpass für moderne Transformer-basierte Rekonstruktionsverfahren dar, die für deutlich leistungsfähigere Hardware konzipiert wurden. Entscheidend ist jedoch, dass die geringe Architektur-Latenz eine direkte Skalierbarkeit auf aktuelle GPU-Generationen ermöglicht: Bei Verwendung modernerer Hardware wie einer RTX 4090 würde sich die Inferenzzeit proportional reduzieren, während der System-Overhead konstant niedrig bliebe. Die containerisierte Architektur erlaubt zudem den transparenten Austausch der Backend-Hardware ohne Anpassungen an Frontend oder Kommunikationsprotokoll, was ein wesentlicher Vorteil für den langfristigen Betrieb in sich entwickelnden VR-Infrastrukturen ist.
 
@@ -781,7 +791,7 @@ Die inferenzdominierte Performance spiegelt sich auch in der GPU-Ressourcenausla
 
 Die erfolgreiche Integration von vier heterogenen Rekonstruktionsverfahren (vgl.~\ref{tab:model_comparison}) validiert den modularen Architekturansatz als praktikabel. Besonders relevant ist dabei, dass diese Verfahren auf unterschiedlichen PyTorch-Versionen basieren und teils konfliktäre Abhängigkeiten aufweisen, die ohne Containerisierung einen gemeinsamen Betrieb unmöglich machen würden. Die Isolation durch Docker-Container ermöglicht hier eine technische Koexistenz, die in monolithischen Architekturen nicht realisierbar wäre.
 
-Der gemessene Integrationsaufwand von durchschnittlich 47--66 Zeilen Dockerfile und 205--401 Zeilen Worker-Code pro Modell (vgl.\ref{tab:integration_effort}) demonstriert die Effizienz der entwickelten Abstraktionsschicht. Diese Werte sind insofern aussagekräftig, als das sie ausschließlich den integrationsspezifischen Code umfassen, wobei die eigentlichen Rekonstruktionsmodelle unverändert bleiben und lediglich durch eine einheitliche Kommunikationsschicht gekapselt werden. Die geringe Varianz zwischen den Modellen (Dockerfile: $\pm 19$ LoC, Worker: $\pm 196$ LoC) deutet darauf hin, dass die Abstraktion stabil über unterschiedliche Modellarchitekturen hinweg funktioniert. Ein wesentlicher Teil des Worker-Codes entfällt auf modellspezifische Datenvorverarbeitung, wie etwa die Transformation von Unity-Koordinatensystemen in die jeweiligen Modell-Konventionen, oder Inferrenz-Prozesse was als unvermeidlicher Aufwand einzustufen ist der in jeder Integrationsarchitektur anfallen würde.
+Der gemessene Integrationsaufwand von durchschnittlich 47--66 Zeilen Dockerfile und 205--401 Zeilen Worker-Code pro Modell (vgl.\ref{tab:integration_effort}) demonstriert die Effizienz der entwickelten Abstraktionsschicht. Diese Werte sind insofern aussagekräftig, als das sie ausschließlich den integrationsspezifischen Code umfassen, wobei die eigentlichen Rekonstruktionsmodelle unverändert bleiben und lediglich durch eine einheitliche Kommunikationsschicht gekapselt werden. Die geringe Varianz zwischen den Modellen (Dockerfile: $\pm 19$ LoC, Worker: $\pm 196$ LoC) deutet darauf hin, dass die Abstraktion stabil über unterschiedliche Modellarchitekturen hinweg funktioniert. Ein wesentlicher Teil des Worker-Codes entfällt dabei noch auf modellspezifische Datenvorverarbeitung, wie etwa die Transformation von Unity-Koordinatensystemen in die jeweiligen Modell-Konventionen, oder Inferrenz-Prozesse was als unvermeidlicher Aufwand einzustufen ist der in jeder Integrationsarchitektur anfallen würde.
 
 Die Effizienz der Kommunikationsschicht manifestiert sich in den kompakten Datenvolumina und der geringen Backend-Ressourcenauslastung. Das binäre Protokoll vermeidet den Overhead von ca. 33\%, der durch Base64-Kodierung entstehen würde und erreicht durch JPEG-Komprimierung und GLB-Serialisierung Uploadgrößen von 0{,}82--1{,}84~MB und Downloadgrößen von 1,60--4,24~MB pro Fragment (vgl.~\ref{tab:data_volumes}). Die Unterschiede zwischen Modellen reflektieren deren Repräsentationsformen: Volumetrische Verfahren generieren dichte Meshes (2,19--4,24~MB), während SLAM-basierte Ansätze konstant kompaktere Punktwolken (1,60~MB) erzeugen. Der zentrale Router benötigt während der Ausführung lediglich 20\% CPU und 100~MB RAM (vgl.~\ref{tab:container_resources}), was die Effizienz der asynchronen Event-Loop-Architektur unterstreicht. Die Worker-Container weisen moderate CPU-Auslastungen von 100--250\% und einen RAM-Verbrauch von 1,8--2,8~GB auf, der primär durch die Modellgewichte und deren Aktivierungen während der Inferenz bestimmt wird.
 
@@ -806,19 +816,19 @@ Die Integration von RTReconstruct in das Va.Si.Li-Lab demonstriert die praktisch
 
 Die Systemstabilität unter realen Nutzungsbedingungen wurde durch umfangreiche Testläufe validiert. In 60 Testdurchgängen über eine Gesamtdauer von 6 Stunden traten 0 Verbindungsabbrüche auf (vgl.~\ref{par:e2e_functional}). Die Multi-Szenen-Unterstützung funktionierte mit 2 parallelen Szenen und 4 verbundenen Clients ohne Funktionseinbußen (vlg.~\ref{par:parallel_execution}), was die Robustheit der asynchronen WebSocket-Architektur und des Fan-Out-Mechanismus auch unter Mehrbenutzer-Last bestätigt. Diese Zuverlässigkeit bildet die Grundlage für den produktiven Einsatz in kollaborativen VR-Szenarien.
 
-Die Visualisierungs-Performance variiert jedoch deutlich zwischen den Repräsentationsformen. Bei der volumetrischen Mesh-Rekonstruktion von \textit{NeuralRecon} blieb die Frame-Rate mit 72 FPS auf Baseline-Niveau. Die implementierte Spatial-Hashing-Visualisierung mit Chunk-Größen von $5 \times 5 \times 5$ Metern ermöglichte hier effizientes Frustum-Culling und sicherte eine flüssige Darstellung auch bei größeren Geometrien. \textit{VisFusion} erreichte hingegen nur 58 FPS, was auf die größere Mesh-Komplexität und höhere Polygon-Anzahl zurückzuführen ist. SLAM-basierte Punktwolken-Rekonstruktionen (\textit{SLAM3R}, \textit{MASt3R-SLAM}) erreichten bei 100.000 dargestellten Punkten konstant 37 FPS. Eine weitere Reduktion der Punktzahl zur Performance-Steigerung erwies sich als nicht praktikabel, da dies zu erheblichem Detailverlust führte und die primäre Stärke der SLAM-Verfahren, ihre hohe geometrische Auflösung, untergraben würde. Die Begrenzung auf 100.000 Punkte stellt damit eine Kompromisslösung dar, die ausreichende Darstellungsqualität bei akzeptabler Performance auf mobiler VR-Hardware gewährleistet.
+Die Visualisierungs-Performance variiert jedoch deutlich zwischen den Repräsentationsformen. Bei der volumetrischen Mesh-Rekonstruktion von \textit{NeuralRecon} blieb die Frame-Rate mit 72 FPS auf Baseline-Niveau. Die implementierte Visualisierung mit Chunk-Größen von $5 \times 5 \times 5$ Metern ermöglichte hier effizientes Frustum-Culling und sicherte eine flüssige Darstellung auch bei größeren Geometrien. \textit{VisFusion} erreichte hingegen nur 58 FPS, was auf die größere Mesh-Komplexität und höhere Polygon-Anzahl zurückzuführen ist. SLAM-basierte Punktwolken-Rekonstruktionen (\textit{SLAM3R}, \textit{MASt3R-SLAM}) erreichten bei 100.000 dargestellten Punkten konstant 37 FPS. Eine weitere Reduktion der Punktzahl zur Performance-Steigerung erwies sich als nicht praktikabel, da dies zu erheblichem Detailverlust führte und die primäre Stärke der SLAM-Verfahren, ihre hohe geometrische Auflösung, untergraben würde. Die Begrenzung auf 100.000 Punkte stellt damit eine Kompromisslösung dar, die ausreichende Darstellungsqualität bei akzeptabler Performance auf mobiler VR-Hardware gewährleistet.
 
-Eine weitere Herausforderung für den produktiven Einsatz betrifft die globale Registrierung der SLAM-Rekonstruktionen. SLAM3R und MASt3R-SLAM erzeugen Rekonstruktionen in einem modellinternen Koordinatensystem mit lokaler Skalierung, da sie Kameraposen vollständig selbst schätzen und keine externen Referenzen nutzen. Volumetrische Verfahren hingegen verwenden die vom Meta SDK bereitgestellten Extrinsiken direkt für die TSDF-Fusion und rekonstruieren dadurch automatisch im korrekten Maßstab des VR-Tracking-Systems. Um SLAM-Outputs in die Unity-Szene zu integrieren, ist derzeit manuelles Skalieren und Ausrichten durch den Nutzer erforderlich. Dieser Arbeitsschritt unterbricht den automatisierten Workflow und erschwert spontane Rekonstruktionsszenarien, in denen Nutzer unmittelbar mit den erfassten Geometrien interagieren möchten. Die Problematik illustriert eine grundlegende Herausforderung bei der Integration von Rekonstruktionsverfahren, die ihre Posen selbst intern optimieren.
+Eine weitere Herausforderung für den produktiven Einsatz betrifft die globale Registrierung der SLAM-Rekonstruktionen. SLAM3R und MASt3R-SLAM erzeugen Rekonstruktionen in einem modellinternen Koordinatensystem mit lokaler Skalierung, da sie Kameraposen vollständig selbst schätzen und keine externen Referenzen nutzen. Volumetrische Verfahren hingegen verwenden die vom Meta SDK bereitgestellten Extrinsiken direkt für die TSDF-Fusion und rekonstruieren dadurch automatisch im korrekten Maßstab des VR-Tracking-Systems. Um SLAM-Outputs in die Unity-Szene zu integrieren, ist derzeit manuelles Skalieren und Ausrichten durch den Nutzer erforderlich. Dieser Arbeitsschritt unterbricht den automatisierten Workflow und erschwert spontane Rekonstruktionsszenarien, in denen Nutzer unmittelbar mit den erfassten Geometrien interagieren möchten. 
 
 \subsection{Beantwortung der Forschungsfrage}
 
-Die zentrale Forschungsfrage \glqq Wie gut eignet sich eine modulare, containerisierte Systemarchitektur zur Integration verschiedener Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung?\grqq kann auf Basis der durchgeführten Evaluation nun differenziert beantwortet werden. Die Architektur erweist sich als gut bis sehr gut geeignet für Forschungs- und Evaluationskontexte, zeigt jedoch auch spezifische Stärken und Limitationen, die von den jeweiligen Deployment-Anforderungen abhängen.
+Die zentrale Forschungsfrage \glqq Wie gut eignet sich eine modulare, containerisierte Systemarchitektur zur Integration verschiedener Echtzeit-3D-Rekonstruktionsverfahren in eine bestehende Virtual-Reality-Umgebung?\grqq~kann auf Basis der durchgeführten Evaluation nun differenziert beantwortet werden. Die Architektur erweist sich als gut bis sehr gut geeignet für Forschungs- und Evaluationskontexte, zeigt jedoch auch spezifische Stärken und Limitationen, die von den jeweiligen Deployment-Anforderungen abhängen.
 
-Die modulare Architektur erfüllt ihre Kernziele auf technischer Ebene umfassend. Die erfolgreiche Integration von vier methodisch divergenten Rekonstruktionsverfahren mit unterschiedlichen Framework-Abhängigkeiten und Repräsentationsformen validiert das Containerisierungskonzept als praktikabel (vlg.~\ref{tab:integration_effort}). Die asynchrone WebSocket-Architektur gewährleistet eine robuste, latenzarme Datenstromverarbeitung mit 0 Verbindungsabbrüchen in 6 Stunden Testbetrieb (vgl.~\ref{par:e2e_functional}). Die niedrige Basis-Latenz von typischerweise unter 1000~ms für Netzwerk- und Rendering-Komponenten demonstriert, dass die Gesamtperformance nahezu linear mit der Modell-Inferenzgeschwindigkeit skaliert und erfüllt somit ein zentrales Designziel modularer Architekturen (vgl.~\ref{fig:latency_stacked_bar}). Die Integration in das Va.Si.Li-Lab gelang additiv ohne disruptive Eingriffe, was die Wiederverwendbarkeit für andere VR-Plattformen nahelegt.
+Die modulare Architektur erfüllt ihre Kernziele auf technischer Ebene umfassend. Die erfolgreiche Integration von vier methodisch unterschiedlichen Rekonstruktionsverfahren mit verschiedenen Framework-Abhängigkeiten und Repräsentationsformen validiert das Containerisierungskonzept als praktikabel (vgl.~\ref{tab:integration_effort}). Die asynchrone WebSocket-Architektur gewährleistet eine robuste, latenzarme Datenstromverarbeitung ohne Verbindungsabbrüche in sechs Stunden Testbetrieb (vgl. ~\ref{par:e2e_functional}). Die typischerweise niedrige Basis-Latenz von unter 1000 ms für Netzwerk- und Rendering-Komponenten zeigt, dass die Gesamtleistung nahezu linear mit der Modell-Inferenzgeschwindigkeit skaliert. Somit wird ein zentrales Designziel modularer Architekturen erfüllt (vgl.~\ref{fig:latency_stacked_bar}). Die Integration in das Va.Si.Li-Lab gelang additiv ohne disruptive Eingriffe, was die Wiederverwendbarkeit für andere VR-Plattformen nahelegt.
 
-Aus wissenschaftlicher Perspektive ermöglichte die Architektur systematische Erkenntnisse, die über isolierte Modell-Benchmarks hinausgehen. Die identifizierte Leistungsumkehr zwischen synthetischen und realen VR-Umgebungen (vgl. Tabelle~\ref{tab:fscore_all}, Abbildung~\ref{fig:real_volumetric} und~\ref{fig:real_slam}) wäre ohne vergleichende Evaluation unter identischen Bedingungen kaum systematisch zu erfassen gewesen. Die Rückführung auf SDK-Limitationen der Meta Quest 3 (fehlende Frame-Timestamps) statt auf inhärente Algorithmen-Schwächen zeigt den Mehrwert kontrollierter Vergleiche. Ebenso offenbarte die Evaluation deployment-spezifische Trade-offs: Volumetrische Verfahren sind schneller (0,30--0,62 Fragmente/s), benötigen aber präzise Extrinsiken; SLAM-Verfahren sind langsamer (0,03--0,13 Fragmente/s), aber robuster gegenüber Sensor-Artefakten (vgl.~\ref{tab:throughput_results}). Die Architektur erlaubt es, solche Entscheidungen kontextspezifisch zu treffen, ohne Code-Anpassungen vornehmen zu müssen.
+Aus wissenschaftlicher Perspektive ermöglichte die Architektur systematische Erkenntnisse, die über isolierte Modell-Benchmarks hinausgehen. Die identifizierte Leistungsumkehr zwischen synthetischen und realen VR-Umgebungen (vgl. Tabelle~\ref{tab:fscore_all}, Abbildung~\ref{fig:real_volumetric} und Abbildung \ref{fig:real_slam}) wäre ohne eine vergleichende Evaluation unter identischen Bedingungen kaum systematisch erfassbar gewesen. Die Feststellung, dass die Ursache in SDK-Limitationen der Meta Quest 3 (fehlende Frame-Timestamps) und nicht in inhärenten Algorithmen-Schwächen liegt, zeigt den Mehrwert kontrollierter Vergleiche. Ebenso offenbarte die Evaluation spezifische Trade-offs: Volumetrische Verfahren sind mit 0,30 bis 0,62 Fragmenten pro Sekunde schneller, benötigen aber präzise Extrinsiken. SLAM-Verfahren sind mit 0,03 bis 0,13 Fragmenten pro Sekunde langsamer, aber robuster gegenüber Sensor-Artefakten (vgl. Tabelle~\ref{tab:throughput_results}). Die Architektur erlaubt es, solche Entscheidungen kontextspezifisch zu treffen, ohne dass Code-Anpassungen erforderlich sind.
 \clearpage
 
-Limitationen bestehen primär in drei Bereichen. Erstens erreichen SLAM-Verfahren auf der verwendeten NVIDIA GTX 1070 Ti eine GPU-Auslastung von 98--100\% bei vollständiger VRAM-Auslastung (8~GB), was den parallelen Betrieb mehrerer Modelle einschränkt (vgl.~\ref{tab:gpu_resources}). Dieser Engpass ist hardware-spezifisch und würde sich mit moderneren GPUs deutlich reduzieren, unterstreicht aber die Relevanz der Architektur. Diese ermöglicht nämlich die direkte Skalierung auf leistungsfähigere Hardware ohne Code-Anpassungen. Zweitens fehlt eine persistente Zustandsverwaltung, sodass Container-Neustarts zum Datenverlust führen. Drittens erfordert die Integration von SLAM-Rekonstruktionen manuelle Skalierung durch Nutzer, da diese in modellinternen Koordinatensystemen vorliegen. Diese Limitationen sind nicht architekturinhärent, sondern reflektieren Hardware-Constraints der Evaluationsumgebung, Implementierungsentscheidungen und eine fehlende Standardisierung zwischen Rekonstruktionsverfahren und VR-Tracking-Systemen.
+Es bestehen primät drei Limitationen. Erstens erreichen SLAM-Verfahren auf der verwendeten NVIDIA GTX 1070 Ti eine GPU-Auslastung von 98--100\% bei vollständiger VRAM-Auslastung (8~GB), was den parallelen Betrieb mehrerer Modelle einschränkt (vgl.~\ref{tab:gpu_resources}). Dieser Engpass ist hardwarespezifisch und würde sich mit moderneren GPUs deutlich reduzieren. Er unterstreicht jedoch die Relevanz der Architektur. Diese ermöglicht die direkte Skalierung auf leistungsfähigere Hardware ohne Code-Anpassungen. Zweitens fehlt eine persistente Zustandsverwaltung, sodass Container-Neustarts zum Datenverlust führen. Drittens erfordert die Integration von SLAM-Rekonstruktionen eine manuelle Skalierung durch die Nutzenden, da diese in modellinternen Koordinatensystemen vorliegen. Diese Einschränkungen sind nicht durch die Architektur bedingt, sondern spiegeln die Hardware-Beschränkungen der Evaluationsumgebung, Implementierungsentscheidungen und die fehlende Standardisierung zwischen Rekonstruktionsverfahren und VR-Tracking-Systemen wider.
 
-Zusammenfassend zeigt sich, dass sich die entwickelte Architektur sehr gut als flexible Integrationsplattform für Forschungs- und Evaluationszwecke eignet. Sie ermöglicht den transparenten Austausch von Rekonstruktionsverfahren, die Identifikation deployment-spezifischer Eignung und die Generierung vergleichender Erkenntnisse unter kontrollierten Bedingungen. Für produktive VR-Anwendungen mit Echtzeitanforderungen empfiehlt sich eine kontextabhängige Verfahrenswahl: volumetrische Ansätze für synthetische Umgebungen oder präzise Kamera-Hardware bzw. SLAM-basierte Ansätze für Consumer-VR mit SDK-Limitationen. Die Modularität des Systems stellt sicher, dass solche Entscheidungen deployment-spezifisch getroffen werden können, ohne dass eine grundlegende Anpassung der Frontend- oder Backend-Implementierung erforderlich ist. Dies ist ein zentrales Erfolgskriterium für langfristig wartbare VR-Forschungsinfrastrukturen.
+Zusammenfassend zeigt sich, dass sich die entwickelte Architektur sehr gut als flexible Integrationsplattform für Forschungs- und Evaluationszwecke eignet. Sie ermöglicht den transparenten Austausch von Rekonstruktionsverfahren, die Identifizierung der Eignung für bestimmte Deployments und die Ableitung vergleichender Erkenntnisse unter kontrollierten Bedingungen. Für produktive VR-Anwendungen mit Echtzeitanforderungen empfiehlt sich eine kontextabhängige Verfahrenswahl: volumetrische Ansätze für synthetische Umgebungen oder präzise Kamera-Hardware bzw. SLAM-basierte Ansätze für Consumer-VR mit SDK-Limitationen. Die Modularität des Systems gewährleistet, dass solche Entscheidungen gezielt für das jeweilige Einsatzszenario getroffen werden können, ohne dass eine grundlegende Anpassung der Frontend- oder Backend-Implementierung erforderlich ist. Dies ist ein zentrales Kriterium für langfristig wartbare VR-Forschungsinfrastrukturen.
