@@ -8,13 +8,13 @@ Das System RTReconstruct realisiert eine modulare Streaming-Pipeline, die räuml
 
 \subsection{Backend-Technologien}
 
-Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen.~\cite{ramirez2023fastapi} Dies ist für die Architektur essenziell: Der zentrale Router agiert als Vermittlungsstelle, die gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
+Für die Umsetzung des Backends fiel die Wahl auf FastAPI in Kombination mit dem ASGI-Server Uvicorn. Im Gegensatz zu synchronen Frameworks (wie Flask) ermöglicht FastAPI durch die konsequente Nutzung von Pythons \texttt{asyncio}-Bibliothek eine nicht-blockierende Verarbeitung von Netzwerkanfragen~\cite{ramirez2023fastapi}. Dies ist für die Architektur essenziell: Der zentrale Router agiert als Vermittlungsstelle, die gleichzeitig hochfrequente Bilddaten von Clients empfängt und an mehrere GPU-Worker verteilt. Da die Inferenzzeiten der Modelle (z.\,B. MASt3R-SLAM oder NeuralRecon) stark variieren, würde ein synchrones Design dazu führen, dass der Router blockiert. Durch das asynchrone Design werden Netzwerk-I/O und Rechenoperationen entkoppelt, was den Durchsatz des Gesamtsystems maximiert.
 
 Die Persistenz der Rekonstruktionsergebnisse wird durch eine SQLite-Datenbank gewährleistet, die Metadaten und Binär-Blobs (GLB-Dateien) speichert. Aufgrund der modularen Struktur werden alle Komponenten mittels Docker Compose orchestriert, wobei das NVIDIA Container Toolkit den Zugriff der Worker-Container auf die Host-GPU ermöglicht.
 
 \subsection{Frontend-Technologien}
 
-Das Frontend wurde in Unity \textit{6000.2.12f1} implementiert. Für die Netzwerkkommunikation kommt die Bibliothek \textit{NativeWebSocket} zum Einsatz, da sie im Gegensatz zu Standard-.NET-Sockets eine bessere Kompatibilität mit WebGL- und Android-Builds (Meta Quest) bietet.~\cite{endel2024nativewebsocket} Das Rendering der 3D-Rekonstruktionen erfolgt hybrid: Punktwolken werden über den Visual Effect Graph (VFX Graph) GPU-beschleunigt dargestellt, während Mesh-Daten mittels der Bibliothek \textit{glTFast} zur Laufzeit importiert werden.~\cite{atteneder2024gltfast}
+Das Frontend wurde in Unity \textit{6000.2.12f1} implementiert. Für die Netzwerkkommunikation kommt die Bibliothek \textit{NativeWebSocket} zum Einsatz, da sie im Gegensatz zu Standard-.NET-Sockets eine bessere Kompatibilität mit WebGL- und Android-Builds (Meta Quest) bietet~\cite{endel2024nativewebsocket}. Das Rendering der 3D-Rekonstruktionen erfolgt hybrid: Punktwolken werden über den Visual Effect Graph (VFX Graph) GPU-beschleunigt dargestellt, während Mesh-Daten mittels der Bibliothek \textit{glTFast} zur Laufzeit importiert werden~\cite{atteneder2024gltfast}.
 
 \section{Kommunikationsstandard}
 
@@ -148,7 +148,7 @@ Der Router (\texttt{fragment\_hub.py}) verwaltet den globalen Zustand aller verb
     \item \texttt{/ws/model/\{name\}}: Hier verbinden sich die Modell-Worker. Für jedes Modell wird eine \texttt{asyncio.Queue} angelegt.
 \end{enumerate}
 
-Eingehende Fragmente von Clients werden vom Router validiert, deserialisiert und in die Warteschlange des adressierten Modells gelegt. Sobald ein Modell-Worker ein Ergebnis liefert, wird dieses zunächst in der Datenbank persistiert gespeichert. Anschließend iteriert der Router über alle Clients, die der entsprechenden Szene zugeordnet sind, und sendet das Ergebnis asynchron über deren WebSocket-Verbindungen nach dem Fan-Out Prinzip.~\cite{hohpe2004enterprise} Durch die Nutzung von \texttt{asyncio.gather()} werden diese Sendevorgänge parallel ausgeführt, ohne die Verarbeitung neuer Fragmente zu blockieren.
+Eingehende Fragmente von Clients werden vom Router validiert, deserialisiert und in die Warteschlange des adressierten Modells gelegt. Sobald ein Modell-Worker ein Ergebnis liefert, wird dieses zunächst in der Datenbank persistiert gespeichert. Anschließend iteriert der Router über alle Clients, die der entsprechenden Szene zugeordnet sind, und sendet das Ergebnis asynchron über deren WebSocket-Verbindungen nach dem Fan-Out Prinzip~\cite{hohpe2004enterprise}. Durch die Nutzung von \texttt{asyncio.gather()} werden diese Sendevorgänge parallel ausgeführt, ohne die Verarbeitung neuer Fragmente zu blockieren.
 
 \subsection{Modell-Worker}
 
@@ -201,7 +201,7 @@ Das Frontend ist für die Datenerfassung, die Netzwerkkommunikation sowie die Vi
 
 \subsection{Hardware-Abstraktion mittels Strategy Pattern}
 
-Um das System plattformunabhängig zu halten, wurde für den Zugriff auf Kamerasensoren das Strategy Pattern angewandt.~\cite{gamma1994design} Das Interface \texttt{ICaptureDevice} definiert Methoden zum Abruf von Bildern (\texttt{GetFrame}) sowie von intrinsischen (\texttt{GetIntrinsics}) und extrinsischen (\texttt{GetExtrinsics}) Parametern. Es existieren spezifische Implementierungen für verschiedene Hardware-Typen:
+Um das System plattformunabhängig zu halten, wurde für den Zugriff auf Kamerasensoren das Strategy Pattern angewandt~\cite{gamma1994design}. Das Interface \texttt{ICaptureDevice} definiert Methoden zum Abruf von Bildern (\texttt{GetFrame}) sowie von intrinsischen (\texttt{GetIntrinsics}) und extrinsischen (\texttt{GetExtrinsics}) Parametern. Es existieren spezifische Implementierungen für verschiedene Hardware-Typen:
 
 \begin{itemize}
     \item \textbf{MetaQuestCaptureDevice}: Nutzt die Passthrough-API der Meta Quest, um Zugriff auf die Umgebungskameras und die Headset-Position zu erhalten.
